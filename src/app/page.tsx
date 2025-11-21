@@ -1,34 +1,48 @@
-"use client"
+"use client";
 
 import Image from "next/image";
 
-import {Configuration, ActivitiesApi} from "@/strava-api";
-import {useAccessTokenCookie} from "@lib/cookies/hooks";
-import {useEffect} from "react";
+import { Configuration, ActivitiesApi } from "@/strava-api";
+import { useAccessTokenCookie } from "@lib/cookies/hooks";
+import { useEffect } from "react";
 
 export default function Home() {
+  const accessToken = useAccessTokenCookie();
 
-    const accessToken = useAccessTokenCookie();
+  useEffect(() => {
+    if (accessToken) {
+      const config = new Configuration({
+        accessToken: `${accessToken.token_type} ${accessToken.access_token}`,
+      });
 
-    useEffect(() => {
-        if (accessToken) {
-            const config = new Configuration({accessToken: `${accessToken.token_type} ${accessToken.access_token}`});
+      const activitiesApi = new ActivitiesApi(config);
 
-            const activitiesApi = new ActivitiesApi(config);
+      async function getActivities() {
+        try {
+          const activities = await activitiesApi.getLoggedInAthleteActivities();
 
-            async function getActivities() {
-                try {
-                    const activities = await activitiesApi.getLoggedInAthleteActivities();
-
-                    console.log(activities);
-                } catch (error) {
-                    console.log("Caught err");
-                }
-            }
-
-            getActivities().then();
+          console.log(activities);
+        } catch (error) {
+          console.log("Caught err");
         }
-    }, [accessToken]);
+      }
+
+      async function getActivity() {
+        try {
+          const activity = await activitiesApi.getActivityById({
+            id: 14294212986,
+          });
+
+          console.log(activity);
+        } catch (error) {
+          console.log("Caught err");
+        }
+      }
+
+      getActivities().then();
+      getActivity().then();
+    }
+  }, [accessToken]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">

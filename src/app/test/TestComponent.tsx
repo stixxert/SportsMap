@@ -1,14 +1,12 @@
-"use client"
+"use client";
 
-import {useEffect} from "react";
-import {setTestCookie} from "@/src/app/test/testfunc";
+import { useEffect } from "react";
+import { setTestCookie } from "@/src/app/test/testfunc";
 
 export default function TestComponent() {
-    useEffect(() => {
-        setTestCookie().then()
-    }, []);
+  useEffect(() => {
+    setTestCookie().then();
+  }, []);
 
-    return (
-        <></>
-    )
+  return <></>;
 }
