@@ -1,17 +1,14 @@
 "use server";
 
-import { redirect } from "next/navigation";
-import { Result } from "@utils/types";
+import { Result } from "@/src/types/types";
 import { URL } from "url";
 import {
   getRefreshTokenCookie,
   setAccessTokenCookie,
   setAthleteInfoCookie,
   setRefreshTokenCookie,
-} from "@lib/cookies/server";
-
-const OAUTH_AUTHORIZE_URL = "https://www.strava.com/oauth/authorize";
-const OAUTH_RETRIEVE_TOKEN_URL = "https://www.strava.com/oauth/token";
+} from "@lib/server-cookies";
+import { OAUTH_RETRIEVE_TOKEN_URL } from "@config/api-urls";
 
 export async function exchangeCodeForToken(
   code: string,
@@ -129,20 +126,4 @@ export async function exchangeRefreshToken(): Promise<Result<void, string>> {
   ]);
 
   return { success: true, value: undefined };
-}
-
-export async function redirectToAuthorizeAccess(): Promise<void> {
-  const query = new URL(OAUTH_AUTHORIZE_URL);
-
-  Object.entries({
-    client_id: process.env.NEXT_PUBLIC_CLIENT_ID || "",
-    response_type: "code",
-    redirect_uri: process.env.NEXT_PUBLIC_DOMAIN + "/authorize" || "",
-    approval_prompt: "auto",
-    scope: "activity:read,activity:read_all",
-  }).forEach(([key, value]) => {
-    query.searchParams.append(key, value);
-  });
-
-  redirect(query.toString());
 }

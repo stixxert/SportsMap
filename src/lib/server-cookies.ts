@@ -1,13 +1,13 @@
 "use server";
 
 import { SummaryAthlete } from "@/strava-api";
-import { AccessToken } from "@utils/types";
+import { AccessToken } from "@/src/types/types";
 import { CookieValueTypes, getCookie, setCookie } from "cookies-next/server";
 import {
   ACCESS_TOKEN_COOKIE,
   ATHLETE_INFO_COOKIE,
   REFRESH_TOKEN_COOKIE,
-} from "@lib/cookies/options";
+} from "@config/cookie-settings";
 import { cookies } from "next/headers";
 
 export async function setAthleteInfoCookie(

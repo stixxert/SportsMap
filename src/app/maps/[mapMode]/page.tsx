@@ -1,15 +1,20 @@
 "use client";
 
-import { useConfigurationContext } from "@/src/contexts/APIConfigurationContext";
 import { ActivitiesApi } from "@/strava-api";
-import MapFrameComponent from "@/src/app/maps/components/MapFrameComponent";
+import MapFrameComponent from "@features/maps/components/MapFrameComponent";
+import { useApiConfigurationStore } from "@features/authorization/api-configuration-store";
 
 export default function MapPage() {
-  const conf = useConfigurationContext();
+  const configuration = useApiConfigurationStore(
+    (state) => state.configuration,
+  );
 
-  const activitiesApi = new ActivitiesApi(conf);
+  const activitiesApi = configuration ? new ActivitiesApi(configuration) : null;
 
   async function getActivities() {
+    if (!activitiesApi) {
+      return;
+    }
     try {
       const activities = await activitiesApi.getLoggedInAthleteActivities();
 

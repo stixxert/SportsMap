@@ -3,11 +3,11 @@
 import Image from "next/image";
 
 import { Configuration, ActivitiesApi } from "@/strava-api";
-import { useAccessTokenCookie } from "@lib/cookies/hooks";
 import { useEffect } from "react";
+import { useAccessTokenStore } from "@stores/authorization-store";
 
 export default function Home() {
-  const accessToken = useAccessTokenCookie();
+  const accessToken = useAccessTokenStore((state) => state.accessToken);
 
   useEffect(() => {
     if (accessToken) {
