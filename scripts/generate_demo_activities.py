@@ -15,7 +15,7 @@ class Point:
     y: float
 
     def to_tuple(self) -> Tuple[float, float]:
-        return (self.x, self.y)
+        return self.x, self.y
 
 @dataclasses.dataclass
 class PolyLine:
@@ -36,6 +36,7 @@ class Activity:
     startDate: int
     distance: float
     totalElevationGain: float
+    type: str
     map: Map
 
 rng = np.random.default_rng()
@@ -154,6 +155,7 @@ def generate_num_activities_and_write_to_file(filename: str, num_activities: int
                 activity: Activity = Activity(
                             id=activityId,
                             name=f"Activity {len(activities)}",
+                            type="Run",
                             startDate=int((datetime.now() - timedelta(days=rng.uniform(-30, 30))).timestamp()),
                             distance=polyLineCommonDistance,
                             totalElevationGain=polyLineCommonElevation,

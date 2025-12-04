@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import React from "react";
-import { useAuthorizationCookies } from "@/src/hooks/client-authorization-state";
 import AppProvider from "@app/provider";
 
 const geistSans = Geist({

@@ -21,7 +21,7 @@ export default function Home() {
         try {
           const activities = await activitiesApi.getLoggedInAthleteActivities();
 
-          console.log(activities);
+          console.log("ACT: ", activities);
         } catch (error) {
           console.log("Caught err");
         }
@@ -33,7 +33,7 @@ export default function Home() {
             id: 14294212986,
           });
 
-          console.log(activity);
+          console.log("ACT: ", activity);
         } catch (error) {
           console.log("Caught err");
         }
