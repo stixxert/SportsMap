@@ -4,10 +4,10 @@ import Image from "next/image";
 
 import { Configuration, ActivitiesApi } from "@/strava-api";
 import { useEffect } from "react";
-import { useAccessTokenStore } from "@stores/authorization-store";
+import { useAccessToken } from "@features/auth/stores/auth-store";
 
 export default function Home() {
-  const accessToken = useAccessTokenStore((state) => state.accessToken);
+  const accessToken = useAccessToken();
 
   useEffect(() => {
     if (accessToken) {

@@ -1,37 +1,34 @@
 "use server";
 
-import { SummaryAthlete } from "@/strava-api";
 import { AccessToken } from "@/src/types/types";
 import { CookieValueTypes, getCookie, setCookie } from "cookies-next/server";
 import {
   ACCESS_TOKEN_COOKIE,
-  ATHLETE_INFO_COOKIE,
+  IS_AUTHENTICATED_COOKIE,
   REFRESH_TOKEN_COOKIE,
 } from "@config/cookie-settings";
 import { cookies } from "next/headers";
 
-export async function setAthleteInfoCookie(
-  athleteInfo: SummaryAthlete,
-): Promise<void> {
-  return setCookie(ATHLETE_INFO_COOKIE.key, JSON.stringify(athleteInfo), {
-    ...ATHLETE_INFO_COOKIE.options,
-    cookies,
-  });
-}
-
 export async function setRefreshTokenCookie(
   refreshToken: string,
-): Promise<void> {
-  return setCookie(REFRESH_TOKEN_COOKIE.key, JSON.stringify(refreshToken), {
-    ...REFRESH_TOKEN_COOKIE.options,
-    cookies,
-  });
+): Promise<void[]> {
+  return Promise.all([
+    setCookie(REFRESH_TOKEN_COOKIE.key, JSON.stringify(refreshToken), {
+      ...REFRESH_TOKEN_COOKIE.options,
+      cookies,
+    }),
+    setCookie(
+      IS_AUTHENTICATED_COOKIE.key,
+      JSON.stringify({ authenticated: true }),
+      { ...IS_AUTHENTICATED_COOKIE.options, cookies },
+    ),
+  ]);
 }
 
 export async function setAccessTokenCookie(
   accessToken: AccessToken,
 ): Promise<void> {
-  return setCookie(ACCESS_TOKEN_COOKIE.key, JSON.stringify(accessToken), {
+  return setCookie(ACCESS_TOKEN_COOKIE.key, JSON.stringify({ accessToken }), {
     ...ACCESS_TOKEN_COOKIE.options,
     cookies,
   });

@@ -1,5 +1,5 @@
 import React from "react";
-import ApiProvider from "@app/[apiMode]/provider";
+import ApiProvider from "@app/maps/[[...apiType]]/provider";
 
 export default function ApiLayout({
   children,

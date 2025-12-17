@@ -1,4 +1,4 @@
-export enum ApiConfigurationType {
+export enum ApiType {
   Demo = "DEMO",
   Strava = "STRAVA",
 }

@@ -8,3 +8,8 @@ export function assembleUrl(
   });
   return url.toString();
 }
+
+export function getUrlSearch() {
+  "use client";
+  return window.location.search.slice(1);
+}

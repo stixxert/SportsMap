@@ -33,9 +33,9 @@ class Map:
 class Activity:
     id: str
     name: str
-    startDate: int
+    start_date: str
     distance: float
-    totalElevationGain: float
+    total_elevation_gain: float
     type: str
     map: Map
 
@@ -132,6 +132,25 @@ def generate_num_activities_and_write_to_file(filename: str, num_activities: int
 
     activities = []
 
+    fileData = []
+
+    try:
+        with open(filename, "r") as fileHandle:
+            fileData = json.load(fileHandle)
+    except FileNotFoundError:
+        pass
+
+    lastEntry = {}
+
+    if len(fileData) == 0:
+        lastEntry["start_date"] = datetime.now().isoformat()
+        lastEntry["name"] = "Activity -1"
+    else:
+        activities.extend(fileData)
+        lastEntry = fileData[-1]
+    lastEntryNameId = int(lastEntry["name"].split(" ")[1])
+    lastEntryDate = datetime.fromisoformat(lastEntry["start_date"])
+
     while remaining_num > 0:
         numPolyLineActivities = rng.integers(0, remaining_num, endpoint=True)
 
@@ -152,13 +171,21 @@ def generate_num_activities_and_write_to_file(filename: str, num_activities: int
                 shuffledPolyline = random_shift_polyline(polyLine)
                 activityId = str(uuid.uuid4())
 
+                activityDate = lastEntryDate + timedelta(hours=1)
+
+                lastEntryDate = activityDate
+
+                activityNameId = lastEntryNameId + 1
+
+                lastEntryNameId = activityNameId
+
                 activity: Activity = Activity(
                             id=activityId,
-                            name=f"Activity {len(activities)}",
+                            name=f"Activity {activityNameId}",
                             type="Run",
-                            startDate=int((datetime.now() - timedelta(days=rng.uniform(-30, 30))).timestamp()),
+                            start_date=activityDate.isoformat(),
                             distance=polyLineCommonDistance,
-                            totalElevationGain=polyLineCommonElevation,
+                            total_elevation_gain=polyLineCommonElevation,
                             map=Map(
                                 id=activityId,
                                 summary_polyline=polyline.encode(shuffledPolyline.points_to_tuple())

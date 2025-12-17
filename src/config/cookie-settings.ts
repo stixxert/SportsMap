@@ -1,6 +1,7 @@
 import { OptionsType } from "cookies-next";
 
-export const COOKIE_EXPIRY = 60 * 60 * 24;
+export const COOKIE_EXPIRY_MONTH = 60 * 60 * 24 * 31;
+export const COOKIE_EXPIRY_HOUR = 60 * 60;
 
 export type Cookie = {
   key: string;
@@ -8,7 +9,6 @@ export type Cookie = {
 };
 
 const COMMON_OPTIONS: OptionsType = {
-  maxAge: COOKIE_EXPIRY,
   sameSite: "strict",
   secure: process.env.NODE_ENV === "production",
 };
@@ -23,18 +23,18 @@ const SERVER_ONLY_ACCESSIBLE_OPTIONS: OptionsType = {
   httpOnly: true,
 };
 
-export const ATHLETE_INFO_COOKIE: Cookie = {
-  key: "athlete_info",
-  options: CLIENT_ACCESSIBLE_OPTIONS,
-};
-
 export const ACCESS_TOKEN_COOKIE: Cookie = {
-  key: "access_token",
-  options: CLIENT_ACCESSIBLE_OPTIONS,
+  key: "accessToken",
+  options: { ...CLIENT_ACCESSIBLE_OPTIONS, maxAge: COOKIE_EXPIRY_HOUR },
 };
 
-/* only server should refresh access token, as this requires api key */
+export const IS_AUTHENTICATED_COOKIE: Cookie = {
+  key: "authenticated",
+  options: { ...CLIENT_ACCESSIBLE_OPTIONS, maxAge: COOKIE_EXPIRY_MONTH },
+};
+
+/* only server should refresh access token, as this requires external-api key */
 export const REFRESH_TOKEN_COOKIE: Cookie = {
-  key: "refresh_token",
-  options: SERVER_ONLY_ACCESSIBLE_OPTIONS,
+  key: "refreshToken",
+  options: { ...SERVER_ONLY_ACCESSIBLE_OPTIONS, maxAge: COOKIE_EXPIRY_MONTH },
 };

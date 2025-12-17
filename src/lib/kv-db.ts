@@ -1,3 +1,5 @@
+"use client";
+
 import { DBSchema, IDBPDatabase, openDB } from "idb";
 
 const DBNAME = "keyval";

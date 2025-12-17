@@ -5,7 +5,6 @@ import { URL } from "url";
 import {
   getRefreshTokenCookie,
   setAccessTokenCookie,
-  setAthleteInfoCookie,
   setRefreshTokenCookie,
 } from "@lib/server-cookies";
 import { OAUTH_RETRIEVE_TOKEN_URL } from "@config/api-urls";
@@ -36,14 +35,6 @@ export async function exchangeCodeForToken(
 
   const response_body = await response.json();
 
-  const { athlete } = response_body;
-
-  if (!athlete)
-    return {
-      success: false,
-      error: "Error while requesting token: ".concat("Missing athlete info"),
-    };
-
   const { refresh_token } = response_body;
 
   if (!refresh_token)
@@ -61,11 +52,10 @@ export async function exchangeCodeForToken(
     };
 
   /*
-   * Set client cookies based on athlete, refresh and access token.
+   * Set client cookies based on refresh and access token.
    */
 
   await Promise.all([
-    setAthleteInfoCookie(athlete),
     setRefreshTokenCookie(refresh_token),
     setAccessTokenCookie({ token_type, access_token, expires_at, expires_in }),
   ]);
