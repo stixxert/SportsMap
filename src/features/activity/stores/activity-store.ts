@@ -46,4 +46,5 @@ export const useActivityStore = zustand.create<ActivityStoreState>((set) => ({
   },
 }));
 
-useActivityCategoryParamStore.subscribe(() => activityDependenciesCallback);
+export const useCurrentActivities = () =>
+  useActivityStore((state) => state.activities);

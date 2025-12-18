@@ -3,7 +3,6 @@
 import { ApiType } from "@/src/types/configuration-types";
 import { del, get, openKVDB, set } from "@lib/kv-db";
 import { SyncMetaData } from "@features/activity/types/activity-types";
-import { useApiTypeStore } from "@features/auth/stores/api-store";
 import {
   SyncMetaDataState,
   useActivityMetadataStore,

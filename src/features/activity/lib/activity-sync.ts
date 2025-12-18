@@ -9,6 +9,7 @@ import {
 } from "@features/activity/lib/activity-db";
 import { ApiType } from "@/src/types/configuration-types";
 import { useActivityMetadataStore } from "@features/activity/stores/activity-metadata-store";
+import { useActivitySyncStore } from "@features/activity/stores/activity-store";
 
 export const MAX_PAGE_SIZE = 200;
 export const SYNC_TIME_THRESHOLD = 1000 * 60 * 60; // 1 hr
@@ -20,6 +21,8 @@ export async function synchronizeActivities(
 ): Promise<void> {
   const metaData = useActivityMetadataStore.getState().metaData;
 
+  const setActivitiesSynced = useActivitySyncStore.getState().setActivitiesSync;
+
   if (!metaData) {
     throw Error("Attempting to synchronize without sync metadata");
   }
@@ -29,13 +32,16 @@ export async function synchronizeActivities(
       new Date(new Date().getTime() - SYNC_TIME_THRESHOLD) &&
     !forceSync
   ) {
+    if (!useActivitySyncStore.getState().activitiesSync)
+      setActivitiesSynced(true);
     return;
-  } else {
   }
 
   if (!apiConfiguration) {
     throw new Error("No API configuration found");
   }
+
+  setActivitiesSynced(false);
 
   const activitiesApi = new ActivitiesApi(apiConfiguration);
 
@@ -67,6 +73,8 @@ export async function synchronizeActivities(
   useActivityMetadataStore
     .getState()
     .setMetaData({ athleteId: metaData.athleteId, lastSync: new Date() });
+
+  setActivitiesSynced(true);
 }
 
 export async function getAllActivities(

@@ -79,7 +79,9 @@ export async function getActivities(
   );
 
   if (!dateRange || !sportTypeRange) {
-    return db.getAll(ACTIVITY_STORE_NAME);
+    return db
+      .getAllFromIndex(ACTIVITY_STORE_NAME, INDEX_DATE)
+      .then((activities) => activities.reverse());
   }
 
   if (dateRange) {
@@ -93,13 +95,15 @@ export async function getActivities(
   if (sportTypeRange) {
     typeBoundActivitiesPromise = Promise.all(
       sportTypeRange.map(async (type) => {
-        return db.getAllFromIndex(ACTIVITY_STORE_NAME, INDEX_TYPE, type);
+        return db
+          .getAllFromIndex(ACTIVITY_STORE_NAME, INDEX_TYPE, type)
+          .then((activities) => activities.reverse());
       }),
     ).then((typeActivities) => typeActivities.flat());
   }
 
   const [dateBoundActivities, typeBoundActivities] = await Promise.all([
-    dateBoundActivitiesPromise,
+    dateBoundActivitiesPromise.then((activities) => activities.reverse()),
     typeBoundActivitiesPromise,
   ]);
 

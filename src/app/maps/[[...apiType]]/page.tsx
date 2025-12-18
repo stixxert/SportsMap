@@ -8,12 +8,17 @@ const MapFrameComponent = dynamic(
     ssr: false,
   },
 );
-import { useActivitySyncStore } from "@features/activity/stores/activity-store";
+import {
+  useActivitySyncStore,
+  useCurrentActivities,
+} from "@features/activity/stores/activity-store";
 
 export default function MapPage() {
   const isSynced = useActivitySyncStore((state) => state.activitiesSync);
 
   console.log("Is synced:", isSynced);
+
+  const activities = useCurrentActivities();
 
   return (
     <>

@@ -27,10 +27,6 @@ export function useActivitySynchronization() {
 
     if (isSynced) return;
 
-    setTimeout(() =>
-      synchronizeActivities(apiType, apiConfiguration).then(() =>
-        useActivitySyncStore.getState().setActivitiesSync(true),
-      ),
-    );
+    setTimeout(() => synchronizeActivities(apiType, apiConfiguration));
   }, [apiConfiguration, syncMetaData]);
 }

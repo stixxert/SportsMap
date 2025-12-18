@@ -31,9 +31,10 @@ export function activityDependenciesCallback() {
   const categoryParams =
     useActivityCategoryParamStore.getState().categoryParams;
 
-  const setActivities = useActivityStore.getState().setActivities;
+  const activities = getActivitiesByCategory(
+    apiType || undefined,
+    categoryParams,
+  );
 
-  const activities = getActivitiesByCategory(apiType, categoryParams);
-
-  setActivities(activities);
+  useActivityStore.getState().setActivities(activities);
 }
