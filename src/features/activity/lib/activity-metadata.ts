@@ -1,12 +1,12 @@
 "use client";
 
 import { ApiType } from "@/src/types/configuration-types";
-import { del, get, openKVDB, set } from "@lib/kv-db";
-import { SyncMetaData } from "@features/activity/types/activity-types";
+import { del, get, openKVDB, set } from "@/lib/kv-db";
+import { SyncMetaData } from "@/features/activity/types/activity-types";
 import {
   SyncMetaDataState,
   useActivityMetadataStore,
-} from "@features/activity/stores/activity-metadata-store";
+} from "@/features/activity/stores/activity-metadata-store";
 
 const METADATA_KEY = "SYNC_METADATA_";
 

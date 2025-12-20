@@ -2,7 +2,7 @@ import { SummaryActivity } from "@/strava-api";
 
 import L from "leaflet";
 import "leaflet.heat";
-import { reduceActivitiesToPoints } from "@features/maps/lib/points-utils";
+import { reduceActivitiesToPoints } from "@/features/maps/lib/points-utils";
 
 export async function paintActivitiesOnHeatLayer(
   heatLayer: L.HeatLayer,

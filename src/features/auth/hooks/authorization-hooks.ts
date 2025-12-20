@@ -7,15 +7,15 @@ import {
   useSearchParams,
 } from "next/navigation";
 import { useEffect } from "react";
-import { exchangeCodeForToken } from "@features/auth/lib/server-flow";
-import { AUTHORIZE_URL } from "@features/auth/lib/objects";
-import { useAuthenticatedStore } from "@features/auth/stores/auth-store";
+import { exchangeCodeForToken } from "@/features/auth/lib/server-flow";
+import { AUTHORIZE_URL } from "@/features/auth/lib/objects";
+import { useAuthenticatedStore } from "@/features/auth/stores/auth-store";
 import {
   ensureAccessToken,
   readApiTypeString,
-} from "@features/auth/lib/api-configuration";
-import { useApiTypeStore } from "@features/auth/stores/api-store";
-import { ApiType } from "@/src/types/configuration-types";
+} from "@/features/auth/lib/api-configuration";
+import { useApiTypeStore } from "@/features/auth/stores/api-store";
+import { ApiType } from "@/types/configuration-types";
 
 export function useAuthorizationFlow() {
   const searchParams = useSearchParams();

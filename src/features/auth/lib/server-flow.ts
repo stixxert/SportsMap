@@ -6,8 +6,8 @@ import {
   getRefreshTokenCookie,
   setAccessTokenCookie,
   setRefreshTokenCookie,
-} from "@lib/server-cookies";
-import { OAUTH_RETRIEVE_TOKEN_URL } from "@config/api-urls";
+} from "@/lib/server-cookies";
+import { OAUTH_RETRIEVE_TOKEN_URL } from "@/config/api-urls";
 
 export async function exchangeCodeForToken(
   code: string,

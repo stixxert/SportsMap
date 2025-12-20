@@ -1,9 +1,9 @@
 "use client";
 
 import { SummaryActivity } from "@/strava-api";
-import { ActivitiesCategoryParams } from "@/src/types/types";
+import { ActivitiesCategoryParams } from "@/types/types";
 import * as zustand from "zustand";
-import { activityDependenciesCallback } from "@features/activity/lib/activity-query";
+import { activityDependenciesCallback } from "@/features/activity/lib/activity-query";
 
 interface ActivitySyncState {
   activitiesSync: boolean;
@@ -45,6 +45,31 @@ export const useActivityStore = zustand.create<ActivityStoreState>((set) => ({
     set({ activities: activities });
   },
 }));
+
+export const useMappableActivitiesStore = zustand.create<ActivityStoreState>(
+  (set) => ({
+    activities: Promise.resolve([]),
+    setActivities: (activities: Promise<SummaryActivity[]>) => {
+      set({ activities: activities });
+    },
+  }),
+);
+
+useActivityStore.subscribe((state) => {
+  useMappableActivitiesStore.getState().setActivities(
+    (async () => {
+      const activities = await state.activities;
+
+      return activities.filter((activity) => {
+        if (activity.map?.summaryPolyline) return true;
+
+        if (activity.distance) return true;
+
+        return false;
+      });
+    })(),
+  );
+});
 
 export const useCurrentActivities = () =>
   useActivityStore((state) => state.activities);

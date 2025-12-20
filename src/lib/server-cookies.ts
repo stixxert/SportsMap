@@ -1,12 +1,12 @@
 "use server";
 
-import { AccessToken } from "@/src/types/types";
+import { AccessToken } from "@/types/types";
 import { CookieValueTypes, getCookie, setCookie } from "cookies-next/server";
 import {
   ACCESS_TOKEN_COOKIE,
   IS_AUTHENTICATED_COOKIE,
   REFRESH_TOKEN_COOKIE,
-} from "@config/cookie-settings";
+} from "@/config/cookie-settings";
 import { cookies } from "next/headers";
 
 export async function setRefreshTokenCookie(

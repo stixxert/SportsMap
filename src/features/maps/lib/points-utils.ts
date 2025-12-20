@@ -1,6 +1,16 @@
+"use client";
+
 import { decode } from "@googlemaps/polyline-codec";
 import { SummaryActivity } from "@/strava-api";
-import { LatLng } from "leaflet";
+import L, { LatLng } from "leaflet";
+
+import { GeoJSON } from "geojson";
+
+import { FeatureCollection, LineString } from "geojson";
+
+import "leaflet/dist/leaflet.css";
+
+import "leaflet.vectorgrid";
 
 const FILL_STEPS = 10;
 
@@ -39,8 +49,66 @@ export function reduceActivitiesToPoints(
   activities: SummaryActivity[],
 ): LatLng[] {
   const points = activities
-    .map((activity) => fillInPolyline(activity.map?.summaryPolyline || ""))
+    .map((activity) => decode(activity.map?.summaryPolyline || ""))
     .flat();
 
+  const data = points;
+
   return points as unknown as LatLng[];
+}
+
+export function activitytogeojson(
+  activities: SummaryActivity[],
+): GeoJSON.FeatureCollection {
+  const featureCollection: GeoJSON.FeatureCollection = {
+    type: "FeatureCollection",
+    features: [],
+  };
+
+  for (const activity of activities) {
+    const points = decode(activity.map?.summaryPolyline || "");
+
+    if (!points.length) continue;
+
+    /*if (points.length <= 1) {
+      featureCollection.features.push({
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [points[0][0], points[0][1]],
+        },
+        properties: {},
+      });
+    }*/
+
+    featureCollection.features.push({
+      id: activity.id,
+      type: "Feature",
+      geometry: {
+        type: "LineString",
+        coordinates: points.map((pt) => [
+          pt[1],
+          pt[0],
+        ]) as unknown as GeoJSON.Position[],
+      },
+      properties: {},
+    });
+  }
+
+  return featureCollection;
+}
+
+export function tile(map: L.Map, data: FeatureCollection) {
+  return L.vectorGrid
+    .slicer(data, {
+      vectorTileLayerStyles: {
+        sliced: {
+          fillColor: "#FF0000",
+          color: "blue",
+          weight: 1,
+          fillOpacity: 0.7,
+        },
+      },
+    })
+    .addTo(map);
 }

@@ -1,15 +1,15 @@
 import {
   getActivities,
   openActivityDB,
-} from "@features/activity/lib/activity-db";
-import { ActivitiesCategoryParams } from "@/src/types/types";
-import { ApiType } from "@/src/types/configuration-types";
+} from "@/features/activity/lib/activity-db";
+import { ActivitiesCategoryParams } from "@/types/types";
+import { ApiType } from "@/types/configuration-types";
 import { SummaryActivity } from "@/strava-api";
-import { useApiTypeStore } from "@features/auth/stores/api-store";
+import { useApiTypeStore } from "@/features/auth/stores/api-store";
 import {
   useActivityCategoryParamStore,
   useActivityStore,
-} from "@features/activity/stores/activity-store";
+} from "@/features/activity/stores/activity-store";
 
 export async function getActivitiesByCategory(
   apiType?: ApiType,

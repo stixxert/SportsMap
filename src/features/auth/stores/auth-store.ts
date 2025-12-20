@@ -3,11 +3,11 @@
 import * as zustand from "zustand";
 import { AccessToken } from "@/src/types/types";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { createCookieStorage } from "@stores/persist-cookie";
+import { createCookieStorage } from "@/stores/persist-cookie";
 import {
   ACCESS_TOKEN_COOKIE,
   IS_AUTHENTICATED_COOKIE,
-} from "@config/cookie-settings";
+} from "@/config/cookie-settings";
 
 interface AccessTokenState {
   accessToken: AccessToken | null;

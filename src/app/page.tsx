@@ -4,7 +4,7 @@ import Image from "next/image";
 
 import { Configuration, ActivitiesApi } from "@/strava-api";
 import { useEffect } from "react";
-import { useAccessToken } from "@features/auth/stores/auth-store";
+import { useAccessToken } from "@/features/auth/stores/auth-store";
 
 export default function Home() {
   const accessToken = useAccessToken();

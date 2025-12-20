@@ -1,8 +1,8 @@
 import * as zustand from "zustand";
 import { Configuration } from "@/strava-api";
 import { ApiType } from "@/src/types/configuration-types";
-import { apiStateUpdateCallback } from "@features/auth/lib/api-configuration";
-import { useAccessTokenStore } from "@features/auth/stores/auth-store";
+import { apiStateUpdateCallback } from "@/features/auth/lib/api-configuration";
+import { useAccessTokenStore } from "@/features/auth/stores/auth-store";
 
 interface ApiTypeState {
   apiType: ApiType | null;

@@ -6,10 +6,10 @@ import {
   INDEX_DATE,
   addActivities,
   openActivityDB,
-} from "@features/activity/lib/activity-db";
+} from "@/features/activity/lib/activity-db";
 import { ApiType } from "@/src/types/configuration-types";
-import { useActivityMetadataStore } from "@features/activity/stores/activity-metadata-store";
-import { useActivitySyncStore } from "@features/activity/stores/activity-store";
+import { useActivityMetadataStore } from "@/features/activity/stores/activity-metadata-store";
+import { useActivitySyncStore } from "@/features/activity/stores/activity-store";
 
 export const MAX_PAGE_SIZE = 200;
 export const SYNC_TIME_THRESHOLD = 1000 * 60 * 60; // 1 hr

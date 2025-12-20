@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import MapsProvider from "@app/maps/provider";
+import MapsProvider from "@/app/maps/provider";
 
 export default function MapsLayout({
   children,

@@ -1,19 +1,19 @@
 "use client";
 
-import { ApiType } from "@/src/types/configuration-types";
-import { AccessToken, Result } from "@/src/types/types";
+import { ApiType } from "@/types/configuration-types";
+import { AccessToken, Result } from "@/types/types";
 import { Configuration } from "@/strava-api";
 import {
   useApiConfigurationStore,
   useApiTypeStore,
-} from "@features/auth/stores/api-store";
+} from "@/features/auth/stores/api-store";
 import {
   rehydrateAccessToken,
   rehydrateIsAuthenticated,
   useAccessTokenStore,
   useAuthenticatedStore,
-} from "@features/auth/stores/auth-store";
-import { exchangeRefreshToken } from "@features/auth/lib/server-flow";
+} from "@/features/auth/stores/auth-store";
+import { exchangeRefreshToken } from "@/features/auth/lib/server-flow";
 
 export function readApiTypeString(apiType: string): ApiType | undefined {
   const modeUppercase = apiType.toUpperCase();

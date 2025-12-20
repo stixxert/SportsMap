@@ -1,8 +1,8 @@
 "use client";
 
 import { useGetCookie } from "cookies-next/client";
-import { ACCESS_TOKEN_COOKIE } from "@config/cookie-settings";
-import { AccessToken } from "@/src/types/types";
+import { ACCESS_TOKEN_COOKIE } from "@/config/cookie-settings";
+import { AccessToken } from "@/types/types";
 
 function useCookie<T>(name: string): T | null {
   const getCookie = useGetCookie();

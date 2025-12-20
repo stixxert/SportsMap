@@ -3,11 +3,11 @@
 import {
   useApiConfigurationStore,
   useApiTypeStore,
-} from "@features/auth/stores/api-store";
+} from "@/features/auth/stores/api-store";
 import { useEffect } from "react";
-import { synchronizeActivities } from "@features/activity/lib/activity-sync";
-import { useActivitySyncStore } from "@features/activity/stores/activity-store";
-import { useActivityMetadataStore } from "@features/activity/stores/activity-metadata-store";
+import { synchronizeActivities } from "@/features/activity/lib/activity-sync";
+import { useActivitySyncStore } from "@/features/activity/stores/activity-store";
+import { useActivityMetadataStore } from "@/features/activity/stores/activity-metadata-store";
 
 export function useActivitySynchronization() {
   const apiConfiguration = useApiConfigurationStore(

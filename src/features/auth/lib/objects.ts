@@ -1,5 +1,5 @@
-import { OAUTH_AUTHORIZE_URL } from "@config/api-urls";
-import { assembleUrl } from "@utils/url";
+import { OAUTH_AUTHORIZE_URL } from "@/config/api-urls";
+import { assembleUrl } from "@/utils/url";
 
 const authorizeParams = {
   client_id: process.env.NEXT_PUBLIC_CLIENT_ID || "",

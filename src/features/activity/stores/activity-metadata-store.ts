@@ -2,12 +2,12 @@
 
 import { ApiType } from "@/src/types/configuration-types";
 import * as zustand from "zustand";
-import { SyncMetaData } from "@features/activity/types/activity-types";
-import { useApiTypeStore } from "@features/auth/stores/api-store";
+import { SyncMetaData } from "@/features/activity/types/activity-types";
+import { useApiTypeStore } from "@/features/auth/stores/api-store";
 import {
   exportMetaData,
   importMetaData,
-} from "@features/activity/lib/activity-metadata";
+} from "@/features/activity/lib/activity-metadata";
 import { useEffect } from "react";
 
 export interface SyncMetaDataState {

@@ -1,4 +1,4 @@
-import { fetchByPagination } from "@testing/fetch-pagination";
+import { fetchByPagination } from "@/testing/fetch-pagination";
 import { ActivitiesApi, Configuration } from "@/strava-api";
 
 import {

@@ -6,8 +6,19 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
 import "leaflet.heat";
-import { useCurrentActivities } from "@features/activity/stores/activity-store";
-import { paintActivitiesOnHeatLayer } from "@features/maps/lib/heat-insert";
+import { useCurrentActivities } from "@/features/activity/stores/activity-store";
+import { paintActivitiesOnHeatLayer } from "@/features/maps/lib/heat-insert";
+import { activitytogeojson, tile } from "@/features/maps/lib/points-utils";
+import Box from "@mui/material/Box";
+import IconButton from "@mui/material/IconButton";
+import MenuIcon from "@mui/icons-material/Menu";
+import * as React from "react";
+import { FilterDrawer } from "@/features/maps/components/activity-list/drawer";
+import CssBaseline from "@mui/material/CssBaseline";
+import Toolbar from "@mui/material/Toolbar";
+import Drawer from "@mui/material/Drawer";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import Divider from "@mui/material/Divider";
 
 function generateRandomLatLng(n: number) {
   const coordinates = [];
@@ -28,7 +39,7 @@ export default function MapFrameComponent() {
 
   const map = useRef<L.Map | null>(null);
 
-  const heatLayer = useRef<L.HeatLayer | null>(null);
+  const activityLayer = useRef<L.VectorGrid | null>(null);
 
   const activities = useCurrentActivities();
 
@@ -37,15 +48,20 @@ export default function MapFrameComponent() {
 
     if (!mapRef.current) return;
 
-    map.current = L.map(mapRef.current).setView([0, 0], 3);
+    map.current = L.map(mapRef.current, {
+      center: [0, 0],
+      zoom: 3,
+      minZoom: 2,
+      maxZoom: 15,
+    });
 
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
       attribution:
         '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(map.current);
   }, []);
 
+  /*
   useLayoutEffect(() => {
     if (!map.current) return;
 
@@ -57,9 +73,36 @@ export default function MapFrameComponent() {
       heatLayer.current!.addTo(map.current!);
       console.log("completed");
     });
+  }, [activities]);*/
+
+  useEffect(() => {
+    if (!map.current) return;
+
+    function doStuff() {
+      setTimeout(async () => {
+        const geojson = activitytogeojson(await activities);
+        console.log(geojson);
+        if (activityLayer.current) {
+          activityLayer.current.remove();
+        }
+
+        activityLayer.current = tile(map.current!, geojson);
+      });
+    }
+
+    doStuff();
+
+    return () => {
+      if (activityLayer.current) activityLayer.current.remove();
+    };
   }, [activities]);
 
-  return <div ref={mapRef} style={{ height: "500px", width: "100%" }}></div>;
+  return (
+    <div
+      ref={mapRef}
+      style={{ position: "relative", height: "100%", width: "100%" }}
+    ></div>
+  );
 }
 
 /*     const lines = decode(
