@@ -1,0 +1,49 @@
+import * as zustand from "zustand";
+
+import {
+  bulkInsertActivities,
+  createGeospatialIndex,
+  IndexType,
+} from "@/features/maps/lib/geospatial-index";
+import { SummaryActivity } from "@/strava-api";
+import { createAvailabilityStore, StoreAvailabilityStore } from "@/utils/store";
+import { useMappableActivitiesStore } from "@/features/activity/stores/activity-store";
+
+interface GeospatialIndexState {
+  index: IndexType | null;
+  activityView: SummaryActivity[] | null;
+}
+
+interface GeospatialIndexActions {
+  setIndex: (index: GeospatialIndexState | null) => void;
+}
+
+type GeospatialIndexStore = GeospatialIndexState & GeospatialIndexActions;
+
+export const useGeospatialIndexStore = zustand.create<
+  GeospatialIndexStore & StoreAvailabilityStore
+>((set) => ({
+  ...createAvailabilityStore(set),
+  index: null,
+  activityView: null,
+  setIndex: (index: GeospatialIndexState | null) =>
+    set({
+      index: index?.index || null,
+      activityView: index?.activityView || null,
+    }),
+}));
+
+useMappableActivitiesStore.subscribe((activityState) => {
+  const activityView = activityState.activities;
+  if (activityView === useGeospatialIndexStore.getState().activityView) return;
+
+  useGeospatialIndexStore.getState().setIndex(null);
+
+  const index = createGeospatialIndex();
+
+  bulkInsertActivities(index, activityView);
+
+  useGeospatialIndexStore
+    .getState()
+    .setIndex({ index, activityView: activityView });
+});

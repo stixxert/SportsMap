@@ -31,10 +31,12 @@ export function activityDependenciesCallback() {
   const categoryParams =
     useActivityCategoryParamStore.getState().categoryParams;
 
-  const activities = getActivitiesByCategory(
-    apiType || undefined,
-    categoryParams,
-  );
+  setTimeout(async () => {
+    const activities = await getActivitiesByCategory(
+      apiType || undefined,
+      categoryParams,
+    );
 
-  useActivityStore.getState().setActivities(activities);
+    useActivityStore.getState().setActivities(activities);
+  });
 }

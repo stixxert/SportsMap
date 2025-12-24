@@ -15,7 +15,7 @@ import {
   useCurrentActivities,
 } from "@/features/activity/stores/activity-store";
 import * as React from "react";
-import { FilterDrawer } from "@/features/maps/components/activity-list/drawer";
+import { ViewDrawer } from "@/features/maps/components/activity-list/drawer";
 
 export default function MapPage() {
   const isSynced = useActivitySyncStore((state) => state.activitiesSync);
@@ -24,19 +24,27 @@ export default function MapPage() {
 
   const activities = useCurrentActivities();
 
-  return (
-    <div style={{ position: "absolute", height: "100%", width: "100%" }}>
-      <Box
+  /*
+
+
+        <Box
         sx={{
           position: "absolute",
-          zIndex: 9999,
           right: 0,
           pointerEvents: "auto",
         }}
       >
-        <FilterDrawer></FilterDrawer>
+        <ViewDrawer></ViewDrawer>
       </Box>
-      <MapFrameComponent></MapFrameComponent>
-    </div>
+   */
+  return (
+    <Box sx={{ position: "relative", height: "100vh", width: "100%" }}>
+      <Box sx={{ position: "absolute", right: 0, zIndex: 9999 }}>
+        <ViewDrawer></ViewDrawer>
+      </Box>
+      <Box sx={{ position: "relative", height: "100%" }}>
+        <MapFrameComponent></MapFrameComponent>
+      </Box>
+    </Box>
   );
 }

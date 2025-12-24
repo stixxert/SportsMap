@@ -9,6 +9,7 @@ import { synchronizeActivities } from "@/features/activity/lib/activity-sync";
 import { useActivitySyncStore } from "@/features/activity/stores/activity-store";
 import { useActivityMetadataStore } from "@/features/activity/stores/activity-metadata-store";
 
+/* needs sync using hook, as localstorage of metadata requires a reference to the client browser */
 export function useActivitySynchronization() {
   const apiConfiguration = useApiConfigurationStore(
     (state) => state.configuration,

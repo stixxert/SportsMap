@@ -13,12 +13,13 @@ import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
 import * as React from "react";
-import { FilterDrawer } from "@/features/maps/components/activity-list/drawer";
+import { ViewDrawer } from "@/features/maps/components/activity-list/drawer";
 import CssBaseline from "@mui/material/CssBaseline";
 import Toolbar from "@mui/material/Toolbar";
 import Drawer from "@mui/material/Drawer";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import Divider from "@mui/material/Divider";
+import { useMapInteraction } from "@/features/maps/hooks/use-map-interaction";
 
 function generateRandomLatLng(n: number) {
   const coordinates = [];
@@ -43,6 +44,8 @@ export default function MapFrameComponent() {
 
   const activities = useCurrentActivities();
 
+  useMapInteraction(map);
+
   useEffect(() => {
     if (map.current) return;
 
@@ -53,6 +56,7 @@ export default function MapFrameComponent() {
       zoom: 3,
       minZoom: 2,
       maxZoom: 15,
+      worldCopyJump: true,
     });
 
     L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -79,15 +83,12 @@ export default function MapFrameComponent() {
     if (!map.current) return;
 
     function doStuff() {
-      setTimeout(async () => {
-        const geojson = activitytogeojson(await activities);
-        console.log(geojson);
-        if (activityLayer.current) {
-          activityLayer.current.remove();
-        }
+      const geojson = activitytogeojson(activities);
+      if (activityLayer.current) {
+        activityLayer.current.remove();
+      }
 
-        activityLayer.current = tile(map.current!, geojson);
-      });
+      activityLayer.current = tile(map.current!, geojson);
     }
 
     doStuff();
@@ -97,12 +98,7 @@ export default function MapFrameComponent() {
     };
   }, [activities]);
 
-  return (
-    <div
-      ref={mapRef}
-      style={{ position: "relative", height: "100%", width: "100%" }}
-    ></div>
-  );
+  return <div ref={mapRef} style={{ height: "100%", width: "100%" }}></div>;
 }
 
 /*     const lines = decode(

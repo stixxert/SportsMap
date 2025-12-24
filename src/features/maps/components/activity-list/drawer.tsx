@@ -8,10 +8,9 @@ import CssBaseline from "@mui/material/CssBaseline";
 import Toolbar from "@mui/material/Toolbar";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import EnhancedTable from "@/features/maps/components/activity-list/list-component";
-const drawerWidth = 400;
+import { NewTable } from "@/features/maps/components/activity-list/list-component";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 
 const DrawerHeader = styled("div")(({ theme }) => ({
   display: "flex",
@@ -22,7 +21,7 @@ const DrawerHeader = styled("div")(({ theme }) => ({
   justifyContent: "flex-start",
 }));
 
-export function FilterDrawer() {
+export function ViewDrawer() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
 
@@ -53,31 +52,46 @@ export function FilterDrawer() {
             onClick={handleDrawerOpen}
             sx={[open && { display: "none" }]}
           >
-            <MenuIcon />
+            <ChevronLeftIcon />
           </IconButton>
         </Toolbar>
         <DrawerHeader />
       </Box>
       <Box sx={{ display: "flex", pointerEvents: "auto" }}>
         <Drawer
-          sx={{
-            width: drawerWidth,
-            flexShrink: 0,
-            "& .MuiDrawer-paper": {
-              width: drawerWidth,
+          sx={(theme) => ({
+            [theme.breakpoints.down("sm")]: {
+              width: "80vw",
+              "& .MuiDrawer-paper": {
+                width: "80vw",
+              },
             },
-          }}
+            [theme.breakpoints.up("sm")]: {
+              width: "25vw",
+              "& .MuiDrawer-paper": {
+                width: "25vw",
+              },
+            },
+
+            flexShrink: 0,
+          })}
           variant="persistent"
           anchor="right"
           open={open}
         >
-          <DrawerHeader>
-            <IconButton onClick={handleDrawerClose}>
-              <ChevronRightIcon />
-            </IconButton>
-          </DrawerHeader>
-          <Divider />
-          <EnhancedTable></EnhancedTable>
+          <Box
+            sx={{ display: "flex", alignItems: "center", flexDirection: "row" }}
+          >
+            <DrawerHeader>
+              <IconButton onClick={handleDrawerClose}>
+                <ChevronRightIcon />
+              </IconButton>
+            </DrawerHeader>
+            <Divider />
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <NewTable />
+          </Box>
         </Drawer>
       </Box>
     </>

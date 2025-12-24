@@ -3,7 +3,7 @@
 import { SummaryActivity } from "@/strava-api";
 import { ActivitiesCategoryParams } from "@/types/types";
 import * as zustand from "zustand";
-import { activityDependenciesCallback } from "@/features/activity/lib/activity-query";
+import { createAvailabilityStore, StoreAvailabilityStore } from "@/utils/store";
 
 interface ActivitySyncState {
   activitiesSync: boolean;
@@ -15,10 +15,15 @@ interface ActivityCategoryParamState {
   setCategoryParams: (categoryParams: ActivitiesCategoryParams) => void;
 }
 
-interface ActivityStoreState {
-  activities: Promise<SummaryActivity[]>;
-  setActivities: (activities: Promise<SummaryActivity[]>) => void;
+interface ActivityState {
+  activities: SummaryActivity[];
 }
+
+interface ActivityActions {
+  setActivities: (activities: SummaryActivity[]) => void;
+}
+
+type ActivityStore = ActivityState & ActivityActions;
 
 export const useActivitySyncStore = zustand.create<ActivitySyncState>(
   (set) => ({
@@ -39,36 +44,38 @@ export const useActivityCategoryParamStore =
       }),
   }));
 
-export const useActivityStore = zustand.create<ActivityStoreState>((set) => ({
-  activities: Promise.resolve([]),
-  setActivities: (activities: Promise<SummaryActivity[]>) => {
+export const useActivityStore = zustand.create<
+  ActivityStore & StoreAvailabilityStore
+>((set) => ({
+  ...createAvailabilityStore(set),
+  activities: [],
+  setActivities: (activities: SummaryActivity[]) => {
     set({ activities: activities });
   },
 }));
 
-export const useMappableActivitiesStore = zustand.create<ActivityStoreState>(
+export const useMappableActivitiesStore = zustand.create<ActivityStore>(
   (set) => ({
-    activities: Promise.resolve([]),
-    setActivities: (activities: Promise<SummaryActivity[]>) => {
+    activities: [],
+    setActivities: (activities: SummaryActivity[]) => {
       set({ activities: activities });
     },
   }),
 );
 
 useActivityStore.subscribe((state) => {
-  useMappableActivitiesStore.getState().setActivities(
-    (async () => {
-      const activities = await state.activities;
+  const activities = state.activities;
 
-      return activities.filter((activity) => {
-        if (activity.map?.summaryPolyline) return true;
+  const mappableActivities = activities.filter((activity) => {
+    if (
+      activity.map?.summaryPolyline ||
+      (activity.map?.summaryPolyline?.length || 0) > 0
+    )
+      return true;
 
-        if (activity.distance) return true;
-
-        return false;
-      });
-    })(),
-  );
+    return !!activity.distance;
+  });
+  useMappableActivitiesStore.getState().setActivities(mappableActivities);
 });
 
 export const useCurrentActivities = () =>
