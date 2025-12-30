@@ -1,20 +1,12 @@
 "use client";
 
 import L, { LatLng, LocationEvent } from "leaflet";
+import { getZoomDistanceSensitivity } from "@/features/maps/utils/bounds";
 import {
-  getZoomDistanceSensitivity,
-  getZoomDistanceSensitivityNoLookup,
-} from "@/features/maps/utils/bounds";
-import { createLookupTable } from "@/utils/misc";
-import {
-  MAX_ZOOM,
-  MIN_ZOOM,
-  POINT_SEARCH_SENSITIVITY,
-} from "@/features/maps/config/consts";
-
-function getCircleRadius(zoomLevel: number) {
-  return getZoomDistanceSensitivity(zoomLevel);
-}
+  PointInteraction,
+  useMapInteractionStore,
+  usePointSensitivityStore,
+} from "@/features/maps/stores/map-interaction-store";
 
 const GEOLOCATION_MARKER: L.CircleOptions = {
   color: "#1769aa",
@@ -35,20 +27,19 @@ const POINT_CIRCLE: L.CircleOptions = {
   fillOpacity: 0.5,
 };
 
-function _getPointRadius(zoomLevel: number) {
-  return (
-    getZoomDistanceSensitivityNoLookup(POINT_SEARCH_SENSITIVITY, zoomLevel) / 10
-  ); //(5 * (15 - zoomLevel) ** 3) / 10;
+function getPointRadius(zoomLevel: number) {
+  return getZoomDistanceSensitivity(zoomLevel) / 10;
 }
 
-export const getPointRadius = createLookupTable(
-  (zoomLevel: number) => _getPointRadius(zoomLevel),
-  MIN_ZOOM,
-  MAX_ZOOM,
-);
+function getCircleRadius(zoomLevel: number) {
+  return getZoomDistanceSensitivity(zoomLevel);
+}
 
 function getPointOptions(zoomLevel: number): L.CircleOptions {
-  return { ...POINT, radius: getPointRadius(zoomLevel) };
+  return {
+    ...POINT,
+    radius: getPointRadius(zoomLevel),
+  };
 }
 
 function getCirclePointOptions(zoomLevel: number): L.CircleOptions {
@@ -63,16 +54,6 @@ export function drawSelectionPoint(map: L.Map, point: LatLng) {
   const _circle = L.circle(point, getCirclePointOptions(zoomLevel));
 
   return L.layerGroup([_point, _circle]).addTo(map);
-}
-
-export function createSelectionPointUpdate(map: L.Map) {
-  let layerGroup: L.LayerGroup | null = null;
-
-  return (event: L.LeafletMouseEvent) => {
-    if (layerGroup) map.removeLayer(layerGroup);
-
-    layerGroup = drawSelectionPoint(map, event.latlng);
-  };
 }
 
 function createGeolocationCircle(radius: number) {
@@ -96,5 +77,41 @@ export function createGeolocationUpdateCallback(map: L.Map) {
     if (layerGroup) map.removeLayer(layerGroup);
 
     layerGroup = drawGeolocationPoint(map, event.latlng);
+  };
+}
+
+export function subscribeToPointInteractionUpdate(map: L.Map) {
+  let layerGroup: L.LayerGroup | null = null;
+
+  function fn() {
+    const interaction = useMapInteractionStore.getState().interaction;
+    const value = useMapInteractionStore.getState().value;
+    if (interaction !== "point") {
+      if (layerGroup) {
+        map.removeLayer(layerGroup);
+        layerGroup = null;
+      }
+      return;
+    }
+
+    if (layerGroup) {
+      map.removeLayer(layerGroup);
+      layerGroup = null;
+    }
+
+    if (!value) return;
+
+    const pointValue = (value as PointInteraction).point;
+
+    layerGroup = drawSelectionPoint(map, pointValue);
+  }
+
+  const unsubPointInteraction = useMapInteractionStore.subscribe(() => fn());
+
+  const unsubPointSensitivity = usePointSensitivityStore.subscribe(() => fn());
+
+  return () => {
+    unsubPointSensitivity();
+    unsubPointInteraction();
   };
 }

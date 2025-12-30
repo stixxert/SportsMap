@@ -26,18 +26,23 @@ export const useActivityInteractionViewStore = zustand.create<
     set({ activityView: activityView }),
 }));
 
-useMapInteractionStore.subscribe((state, prevState) => {
-  if (
-    state.interaction === prevState.interaction &&
-    state.value === prevState.value
-  )
-    return;
+export function subscribeToMapInteractionStateUpdate() {
+  return useMapInteractionStore.subscribe((state, prevState) => {
+    if (
+      state.interaction === "mapview" &&
+      state.interaction === prevState.interaction &&
+      state.value === prevState.value
+    )
+      return;
 
-  updateActivitiesInViewCallback();
-});
+    updateActivitiesInViewCallback();
+  });
+}
 
-useGeospatialIndexStore.subscribe((state, prevState) => {
-  if (state.activityView === prevState.activityView) return;
+export function subscribeToIndexStateUpdate() {
+  return useGeospatialIndexStore.subscribe((state, prevState) => {
+    if (state.activityView === prevState.activityView) return;
 
-  updateActivitiesInViewCallback();
-});
+    updateActivitiesInViewCallback();
+  });
+}

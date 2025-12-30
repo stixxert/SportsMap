@@ -1,21 +1,22 @@
 import * as React from "react";
 import { Drawer, Stack } from "@mui/material";
 
-import RoomIcon from "@mui/icons-material/Room";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 
 import {
   drawerVisible,
+  selectedContains,
   SelectionMenuTypes,
+  updateSelected,
 } from "@/features/maps/components/overlay/Overlay";
 import { JSX } from "react";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { ActivityToolbarIcon } from "@/features/maps/components/activity/ToolbarIcon";
 import {
-  IconButtonBase,
+  BaseIconButton,
   IconButtonBaseProps,
-  IconComponent,
-} from "@/features/maps/components/IconButtonBase";
+} from "@/features/maps/components/BaseIconButton";
+import { ToolbarMarkerIcon } from "@/features/maps/components/overlay/ToolbarMarkerIcon";
 
 type FunctionIcon = {
   type: SelectionMenuTypes;
@@ -32,7 +33,6 @@ const icons: FunctionIcon[] = [
     label: "List activities",
     icon: ActivityToolbarIcon,
     activeIcon: <ChevronRightIcon />,
-    overrideIcon: true,
   },
   {
     type: "filter",
@@ -42,7 +42,7 @@ const icons: FunctionIcon[] = [
   {
     type: "marker",
     label: "Marker on map",
-    icon: <RoomIcon />,
+    icon: ToolbarMarkerIcon,
   },
 ];
 
@@ -50,8 +50,8 @@ export function FunctionToolbar({
   selected,
   setSelected,
 }: {
-  selected: SelectionMenuTypes | null;
-  setSelected: (selected: SelectionMenuTypes | null) => void;
+  selected: SelectionMenuTypes[] | null;
+  setSelected: (selected: SelectionMenuTypes[] | null) => void;
 }) {
   return (
     <Drawer
@@ -83,10 +83,34 @@ export function FunctionToolbar({
     >
       <Stack direction={"column"} spacing={{ xs: 1 }} alignItems={"center"}>
         {icons.map((icon) => {
-          const isActive = icon.type === selected;
+          const isActive = selectedContains(selected, icon.type);
 
-          const setActive = () =>
-            setSelected(selected === icon.type ? null : icon.type);
+          function setActive(state?: boolean) {
+            if (state === undefined) {
+              const newSelection = isActive
+                ? selected?.filter((select) => select !== icon.type) || []
+                : updateSelected(selected, icon.type);
+
+              setSelected(newSelection);
+
+              return;
+            }
+
+            if (state) {
+              if (isActive) return;
+
+              const newSelection = updateSelected(selected, icon.type);
+
+              setSelected(newSelection);
+            } else {
+              if (!isActive) return;
+
+              const newSelection =
+                selected?.filter((select) => select !== icon.type) || [];
+
+              setSelected(newSelection);
+            }
+          }
 
           const props = {
             ...icon,
@@ -97,11 +121,11 @@ export function FunctionToolbar({
 
           const Icon = icon.icon as (props: IconButtonBaseProps) => JSX.Element;
 
-          if (icon.overrideIcon) {
+          if (typeof icon.icon === "function") {
             return <Icon {...props} key={icon.type} />;
           }
 
-          return <IconButtonBase {...props} key={icon.type} />;
+          return <BaseIconButton {...props} key={icon.type} />;
         })}
       </Stack>
     </Drawer>

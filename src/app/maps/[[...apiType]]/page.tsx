@@ -15,20 +15,11 @@ const Overlay = dynamic(
   },
 );
 
-import {
-  useActivitySyncStore,
-  useCurrentActivities,
-} from "@/features/activity/stores/activity-store";
 import * as React from "react";
 import { useRef } from "react";
+import L from "leaflet";
 
 export default function MapPage() {
-  const isSynced = useActivitySyncStore((state) => state.activitiesSync);
-
-  console.log("Is synced:", isSynced);
-
-  const activities = useCurrentActivities();
-
   const mapRef = useRef<L.Map | null>(null);
 
   return (

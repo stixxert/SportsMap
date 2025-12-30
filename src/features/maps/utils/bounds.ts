@@ -1,11 +1,6 @@
 import { BBox } from "rbush";
 import L, { LatLng, LatLngBounds } from "leaflet";
-import {
-  MAX_ZOOM,
-  MIN_ZOOM,
-  POINT_SEARCH_SENSITIVITY,
-} from "@/features/maps/config/consts";
-import { createLookupTable } from "@/utils/misc";
+import { usePointSensitivityStore } from "@/features/maps/stores/map-interaction-store";
 
 export function getZoomDistanceSensitivityNoLookup(
   searchSensitivity: number,
@@ -14,12 +9,12 @@ export function getZoomDistanceSensitivityNoLookup(
   return searchSensitivity * (15 - zoomLevel) ** 3;
 }
 
-export const getZoomDistanceSensitivity = createLookupTable(
-  (zoomLevel: number) =>
-    getZoomDistanceSensitivityNoLookup(POINT_SEARCH_SENSITIVITY, zoomLevel),
-  MIN_ZOOM,
-  MAX_ZOOM,
-);
+export function getZoomDistanceSensitivity(zoomLevel: number) {
+  return getZoomDistanceSensitivityNoLookup(
+    usePointSensitivityStore.getState().pointSensitivity,
+    zoomLevel,
+  );
+}
 
 export function lineSegmentToLatLng<T extends BBox>(lineSegment: T): LatLng[] {
   return [

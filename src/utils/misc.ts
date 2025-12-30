@@ -90,3 +90,13 @@ export function createLookupTable(
     return lookup.get(_value) || 0;
   };
 }
+
+/*
+EX:
+ export const getZoomDistanceSensitivity = createLookupTable(
+  (zoomLevel: number) =>
+    getZoomDistanceSensitivityNoLookup(POINT_SEARCH_SENSITIVITY, zoomLevel),
+  MIN_ZOOM,
+  MAX_ZOOM,
+);
+*/

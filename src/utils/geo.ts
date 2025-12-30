@@ -1,3 +1,5 @@
+"use client";
+
 import L, { LatLng } from "leaflet";
 
 /* https://stackoverflow.com/a/6853926 */

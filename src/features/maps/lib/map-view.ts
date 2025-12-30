@@ -1,3 +1,5 @@
+"use client";
+
 import { IndexType } from "@/features/maps/lib/geospatial-index";
 import L, { LatLng, LatLngBounds, LeafletMouseEvent } from "leaflet";
 import { BBox } from "rbush";
@@ -15,7 +17,6 @@ import {
   getZoomDistanceSensitivity,
   lineSegmentToLatLng,
 } from "@/features/maps/utils/bounds";
-import { POINT_SEARCH_SENSITIVITY } from "@/features/maps/config/consts";
 
 export function getIndexBboxResults(index: IndexType, bBox: BBox | BBox[]) {
   if (Array.isArray(bBox)) return bBox.map((b) => index.search(b)).flat();

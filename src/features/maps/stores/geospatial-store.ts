@@ -1,3 +1,5 @@
+"use client";
+
 import * as zustand from "zustand";
 
 import {
@@ -33,21 +35,24 @@ export const useGeospatialIndexStore = zustand.create<
     }),
 }));
 
-useMappableActivitiesStore.subscribe((activityState) => {
-  const activityView = activityState.activities;
-  if (
-    useGeospatialIndexStore.getState().activityView !== null &&
-    activityView === useGeospatialIndexStore.getState().activityView
-  )
-    return;
+export function subscribeToActivityStateUpdate() {
+  return useMappableActivitiesStore.subscribe((activityState) => {
+    const activityView = activityState.activities;
 
-  useGeospatialIndexStore.getState().setIndex(null);
+    if (
+      useGeospatialIndexStore.getState().activityView !== null &&
+      activityView === useGeospatialIndexStore.getState().activityView
+    )
+      return;
 
-  const index = createGeospatialIndex();
+    useGeospatialIndexStore.getState().setIndex(null);
 
-  bulkInsertActivities(index, activityView);
+    const index = createGeospatialIndex();
 
-  useGeospatialIndexStore
-    .getState()
-    .setIndex({ index, activityView: activityView });
-});
+    bulkInsertActivities(index, activityView);
+
+    useGeospatialIndexStore
+      .getState()
+      .setIndex({ index, activityView: activityView });
+  });
+}
