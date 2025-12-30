@@ -75,6 +75,7 @@ useActivityStore.subscribe((state) => {
 
     return !!activity.distance;
   });
+
   useMappableActivitiesStore.getState().setActivities(mappableActivities);
 });
 

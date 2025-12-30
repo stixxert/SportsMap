@@ -4,18 +4,23 @@ import dynamic from "next/dynamic";
 
 import Box from "@mui/material/Box";
 
-const MapFrameComponent = dynamic(
-  () => import("@/features/maps/components/MapFrameComponent"),
+const Map = dynamic(() => import("@/features/maps/components/Map"), {
+  ssr: false,
+});
+
+const Overlay = dynamic(
+  () => import("@/features/maps/components/overlay/Overlay"),
   {
     ssr: false,
   },
 );
+
 import {
   useActivitySyncStore,
   useCurrentActivities,
 } from "@/features/activity/stores/activity-store";
 import * as React from "react";
-import { ViewDrawer } from "@/features/maps/components/activity-list/drawer";
+import { useRef } from "react";
 
 export default function MapPage() {
   const isSynced = useActivitySyncStore((state) => state.activitiesSync);
@@ -24,26 +29,15 @@ export default function MapPage() {
 
   const activities = useCurrentActivities();
 
-  /*
+  const mapRef = useRef<L.Map | null>(null);
 
-
-        <Box
-        sx={{
-          position: "absolute",
-          right: 0,
-          pointerEvents: "auto",
-        }}
-      >
-        <ViewDrawer></ViewDrawer>
-      </Box>
-   */
   return (
     <Box sx={{ position: "relative", height: "100vh", width: "100%" }}>
-      <Box sx={{ position: "absolute", right: 0, zIndex: 9999 }}>
-        <ViewDrawer></ViewDrawer>
+      <Box sx={{ position: "absolute" }}>
+        <Overlay map={mapRef}></Overlay>
       </Box>
       <Box sx={{ position: "relative", height: "100%" }}>
-        <MapFrameComponent></MapFrameComponent>
+        <Map map={mapRef}></Map>
       </Box>
     </Box>
   );

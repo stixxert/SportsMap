@@ -41,7 +41,3 @@ useGeospatialIndexStore.subscribe((state, prevState) => {
 
   updateActivitiesInViewCallback();
 });
-
-useActivityInteractionViewStore.subscribe((state) => {
-  console.log(state.activityView);
-});

@@ -72,3 +72,21 @@ export function runOnceWrapper<T extends FunctionType>(func: T) {
 
   return (...args: Parameters<T>) => runOnce(...args);
 }
+
+export function createLookupTable(
+  fn: (value: number) => number,
+  min: number,
+  max: number,
+) {
+  const lookup = new Map<number, number>();
+
+  for (let i = min; i <= max; i++) {
+    lookup.set(i, fn(i));
+  }
+
+  return function (value: number) {
+    const _value = Math.min(max, Math.max(min, value));
+
+    return lookup.get(_value) || 0;
+  };
+}

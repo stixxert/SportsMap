@@ -1,12 +1,14 @@
+import L, { LatLng } from "leaflet";
+
 /* https://stackoverflow.com/a/6853926 */
-export function pointDistanceToLine(
-  linePoints: number[][],
-  queryPoint: number[],
+export function getClosestPointOnLine(
+  linePoints: LatLng[],
+  queryPoint: LatLng,
 ) {
-  const A = queryPoint[0] - linePoints[0][0];
-  const B = queryPoint[1] - linePoints[0][1];
-  const C = linePoints[1][0] - linePoints[0][0];
-  const D = linePoints[1][1] - linePoints[0][1];
+  const A = queryPoint.lat - linePoints[0].lat;
+  const B = queryPoint.lng - linePoints[0].lng;
+  const C = linePoints[1].lat - linePoints[0].lat;
+  const D = linePoints[1].lng - linePoints[0].lng;
 
   const dot = A * C + B * D;
   const len_sq = C * C + D * D;
@@ -15,21 +17,33 @@ export function pointDistanceToLine(
     //in case of 0 length line
     param = dot / len_sq;
 
-  let closestPoint: number[];
+  let closestPoint: LatLng;
 
   if (param < 0) {
     closestPoint = linePoints[0];
   } else if (param > 1) {
     closestPoint = linePoints[1];
   } else {
-    closestPoint = [linePoints[0][0] + param * C, linePoints[0][1] + param * D];
+    closestPoint = L.latLng([
+      linePoints[0].lat + param * C,
+      linePoints[0].lng + param * D,
+    ]);
   }
+
+  return closestPoint;
+}
+
+/* https://stackoverflow.com/a/6853926 */
+export function pointDistanceToLine(
+  linePoints: number[][],
+  queryPoint: number[],
+) {
+  /* const closestPoint = getClosestPointOnLine(linePoints, queryPoint);
 
   const dx = queryPoint[0] - closestPoint[0];
   const dy = queryPoint[1] - closestPoint[1];
 
-  return [dx, dy];
-
+  return [dx, dy]; */
   /*  return Math.sqrt(dx * dx + dy * dy); */
 }
 

@@ -35,7 +35,11 @@ export const useGeospatialIndexStore = zustand.create<
 
 useMappableActivitiesStore.subscribe((activityState) => {
   const activityView = activityState.activities;
-  if (activityView === useGeospatialIndexStore.getState().activityView) return;
+  if (
+    useGeospatialIndexStore.getState().activityView !== null &&
+    activityView === useGeospatialIndexStore.getState().activityView
+  )
+    return;
 
   useGeospatialIndexStore.getState().setIndex(null);
 

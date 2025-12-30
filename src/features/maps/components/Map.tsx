@@ -1,24 +1,14 @@
 "use client";
 
-import { use, useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
 import "leaflet.heat";
 import { useCurrentActivities } from "@/features/activity/stores/activity-store";
-import { paintActivitiesOnHeatLayer } from "@/features/maps/lib/heat-insert";
 import { activitytogeojson, tile } from "@/features/maps/lib/points-utils";
-import Box from "@mui/material/Box";
-import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
 import * as React from "react";
-import { ViewDrawer } from "@/features/maps/components/activity-list/drawer";
-import CssBaseline from "@mui/material/CssBaseline";
-import Toolbar from "@mui/material/Toolbar";
-import Drawer from "@mui/material/Drawer";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import Divider from "@mui/material/Divider";
 import { useMapInteraction } from "@/features/maps/hooks/use-map-interaction";
 
 function generateRandomLatLng(n: number) {
@@ -35,10 +25,8 @@ function generateRandomLatLng(n: number) {
   return coordinates;
 }
 
-export default function MapFrameComponent() {
+export default function Map({ map }: { map: React.RefObject<L.Map | null> }) {
   const mapRef = useRef<HTMLDivElement>(null);
-
-  const map = useRef<L.Map | null>(null);
 
   const activityLayer = useRef<L.VectorGrid | null>(null);
 
@@ -56,6 +44,7 @@ export default function MapFrameComponent() {
       zoom: 3,
       minZoom: 2,
       maxZoom: 15,
+      zoomControl: false,
       worldCopyJump: true,
     });
 
@@ -64,20 +53,6 @@ export default function MapFrameComponent() {
         '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(map.current);
   }, []);
-
-  /*
-  useLayoutEffect(() => {
-    if (!map.current) return;
-
-    if (!heatLayer.current) {
-      heatLayer.current = L.heatLayer([], { radius: 5 }).addTo(map.current);
-    }
-
-    paintActivitiesOnHeatLayer(heatLayer.current, activities).then(() => {
-      heatLayer.current!.addTo(map.current!);
-      console.log("completed");
-    });
-  }, [activities]);*/
 
   useEffect(() => {
     if (!map.current) return;
@@ -98,7 +73,13 @@ export default function MapFrameComponent() {
     };
   }, [activities]);
 
-  return <div ref={mapRef} style={{ height: "100%", width: "100%" }}></div>;
+  return (
+    <div
+      id={"map"}
+      ref={mapRef}
+      style={{ height: "100%", width: "100%" }}
+    ></div>
+  );
 }
 
 /*     const lines = decode(

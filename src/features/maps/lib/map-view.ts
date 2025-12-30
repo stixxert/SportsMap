@@ -1,64 +1,26 @@
 import { IndexType } from "@/features/maps/lib/geospatial-index";
 import L, { LatLng, LatLngBounds, LeafletMouseEvent } from "leaflet";
 import { BBox } from "rbush";
-import {
-  latLngDistanceToMeters,
-  metersDistanceToLatLng,
-  pointDistanceToLine,
-} from "@/utils/geo";
+import { getClosestPointOnLine } from "@/utils/geo";
 import { SummaryActivity } from "@/strava-api";
 import { useGeospatialIndexStore } from "@/features/maps/stores/geospatial-store";
 import { useActivityInteractionViewStore } from "@/features/maps/stores/activity-interaction-view-store";
-import { useMapInteractionStore } from "@/features/maps/stores/map-interaction-store";
+import {
+  PointInteraction,
+  useMapInteractionStore,
+} from "@/features/maps/stores/map-interaction-store";
+import {
+  getBoundsSearchBox,
+  getPointBounds,
+  getZoomDistanceSensitivity,
+  lineSegmentToLatLng,
+} from "@/features/maps/utils/bounds";
+import { POINT_SEARCH_SENSITIVITY } from "@/features/maps/config/consts";
 
-const POINT_SEARCH_SENSITIVITY = 2; // meters
+export function getIndexBboxResults(index: IndexType, bBox: BBox | BBox[]) {
+  if (Array.isArray(bBox)) return bBox.map((b) => index.search(b)).flat();
 
-function lineSegmentToLatLng<T extends BBox>(lineSegment: T): number[][] {
-  return [
-    [lineSegment.minX, lineSegment.minY],
-    [lineSegment.maxX, lineSegment.maxY],
-  ];
-}
-
-export function getPointSearchBox(point: LatLng) {
-  const distance = metersDistanceToLatLng(point.lat, POINT_SEARCH_SENSITIVITY);
-  return {
-    minX: point.lat - distance[0],
-    minY: point.lng - distance[1],
-    maxX: point.lat + distance[0],
-    maxY: point.lng + distance[1],
-  } as BBox;
-}
-
-export function getBoundsSearchBox(bounds: LatLngBounds): BBox | BBox[] {
-  function getWidth(west: number, east: number): number {
-    const _east = east < west ? east + 360 : east;
-
-    return _east - west;
-  }
-
-  const sw = bounds.getSouthWest();
-  const ne = bounds.getNorthEast();
-
-  const south = sw.lat;
-  const north = ne.lat;
-
-  /* if viewport covers more than one rotation around the globe, clamp to one rotation */
-  if (getWidth(sw.lng, ne.lng) >= 360 - 0.01)
-    return { minX: south, minY: -180, maxX: north, maxY: 180 };
-
-  const wrapWest = sw.wrap().lng;
-  const wrapEast = ne.wrap().lng;
-
-  /* no antimeridian crossing */
-  if (wrapWest < wrapEast)
-    return { minX: south, minY: wrapWest, maxX: north, maxY: wrapEast };
-
-  /* crosses the antimeridian: split into two boxes */
-  return [
-    { minX: south, minY: wrapWest, maxX: north, maxY: 180 },
-    { minX: south, minY: -180, maxX: north, maxY: wrapEast },
-  ];
+  return index.search(bBox);
 }
 
 export function getActivitiesOfBBox(
@@ -66,9 +28,7 @@ export function getActivitiesOfBBox(
   activityView: SummaryActivity[],
   bBox: BBox | BBox[],
 ) {
-  const results = Array.isArray(bBox)
-    ? bBox.map((b) => index.search(b)).flat()
-    : index.search(bBox);
+  const results = getIndexBboxResults(index, bBox);
 
   const activities: SummaryActivity[] = [];
   const ids: number[] = [];
@@ -91,11 +51,12 @@ export function getActivitiesOfPoint(
   index: IndexType,
   activityView: SummaryActivity[],
   point: LatLng,
+  zoomLevel: number,
 ) {
   /* TODO: Represent points separated by enough time as another activity pass. Needs stream fetching to implement*/
-  const searchBox = getPointSearchBox(point);
+  const bBox = getBoundsSearchBox(getPointBounds(point, zoomLevel));
 
-  const results = index.search(searchBox);
+  const results = getIndexBboxResults(index, bBox);
 
   const activities: SummaryActivity[] = [];
   const ids: number[] = [];
@@ -106,14 +67,14 @@ export function getActivitiesOfPoint(
 
       if (activities.find((_activity) => _activity.id === activity.id)) return;
 
-      const distanceLatLng = pointDistanceToLine(lineSegmentToLatLng(line), [
-        point.lat,
-        point.lng,
-      ]);
+      const lineClosestPoint = getClosestPointOnLine(
+        lineSegmentToLatLng(line),
+        point,
+      );
 
-      const distanceMeters = latLngDistanceToMeters(point.lat, distanceLatLng);
+      const distance = point.distanceTo(lineClosestPoint);
 
-      if (distanceMeters <= POINT_SEARCH_SENSITIVITY) {
+      if (distance <= getZoomDistanceSensitivity(zoomLevel || 2)) {
         activities.push(activityView[line.id]);
         ids.push(line.id);
       }
@@ -142,15 +103,16 @@ export function updateActivitiesInViewCallback() {
 
     activities = getActivitiesOfBBox(index, activityView, searchBox);
   } else if (interaction === "point") {
+    const pointInteraction = interactionValue as PointInteraction;
     activities = getActivitiesOfPoint(
       index,
       activityView,
-      interactionValue as LatLng,
+      pointInteraction.point,
+      pointInteraction.zoomLevel,
     );
   } else {
     return;
   }
-
   useActivityInteractionViewStore.getState().setActivityView(activities);
 }
 
@@ -166,16 +128,19 @@ export function setMapBoundsAsView(map: L.Map, forceUpdate?: boolean) {
   });
 }
 
-export function createMapViewUpdate(map: L.Map) {
-  return () => {
-    setMapBoundsAsView(map);
-  };
+export function setPointAsView(map: L.Map, point: LatLng) {
+  const zoomLevel = map.getZoom();
+
+  useMapInteractionStore.getState().setPointInteraction({
+    point,
+    zoomLevel,
+  });
 }
 
-export function createMapPointClickUpdate() {
-  return (event: LeafletMouseEvent) => {
-    useMapInteractionStore
-      .getState()
-      .setInteractionState({ interaction: "point", value: event.latlng });
-  };
+export function createMapViewUpdate(map: L.Map) {
+  return () => setMapBoundsAsView(map);
+}
+
+export function createMapPointClickUpdate(map: L.Map) {
+  return (event: LeafletMouseEvent) => setPointAsView(map, event.latlng);
 }
