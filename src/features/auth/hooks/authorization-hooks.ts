@@ -6,12 +6,14 @@ import {
   useRouter,
   useSearchParams,
 } from "next/navigation";
-import { useEffect } from "react";
-import { exchangeCodeForToken } from "@/features/auth/lib/server-flow";
-import { AUTHORIZE_URL } from "@/features/auth/lib/objects";
-import { useAuthenticatedStore } from "@/features/auth/stores/auth-store";
+import { useEffect, useState } from "react";
 import {
-  ensureAccessToken,
+  exchangeCodeForToken,
+  isAuthenticated,
+} from "@/features/auth/lib/server-flow";
+import { AUTHORIZE_URL } from "@/features/auth/lib/objects";
+import {
+  syncAccessToken,
   readApiTypeString,
 } from "@/features/auth/lib/api-configuration";
 import { useApiTypeStore } from "@/features/auth/stores/api-store";
@@ -44,13 +46,26 @@ export function useAuthorizationFlow() {
 }
 
 /* not continuously refreshing, will only run on update of authenticated status (new refresh token) */
-export function useEnsureActiveAccessToken() {
-  /* side-effect of reliance on completed authenticated state: will run again when new refresh token is returned with new access token.*/
-  const authenticated = useAuthenticatedStore((state) => state.authenticated);
+export function useAccessTokenSync() {
+  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
-    ensureAccessToken();
+    async function updateAuthenticatedState() {
+      const state = await isAuthenticated();
+
+      setAuthenticated(state);
+    }
+
+    void updateAuthenticatedState();
+  }, []);
+
+  useEffect(() => {
+    if (!authenticated) return;
+
+    void syncAccessToken();
   }, [authenticated]);
+
+  return authenticated;
 }
 
 export function useSyncApiTypeToParams() {

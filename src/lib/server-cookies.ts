@@ -1,7 +1,12 @@
 "use server";
 
 import { AccessToken } from "@/types/types";
-import { CookieValueTypes, getCookie, setCookie } from "cookies-next/server";
+import {
+  CookieValueTypes,
+  getCookie,
+  setCookie,
+  deleteCookie,
+} from "cookies-next/server";
 import {
   ACCESS_TOKEN_COOKIE,
   IS_AUTHENTICATED_COOKIE,
@@ -45,4 +50,8 @@ export async function getRefreshTokenCookie(): Promise<CookieValueTypes> {
   }
 
   return JSON.parse(cookie);
+}
+
+export async function deleteRefreshTokenCookie(): Promise<void> {
+  return deleteCookie(REFRESH_TOKEN_COOKIE.key, { cookies });
 }

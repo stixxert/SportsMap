@@ -9,11 +9,12 @@ import {
 } from "@/features/auth/stores/api-store";
 import {
   rehydrateAccessToken,
-  rehydrateIsAuthenticated,
   useAccessTokenStore,
-  useAuthenticatedStore,
 } from "@/features/auth/stores/auth-store";
-import { exchangeRefreshToken } from "@/features/auth/lib/server-flow";
+import {
+  exchangeRefreshToken,
+  isAuthenticated,
+} from "@/features/auth/lib/server-flow";
 
 export function readApiTypeString(apiType: string): ApiType | undefined {
   const modeUppercase = apiType.toUpperCase();
@@ -75,10 +76,10 @@ export function apiStateUpdateCallback() {
   useApiConfigurationStore.getState().setConfiguration(newConfiguration);
 }
 
-export async function ensureAccessToken(): Promise<Result<null, string>> {
-  const isAuthenticated = useAuthenticatedStore.getState().authenticated;
+export async function syncAccessToken(): Promise<Result<null, string>> {
+  const authenticated = await isAuthenticated();
 
-  if (!isAuthenticated) {
+  if (!authenticated) {
     return Promise.reject({
       success: false,
       reason: "User not authenticated",
@@ -104,7 +105,6 @@ export async function ensureAccessToken(): Promise<Result<null, string>> {
     useAccessTokenStore.getState().setAccessToken(null);
     await exchangeRefreshToken();
     rehydrateAccessToken();
-    rehydrateIsAuthenticated();
     return { success: true, value: null };
   }
 

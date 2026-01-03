@@ -41,6 +41,7 @@ useApiTypeStore.subscribe((state, prevState) => {
     apiStateUpdateCallback();
   }
 });
+
 useAccessTokenStore.subscribe(() => {
   apiStateUpdateCallback();
 });

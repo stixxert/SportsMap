@@ -3,6 +3,7 @@
 import { Result } from "@/src/types/types";
 import { URL } from "url";
 import {
+  deleteRefreshTokenCookie,
   getRefreshTokenCookie,
   setAccessTokenCookie,
   setRefreshTokenCookie,
@@ -116,4 +117,14 @@ export async function exchangeRefreshToken(): Promise<Result<void, string>> {
   ]);
 
   return { success: true, value: undefined };
+}
+
+export async function deleteServerOnlyTokens(): Promise<void> {
+  return deleteRefreshTokenCookie();
+}
+
+export async function isAuthenticated(): Promise<boolean> {
+  const refresh_token = await getRefreshTokenCookie();
+
+  return refresh_token !== undefined;
 }
