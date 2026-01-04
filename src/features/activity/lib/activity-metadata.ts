@@ -1,21 +1,25 @@
 "use client";
 
 import { ApiType } from "@/src/types/configuration-types";
-import { del, get, openKVDB, set } from "@/lib/kv-db";
-import { SyncMetaData } from "@/features/activity/types/activity-types";
+import { del, get, KVDB, openKVDB, set } from "@/lib/kv-db";
 import {
   SyncMetaDataState,
   useActivityMetadataStore,
 } from "@/features/activity/stores/activity-metadata-store";
+import { SyncMetaData } from "@/types/types";
 
-const METADATA_KEY = "SYNC_METADATA_";
+const METADATA_KEY = "SYNC_METADATA";
+
+function getMetaDataKeyName(apiType: ApiType) {
+  return `${METADATA_KEY}_${apiType}`;
+}
 
 export async function getMetaData(
   apiType: ApiType,
 ): Promise<SyncMetaData | null> {
   const db = await openKVDB();
 
-  const metaDataKey = `${METADATA_KEY}${apiType}`;
+  const metaDataKey = getMetaDataKeyName(apiType);
 
   const value = await get(db, metaDataKey);
 
@@ -28,7 +32,7 @@ export async function setMetaData(
 ): Promise<void> {
   const db = await openKVDB();
 
-  const metaDataKey = `${METADATA_KEY}${apiType}`;
+  const metaDataKey = getMetaDataKeyName(apiType);
 
   if (value === null) {
     return del(db, metaDataKey);

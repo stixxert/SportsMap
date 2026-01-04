@@ -3,7 +3,7 @@
 import React from "react";
 import { useActivitySynchronization } from "@/features/activity/hooks/sync-state";
 import {
-  useEnsureActiveAccessToken,
+  useAccessTokenSync,
   useSyncApiTypeToParams,
 } from "@/features/auth/hooks/authorization-hooks";
 import {
@@ -11,17 +11,19 @@ import {
   useMetaDataSync,
 } from "@/features/activity/hooks/window-dependent-subscribes";
 import { useInteractionDependencies } from "@/features/maps/hooks/use-map-interaction";
+import { useProfile } from "@/features/profile/use-profile";
 
 export default function ApiProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  useProfile();
   useInteractionDependencies();
 
   useMetaDataSync();
   useSyncApiTypeToParams();
-  useEnsureActiveAccessToken();
+  useAccessTokenSync();
   useActivitySynchronization();
 
   useActivityCategorizationQuerySync();

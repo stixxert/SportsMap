@@ -17,6 +17,7 @@ import {
   IconButtonBaseProps,
 } from "@/features/maps/components/BaseIconButton";
 import { ToolbarMarkerIcon } from "@/features/maps/components/overlay/ToolbarMarkerIcon";
+import { UserAvatar } from "@/features/profile/user-avatar";
 
 type FunctionIcon = {
   type: SelectionMenuTypes;
@@ -28,17 +29,19 @@ type FunctionIcon = {
 };
 
 const icons: FunctionIcon[] = [
+  { type: "user", label: "User", icon: UserAvatar },
   {
     type: "list",
     label: "List activities",
     icon: ActivityToolbarIcon,
     activeIcon: <ChevronRightIcon />,
   },
-  {
+  /* TODO: Implement filtering of activity categories */
+  /*{
     type: "filter",
     label: "Filter activities",
     icon: <FilterAltIcon />,
-  },
+  },*/
   {
     type: "marker",
     label: "Marker on map",

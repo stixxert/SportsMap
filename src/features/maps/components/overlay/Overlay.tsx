@@ -10,7 +10,8 @@ export const MENU_OPTIONS_FOR_DRAWER = ["list", "filter"] as const;
 
 export type SelectionMenuTypes =
   | (typeof MENU_OPTIONS_FOR_DRAWER)[number]
-  | "marker";
+  | "marker"
+  | "user";
 
 export function selectedContains(
   selected: SelectionMenuTypes[] | null,

@@ -44,7 +44,7 @@ const headCells: GridColDef[] = [
     renderHeader: () => <></>,
     renderCell: (params) => (
       <Icon sx={{ height: "100%", alignItems: "center" }}>
-        <Tooltip title={"Open Strava activity"}>
+        <Tooltip sx={{ textDecoration: "underline" }} title={"View on Strava"}>
           <a
             href={`https://www.strava.com/activities/${params.id}`}
             target="_blank"

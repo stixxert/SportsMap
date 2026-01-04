@@ -1,4 +1,5 @@
 import { SportType } from "@/strava-api";
+import { SummaryAthlete } from "@/strava-api";
 
 export type Result<SuccessType, ErrorType> =
   | { success: true; value: SuccessType }
@@ -15,4 +16,9 @@ export type ActivitiesCategoryParams = {
   startTime?: Date;
   endTime?: Date;
   sportType?: SportType | SportType[];
+};
+
+export type SyncMetaData = {
+  athleteId: SummaryAthlete["id"];
+  lastSync: Date;
 };

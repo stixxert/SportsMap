@@ -6,8 +6,8 @@ import * as zustand from "zustand";
 import { createAvailabilityStore, StoreAvailabilityStore } from "@/utils/store";
 
 interface ActivitySyncState {
-  activitiesSync: boolean;
-  setActivitiesSync: (newActivitiesSync: boolean) => void;
+  activitiesSync: boolean | null;
+  setActivitiesSync: (newActivitiesSync: boolean | null) => void;
 }
 
 interface ActivityCategoryParamState {
@@ -27,8 +27,8 @@ type ActivityStore = ActivityState & ActivityActions;
 
 export const useActivitySyncStore = zustand.create<ActivitySyncState>(
   (set) => ({
-    activitiesSync: false,
-    setActivitiesSync: (newActivitiesSync: boolean) =>
+    activitiesSync: null,
+    setActivitiesSync: (newActivitiesSync: boolean | null) =>
       set({
         activitiesSync: newActivitiesSync,
       }),

@@ -11,13 +11,10 @@ import { useActivityMetadataStore } from "@/features/activity/stores/activity-me
 
 /* needs sync using hook, as localstorage of metadata requires a reference to the client browser */
 export function useActivitySynchronization() {
-  const apiConfiguration = useApiConfigurationStore(
-    (state) => state.configuration,
-  );
-
   const syncMetaData = useActivityMetadataStore((state) => state.metaData);
 
   useEffect(() => {
+    const apiConfiguration = useApiConfigurationStore.getState().configuration;
     const apiType = useApiTypeStore.getState().apiType;
 
     if (!apiType || !apiConfiguration || !syncMetaData) {
@@ -26,8 +23,10 @@ export function useActivitySynchronization() {
 
     const isSynced = useActivitySyncStore.getState().activitiesSync;
 
-    if (isSynced) return;
+    if (isSynced != null) return;
+
+    useActivitySyncStore.getState().setActivitiesSync(false);
 
     setTimeout(() => synchronizeActivities(apiType, apiConfiguration));
-  }, [apiConfiguration, syncMetaData]);
+  }, [syncMetaData]);
 }

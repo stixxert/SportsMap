@@ -28,11 +28,6 @@ export const ACCESS_TOKEN_COOKIE: Cookie = {
   options: { ...CLIENT_ACCESSIBLE_OPTIONS, maxAge: COOKIE_EXPIRY_HOUR },
 };
 
-export const IS_AUTHENTICATED_COOKIE: Cookie = {
-  key: "authenticated",
-  options: { ...CLIENT_ACCESSIBLE_OPTIONS, maxAge: COOKIE_EXPIRY_MONTH },
-};
-
 /* only server should refresh access token, as this requires external-api key */
 export const REFRESH_TOKEN_COOKIE: Cookie = {
   key: "refreshToken",

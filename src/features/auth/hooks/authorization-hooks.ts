@@ -45,8 +45,7 @@ export function useAuthorizationFlow() {
   });
 }
 
-/* not continuously refreshing, will only run on update of authenticated status (new refresh token) */
-export function useAccessTokenSync() {
+export function useAuthenticatedState() {
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -58,6 +57,12 @@ export function useAccessTokenSync() {
 
     void updateAuthenticatedState();
   }, []);
+
+  return authenticated;
+}
+
+export function useAccessTokenSync() {
+  const authenticated = useAuthenticatedState();
 
   useEffect(() => {
     if (!authenticated) return;

@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect } from "react";
 import { useApiTypeStore } from "@/features/auth/stores/api-store";
 import {

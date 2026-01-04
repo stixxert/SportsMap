@@ -1,6 +1,6 @@
 "use client";
 
-import { DBSchema, IDBPDatabase, openDB } from "idb";
+import { DBSchema, deleteDB, IDBPDatabase, openDB } from "idb";
 
 const DBNAME = "keyval";
 
@@ -36,4 +36,8 @@ export async function set<T extends KValue>(
 
 export async function del(db: KVDB, key: string): Promise<void> {
   return db.delete(DBNAME, key);
+}
+
+export async function deleteKVDb() {
+  await deleteDB(DBNAME);
 }

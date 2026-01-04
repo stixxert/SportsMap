@@ -1,12 +1,13 @@
 "use client";
 
 import { SummaryActivity } from "@/strava-api";
-import { DBSchema, IDBPDatabase, openDB } from "idb";
+import { DBSchema, deleteDB, IDBPDatabase, openDB } from "idb";
 import { ApiType } from "@/types/configuration-types";
 import { ActivitiesCategoryParams } from "@/types/types";
 import { constructDiscreteKeyBound, constructKeyBound } from "@/utils/misc";
+import { del } from "@/lib/kv-db";
 
-export const DATABASE_NAME = "sports-db";
+export const DATABASE_NAME = "sports_db";
 export const ACTIVITY_STORE_NAME = "activities";
 
 export const INDEX_ID = "by-id";
@@ -23,26 +24,26 @@ interface ActivityDBSchema extends DBSchema {
   };
 }
 
+function getDbName(apiType: ApiType) {
+  return `${DATABASE_NAME}_${apiType}`;
+}
+
 export type ActivityDb = IDBPDatabase<ActivityDBSchema>;
 
 export async function openActivityDB(
   activityConfigurationType: ApiType,
 ): Promise<ActivityDb> {
-  return openDB<ActivityDBSchema>(
-    `${DATABASE_NAME}-${activityConfigurationType.toString()}`,
-    1,
-    {
-      upgrade(db) {
-        const activitiesStore = db.createObjectStore(ACTIVITY_STORE_NAME, {
-          keyPath: "id",
-        });
+  return openDB<ActivityDBSchema>(getDbName(activityConfigurationType), 1, {
+    upgrade(db) {
+      const activitiesStore = db.createObjectStore(ACTIVITY_STORE_NAME, {
+        keyPath: "id",
+      });
 
-        activitiesStore.createIndex(INDEX_ID, "id", { unique: true });
-        activitiesStore.createIndex(INDEX_TYPE, "type", { unique: false });
-        activitiesStore.createIndex(INDEX_DATE, "startDate", { unique: false });
-      },
+      activitiesStore.createIndex(INDEX_ID, "id", { unique: true });
+      activitiesStore.createIndex(INDEX_TYPE, "type", { unique: false });
+      activitiesStore.createIndex(INDEX_DATE, "startDate", { unique: false });
     },
-  );
+  });
 }
 
 export async function addActivities(
@@ -55,7 +56,7 @@ export async function addActivities(
     await tx.store.add(activity);
   });
 
-  return Promise.all([...addActivitiesPromises, tx.done]).then(() => {});
+  await Promise.all([...addActivitiesPromises, tx.done]);
 }
 
 export async function getActivities(
@@ -118,4 +119,18 @@ export async function getActivities(
       (typeActivity) => dateActivity.id === typeActivity.id,
     );
   });
+}
+
+export async function deleteActivityDb(apiType: ApiType): Promise<void> {
+  await deleteDB(getDbName(apiType));
+}
+
+export async function deleteActivityDbs(): Promise<void> {
+  await Promise.all(
+    [ApiType.Strava, ApiType.Demo].map((type) => deleteActivityDb(type)),
+  );
+}
+
+export function deleteAllActivities() {
+  return deleteActivityDbs();
 }

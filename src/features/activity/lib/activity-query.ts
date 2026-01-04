@@ -9,6 +9,7 @@ import { useApiTypeStore } from "@/features/auth/stores/api-store";
 import {
   useActivityCategoryParamStore,
   useActivityStore,
+  useActivitySyncStore,
 } from "@/features/activity/stores/activity-store";
 
 export async function getActivitiesByCategory(
@@ -26,6 +27,8 @@ export async function getActivitiesByCategory(
 }
 
 export function activityDependenciesCallback() {
+  if (!useActivitySyncStore.getState().activitiesSync) return;
+
   const apiType = useApiTypeStore.getState().apiType;
 
   const categoryParams =

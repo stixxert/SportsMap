@@ -2,13 +2,9 @@
 
 import { ApiType } from "@/src/types/configuration-types";
 import * as zustand from "zustand";
-import { SyncMetaData } from "@/features/activity/types/activity-types";
-import { useApiTypeStore } from "@/features/auth/stores/api-store";
-import {
-  exportMetaData,
-  importMetaData,
-} from "@/features/activity/lib/activity-metadata";
-import { useEffect } from "react";
+import { SyncMetaData } from "@/types/types";
+
+/* carrying the ApiType in the State is redundant, problem for later */
 
 export interface SyncMetaDataState {
   metaData: SyncMetaData | null;
