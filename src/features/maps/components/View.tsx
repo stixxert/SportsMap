@@ -4,12 +4,13 @@ import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
 
-import { Drawer, Tooltip, ButtonBase, Avatar, Stack } from "@mui/material";
+import { Drawer, Stack } from "@mui/material";
 import L from "leaflet";
 import {
   useLocationDetection,
   useZoomControls,
 } from "@/features/maps/hooks/use-zoom-controls";
+import { BaseIconButton } from "@/features/maps/components/BaseIconButton";
 
 type ViewButtonProps = {
   action: () => void;
@@ -20,26 +21,12 @@ type ViewButtonProps = {
 
 function ViewButton({ action, label, icon, disabled }: ViewButtonProps) {
   return (
-    <Tooltip title={label}>
-      <ButtonBase onClick={action} disabled={disabled}>
-        <Avatar
-          sx={(theme) => ({
-            borderRadius: "50%",
-            backgroundColor: !disabled
-              ? theme.palette.primary.light
-              : theme.palette.primary.dark,
-            "&:hover": {
-              backgroundColor: theme.palette.primary.main,
-            },
-            "&:active": {
-              backgroundColor: theme.palette.primary.dark,
-            },
-          })}
-        >
-          {icon}
-        </Avatar>
-      </ButtonBase>
-    </Tooltip>
+    <BaseIconButton
+      setActive={action}
+      icon={icon}
+      label={label}
+      disabled={disabled}
+    />
   );
 }
 

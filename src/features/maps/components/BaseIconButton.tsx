@@ -1,7 +1,6 @@
 import { Avatar, ButtonBase, Tooltip } from "@mui/material";
 import * as React from "react";
 import { JSX } from "react";
-import { BoxProps } from "@mui/system";
 
 export type IconComponent = (props: IconButtonBaseProps) => JSX.Element;
 
@@ -12,13 +11,25 @@ export interface IconButtonBaseProps {
   setActive?: (state?: boolean) => void;
   secondaryColor?: boolean;
   activeIcon?: JSX.Element;
+  disabled?: boolean;
 }
 
 export function BaseIconButton(props: IconButtonBaseProps): JSX.Element {
-  const { label, icon, isActive, setActive, activeIcon, secondaryColor } =
-    props;
+  const {
+    label,
+    icon,
+    isActive,
+    setActive,
+    activeIcon,
+    secondaryColor,
+    disabled,
+  } = props;
   return (
-    <Tooltip sx={{ width: "100%", height: "100%" }} title={label}>
+    <Tooltip
+      sx={{ width: "100%", height: "100%" }}
+      title={label}
+      disableInteractive
+    >
       <Avatar
         sx={(theme) => ({
           borderRadius: "50%",
@@ -33,6 +44,7 @@ export function BaseIconButton(props: IconButtonBaseProps): JSX.Element {
         })}
       >
         <ButtonBase
+          disabled={disabled}
           sx={{ width: "100%", height: "100%" }}
           onClick={setActive ? () => setActive() : () => {}}
         >

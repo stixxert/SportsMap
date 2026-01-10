@@ -5,6 +5,7 @@ import {
   MenuItem,
   Menu,
   ListItemIcon,
+  Box,
 } from "@mui/material";
 import { useProfile } from "@/features/profile/use-profile";
 import React, { useState } from "react";
@@ -19,34 +20,17 @@ export function UserAvatar() {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   const [clickOpen, setClickOpen] = useState(false);
-  const [hoverOpen, setHoverOpen] = useState(false);
 
   const isOpen = anchorEl !== null;
 
   function handleClick(event: React.MouseEvent<HTMLButtonElement>) {
-    if (hoverOpen) setHoverOpen(false);
-
     setAnchorEl(event.currentTarget);
     setClickOpen(true);
-  }
-
-  function handleHover(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-    if (!clickOpen) {
-      setHoverOpen(true);
-      setAnchorEl(event.currentTarget);
-    }
   }
 
   function handleClose() {
     if (clickOpen) {
       setClickOpen(false);
-      setAnchorEl(null);
-    }
-  }
-
-  function handleHoverClose() {
-    if (hoverOpen) {
-      setHoverOpen(false);
       setAnchorEl(null);
     }
   }
@@ -58,12 +42,18 @@ export function UserAvatar() {
           borderRadius: "50%",
           width: "100%",
           height: "100%",
-          "&:hover": {},
+          "&:hover": {
+            transform: "scale(1.1)",
+          },
+          transform: clickOpen ? "scale(1.1)" : "scale(1)",
         }}
         onClick={handleClick}
-        onMouseOver={handleHover}
       >
-        <Tooltip sx={{ width: "100%", height: "100%" }} title={"User options"}>
+        <Tooltip
+          sx={{ width: "100%", height: "100%" }}
+          title={"User options"}
+          disableInteractive
+        >
           <Avatar
             sx={(theme) => ({
               borderRadius: "50%",
@@ -86,7 +76,6 @@ export function UserAvatar() {
               backgroundColor: theme.palette.primary.light,
             }),
           },
-          list: { onMouseLeave: handleHoverClose },
         }}
       >
         {user ? (

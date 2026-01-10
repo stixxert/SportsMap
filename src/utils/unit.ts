@@ -34,10 +34,7 @@ export function durationToTimeString(
   if (days && options?.days !== false) parts.push(String(days).concat("d"));
 
   // manually adjusting just for hours, to add days as hours. should this be done for lower units as well?
-  if (
-    (hours && options?.hours !== false) ||
-    (options?.hours && !options?.days && days >= 0)
-  ) {
+  if (options?.hours !== false && (hours || (!options?.days && days > 0))) {
     let adjustedHours = hours;
     if (options?.days === false) adjustedHours = adjustedHours + days * 24;
     parts.push(String(adjustedHours).concat("h"));
