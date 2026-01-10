@@ -18,7 +18,7 @@ import {
   MRT_RowSelectionState,
 } from "material-react-table";
 import { SummaryActivity } from "@/strava-api";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const StyledGridOverlay = styled("div")(({ theme }) => ({
   display: "flex",
@@ -71,64 +71,14 @@ function activityCount(
   }: ${activityCount}`;
 }
 
-function useSelectedRow() {
-  const [selectedRows, setSelectedRows] = useState<MRT_RowSelectionState>({});
-
-  function _isSelectedRow(row: string) {
-    return selectedRows.hasOwnProperty(row);
-  }
-
-  function _toggleSelectedRow(row: string) {
-    if (_isSelectedRow(row)) {
-      return setSelectedRows({});
-    }
-    setSelectedRows({ [row]: true });
-  }
-
-  return {
-    selectedRows,
-    setSelectedRows,
-    toggleSelectedRow: _toggleSelectedRow,
-    isSelectedRow: _isSelectedRow,
-  };
-}
-
-export function ActivityTable() {
-  const viewActivities = useActivityInteractionViewStore(
-    (state) => state.activityView,
-  );
-
+function useTableColumns(
+  activities: SummaryActivity[] | null,
+): MRT_ColumnDef<SummaryActivity>[] {
   const interactionType = useMapInteractionStore((state) => state.interaction);
+  const { movingTime, distance, totalElevationGain } =
+    useReducedActivitiesStatistics(activities);
 
-  const { selectedRows, toggleSelectedRow, isSelectedRow } = useSelectedRow();
-
-  const { movingTime, distance, totalElevationGain } = useMemo(() => {
-    const defaultData: SummaryActivity = {
-      movingTime: 0,
-      distance: 0,
-      totalElevationGain: 0,
-    };
-
-    if (!viewActivities) return defaultData;
-
-    return viewActivities.reduce(
-      (accumulator, activity) => {
-        return {
-          movingTime:
-            (accumulator.movingTime || 0) + (activity.movingTime || 0),
-          distance: (accumulator.distance || 0) + (activity.distance || 0),
-          totalElevationGain:
-            (accumulator.totalElevationGain || 0) +
-            (activity.totalElevationGain || 0),
-        };
-      },
-      {
-        ...defaultData,
-      },
-    );
-  }, [viewActivities]);
-
-  const _headerColumns: MRT_ColumnDef<SummaryActivity>[] = [
+  return [
     {
       header: "",
       accessorKey: "id",
@@ -161,8 +111,8 @@ export function ActivityTable() {
       header: "Name",
       Footer: () => (
         <div>
-          {(viewActivities?.length || 0) > 0 ? (
-            activityCount(viewActivities?.length || 0, interactionType)
+          {(activities?.length || 0) > 0 ? (
+            activityCount(activities?.length || 0, interactionType)
           ) : (
             <></>
           )}
@@ -247,10 +197,76 @@ export function ActivityTable() {
         </div>
       ),
     },
-  ];
+  ] as MRT_ColumnDef<SummaryActivity>[];
+}
+
+function useSelectedRow() {
+  const [selectedRows, setSelectedRows] = useState<MRT_RowSelectionState>({});
+
+  function _isSelectedRow(row: string) {
+    return selectedRows.hasOwnProperty(row);
+  }
+
+  function _toggleSelectedRow(row: string) {
+    if (_isSelectedRow(row)) {
+      return setSelectedRows({});
+    }
+    setSelectedRows({ [row]: true });
+  }
+
+  return {
+    selectedRows,
+    setSelectedRows,
+    toggleSelectedRow: _toggleSelectedRow,
+    isSelectedRow: _isSelectedRow,
+  };
+}
+
+function useReducedActivitiesStatistics(activities: SummaryActivity[] | null) {
+  return useMemo(() => {
+    const defaultData: SummaryActivity = {
+      movingTime: 0,
+      distance: 0,
+      totalElevationGain: 0,
+    };
+
+    if (!activities) return defaultData;
+
+    return activities.reduce(
+      (accumulator, activity) => {
+        return {
+          movingTime:
+            (accumulator.movingTime || 0) + (activity.movingTime || 0),
+          distance: (accumulator.distance || 0) + (activity.distance || 0),
+          totalElevationGain:
+            (accumulator.totalElevationGain || 0) +
+            (activity.totalElevationGain || 0),
+        };
+      },
+      {
+        ...defaultData,
+      },
+    );
+  }, [activities]);
+}
+
+export function ActivityTable() {
+  const viewActivities = useActivityInteractionViewStore(
+    (state) => state.activityView,
+  );
+
+  const { selectedRows, setSelectedRows, toggleSelectedRow, isSelectedRow } =
+    useSelectedRow();
+
+  const columns = useTableColumns(viewActivities);
+
+  useEffect(() => {
+    /* remove selection that were previously active, when the activities view changes*/
+    setSelectedRows({});
+  }, [setSelectedRows, viewActivities]);
 
   const table = useMaterialReactTable({
-    columns: _headerColumns,
+    columns: columns,
     data: viewActivities || [],
     initialState: {
       sorting: [
