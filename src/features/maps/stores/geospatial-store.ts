@@ -6,7 +6,7 @@ import {
   bulkInsertActivities,
   createGeospatialIndex,
   IndexType,
-} from "@/features/maps/lib/geospatial-index";
+} from "@/features/maps/lib/activity-geo-index";
 import { SummaryActivity } from "@/strava-api";
 import { createAvailabilityStore, StoreAvailabilityStore } from "@/utils/store";
 import { useMappableActivitiesStore } from "@/features/activity/stores/activity-store";

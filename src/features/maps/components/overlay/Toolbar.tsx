@@ -79,7 +79,7 @@ export function FunctionToolbar({
         },
         [theme.breakpoints.up("sm")]: {
           "& .MuiDrawer-paper": {
-            right: drawerVisible(selected) ? "35vw" : 0,
+            right: drawerVisible(selected) ? "45vw" : 0,
           },
         },
       })}

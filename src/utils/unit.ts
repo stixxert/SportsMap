@@ -2,7 +2,16 @@
  * returns: duration in DD d HH h MM m or MM m SS s,
  * the latter if duration does not span days.
  */
-export function durationToTimeString(duration: number) {
+export function durationToTimeString(
+  duration: number,
+  options?: {
+    days?: boolean;
+    hours?: boolean;
+    minutes?: boolean;
+    seconds?: boolean;
+    hoursIgnoreLowerUnitThreshold?: number;
+  },
+) {
   let durationRemaining = duration;
 
   const daysInSeconds = 60 * 60 * 24;
@@ -22,22 +31,81 @@ export function durationToTimeString(duration: number) {
 
   const parts = [];
 
-  if (days) parts.push(String(days).concat("d"));
+  if (days && options?.days !== false) parts.push(String(days).concat("d"));
 
-  if (hours) parts.push(String(hours).concat("h"));
+  // manually adjusting just for hours, to add days as hours. should this be done for lower units as well?
+  if (
+    (hours && options?.hours !== false) ||
+    (options?.hours && !options?.days && days >= 0)
+  ) {
+    let adjustedHours = hours;
+    if (options?.days === false) adjustedHours = adjustedHours + days * 24;
+    parts.push(String(adjustedHours).concat("h"));
 
-  if (minutes) parts.push(String(minutes).concat("m"));
+    if (
+      options?.hoursIgnoreLowerUnitThreshold !== undefined &&
+      options?.hoursIgnoreLowerUnitThreshold <= adjustedHours
+    )
+      return parts.join(" ");
+  }
 
-  if (seconds && !days && !hours) parts.push(String(seconds).concat("s"));
+  if (minutes && options?.minutes !== false)
+    parts.push(String(minutes).concat("m"));
+
+  if (seconds && !days && !hours && options?.seconds !== false)
+    parts.push(String(seconds).concat("s"));
 
   return parts.join(" ");
 }
 
+const defaultDistanceOptions = {
+  bigUnitUseThreshold: -1,
+  bigUnitExcludeDecimalThreshold: -1,
+  smallUnitExcludeDecimalThreshold: -1,
+};
+
 /* dist <= 1 KM gets M format, dist > KM gets KM*/
-export function formatDistance(distance: number) {
-  if (distance <= 1000) {
-    return `${distance} m`;
+export function formatDistance(
+  distance: number,
+  options?: Partial<typeof defaultDistanceOptions>,
+) {
+  const _options = options
+    ? { ...defaultDistanceOptions, ...options }
+    : defaultDistanceOptions;
+
+  if (
+    (_options.bigUnitUseThreshold == -1 && distance <= 1000) ||
+    _options.bigUnitUseThreshold >= distance
+  ) {
+    let _distance: string;
+    if (_options.smallUnitExcludeDecimalThreshold !== -1)
+      _distance = distance.toFixed(0);
+    else _distance = `${distance}`;
+
+    return `${_distance}m`;
   }
 
-  return (distance / 1000).toFixed(1);
+  const bigUnitDistance = distance / 1000;
+
+  let decimalAdjustedDistance: string;
+
+  if (bigUnitDistance >= _options.bigUnitExcludeDecimalThreshold)
+    decimalAdjustedDistance = bigUnitDistance.toFixed(0);
+  else decimalAdjustedDistance = bigUnitDistance.toFixed(1);
+
+  return `${decimalAdjustedDistance}km`;
+}
+
+const dateTimeFormatter = new Intl.DateTimeFormat("en-US", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+export function formatDate(date: Date) {
+  return dateTimeFormatter.format(
+    new Date(date.getTime() + date.getTimezoneOffset() * 60 * 1000),
+  );
 }

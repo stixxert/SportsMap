@@ -1,6 +1,6 @@
 "use client";
 
-import { IndexType } from "@/features/maps/lib/geospatial-index";
+import { IndexType } from "@/features/maps/lib/activity-geo-index";
 import L, { LatLng, LatLngBounds, LeafletMouseEvent } from "leaflet";
 import { BBox } from "rbush";
 import { getClosestPointOnLine } from "@/utils/geo";

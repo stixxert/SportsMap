@@ -30,10 +30,11 @@ export function ActivityDrawer({ drawerOpen }: { drawerOpen: boolean }) {
               },
             },
             [theme.breakpoints.up("sm")]: {
-              width: "35vw",
+              width: "45vw",
               "& .MuiDrawer-paper": {
+                border: "none",
                 backgroundColor: "transparent",
-                width: "35vw",
+                width: "45vw",
               },
             },
           }),

@@ -5,7 +5,6 @@ import { DBSchema, deleteDB, IDBPDatabase, openDB } from "idb";
 import { ApiType } from "@/types/configuration-types";
 import { ActivitiesCategoryParams } from "@/types/types";
 import { constructDiscreteKeyBound, constructKeyBound } from "@/utils/misc";
-import { del } from "@/lib/kv-db";
 
 export const DATABASE_NAME = "sports_db";
 export const ACTIVITY_STORE_NAME = "activities";
