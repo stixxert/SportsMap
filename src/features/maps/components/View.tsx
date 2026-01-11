@@ -5,12 +5,11 @@ import ZoomOutIcon from "@mui/icons-material/ZoomOut";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
 
 import { Drawer, Stack } from "@mui/material";
-import L from "leaflet";
-import {
+import useZoomControls, {
   useLocationDetection,
-  useZoomControls,
 } from "@/features/maps/hooks/use-zoom-controls";
 import { BaseIconButton } from "@/features/maps/components/BaseIconButton";
+import { useMap } from "@/features/maps/stores/map-store";
 
 type ViewButtonProps = {
   action: () => void;
@@ -30,13 +29,11 @@ function ViewButton({ action, label, icon, disabled }: ViewButtonProps) {
   );
 }
 
-export function ViewController({
-  map,
-}: {
-  map: React.RefObject<L.Map | null>;
-}) {
+export function ViewController() {
+  const map = useMap();
+
   const { zoomIn, zoomInDisabled, zoomOut, zoomOutDisabled } =
-    useZoomControls(map);
+    useZoomControls();
 
   const locateFn = useLocationDetection(map);
 

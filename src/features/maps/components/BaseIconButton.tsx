@@ -12,6 +12,7 @@ export interface IconButtonBaseProps {
   secondaryColor?: boolean;
   activeIcon?: JSX.Element;
   disabled?: boolean;
+  buttonElement?: () => JSX.Element;
 }
 
 export function BaseIconButton(props: IconButtonBaseProps): JSX.Element {
@@ -23,7 +24,11 @@ export function BaseIconButton(props: IconButtonBaseProps): JSX.Element {
     activeIcon,
     secondaryColor,
     disabled,
+    buttonElement,
   } = props;
+
+  const _button = buttonElement ? buttonElement : ButtonBase;
+
   return (
     <Tooltip
       sx={{ width: "100%", height: "100%" }}
@@ -41,15 +46,18 @@ export function BaseIconButton(props: IconButtonBaseProps): JSX.Element {
           "&:hover": {
             backgroundColor: theme.palette.primary.main,
           },
+          "& .Mui-disabled": {
+            backgroundColor: theme.palette.primary.dark,
+          },
         })}
       >
-        <ButtonBase
+        <_button
           disabled={disabled}
           sx={{ width: "100%", height: "100%" }}
           onClick={setActive ? () => setActive() : () => {}}
         >
           {isActive && activeIcon ? activeIcon : icon}
-        </ButtonBase>
+        </_button>
       </Avatar>
     </Tooltip>
   );

@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useEffect } from "react";
-import L, { LeafletEvent } from "leaflet";
+import React, { useCallback, useEffect, useMemo } from "react";
+import { Map } from "leaflet";
 import { createGeolocationUpdateCallback } from "@/features/maps/lib/map-visuals";
+import { getMap, useMap } from "@/features/maps/stores/map-store";
 
-function checkZoomBounds(map: L.Map) {
+function checkZoomBounds(map: Map) {
   const bounds = { min: false, max: false };
 
   const zoom = map.getZoom();
@@ -18,90 +19,86 @@ function checkZoomBounds(map: L.Map) {
   return bounds;
 }
 
-export function useZoomControls(map: React.RefObject<L.Map | null>) {
+function useZoomDisable() {
+  const map = useMap();
+
   const [zoomInDisabled, setZoomInDisabled] = React.useState(false);
   const [zoomOutDisabled, setZoomOutDisabled] = React.useState(false);
+
+  function checkZoomState() {
+    if (!map.current) return;
+    const bounds = checkZoomBounds(map.current);
+
+    if (bounds.min) {
+      setZoomOutDisabled(true);
+
+      setZoomInDisabled(false);
+    } else {
+      setZoomOutDisabled(false);
+    }
+
+    if (bounds.max) {
+      setZoomInDisabled(true);
+
+      setZoomOutDisabled(false);
+    } else {
+      setZoomInDisabled(false);
+    }
+  }
+
+  return {
+    zoomInDisabled,
+    zoomOutDisabled,
+    checkZoomState,
+  };
+}
+
+function useZoomControls() {
+  const map = useMap();
+
+  const { zoomInDisabled, zoomOutDisabled, checkZoomState } = useZoomDisable();
 
   useEffect(() => {
     if (!map.current) return;
 
     const mapRef = map.current;
 
-    function zoomEvent() {
-      if (!mapRef) return;
-      const bounds = checkZoomBounds(mapRef);
-
-      if (bounds.min) {
-        setZoomOutDisabled(true);
-
-        setZoomInDisabled(false);
-      } else {
-        setZoomOutDisabled(false);
-      }
-
-      if (bounds.max) {
-        setZoomInDisabled(true);
-
-        setZoomOutDisabled(false);
-      } else {
-        setZoomInDisabled(false);
-      }
-    }
-
-    mapRef.on("zoomend", zoomEvent);
+    mapRef.on("zoomend", checkZoomState);
 
     return () => {
       if (!mapRef) return;
 
-      mapRef.off("zoomend", zoomEvent);
+      mapRef.off("zoomend", checkZoomState);
     };
-  }, [map]);
+  }, [checkZoomState, map]);
 
-  function zoomModify(modifier: number) {
-    if (!map.current) return () => {};
+  function zoomIn() {
+    if (!map.current) return;
 
-    if (modifier < 0) {
-      return () => {
-        if (!map.current) return;
+    map.current.zoomIn();
 
-        map.current.zoomOut();
+    checkZoomState();
+  }
 
-        const bounds = checkZoomBounds(map.current);
+  function zoomOut() {
+    if (!map.current) return;
 
-        if (bounds.min) {
-          if (!zoomOutDisabled) setZoomOutDisabled(true);
+    map.current.zoomOut();
 
-          if (zoomInDisabled) setZoomInDisabled(false);
-        }
-      };
-    } else if (modifier > 0) {
-      return () => {
-        if (!map.current) return;
-
-        map.current.zoomIn();
-
-        const bounds = checkZoomBounds(map.current);
-
-        if (bounds.max) {
-          if (!zoomInDisabled) setZoomInDisabled(true);
-
-          if (zoomOutDisabled) setZoomOutDisabled(false);
-        }
-      };
-    }
-
-    return () => {};
+    checkZoomState();
   }
 
   return {
-    zoomIn: zoomModify(1),
+    zoomIn,
     zoomInDisabled,
-    zoomOut: zoomModify(-1),
+    zoomOut,
     zoomOutDisabled,
   };
 }
 
-export function useLocationDetection(map: React.RefObject<L.Map | null>) {
+export default useZoomControls;
+
+export function useLocationDetection(map: React.RefObject<Map | null>) {
   useEffect(() => {
     if (!map.current) return;
 

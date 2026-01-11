@@ -8,13 +8,29 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import LocationOffIcon from "@mui/icons-material/LocationOff";
 
-import { Box, Stack, Slider, Tooltip } from "@mui/material";
+import {
+  Box,
+  Stack,
+  Slider,
+  Tooltip,
+  Collapse,
+  List,
+  ListItem,
+} from "@mui/material";
 import { useState } from "react";
 import {
   PointInteraction,
   useMapInteractionStore,
   usePointSensitivityStore,
 } from "@/features/maps/stores/map-interaction-store";
+
+function useMapMarkerActive() {
+  const mapInteractionType = useMapInteractionStore(
+    (state) => state.interaction,
+  );
+
+  return mapInteractionType === "point";
+}
 
 function sliderScale(scaleValue: number) {
   return 2 ** scaleValue;
@@ -69,13 +85,9 @@ function SensitivityAdjustSlider() {
 }
 
 function RemoveMarkerButton(props: IconButtonBaseProps) {
-  const mapInteractionType = useMapInteractionStore(
-    (state) => state.interaction,
-  );
-
   const { isActive, setActive } = props;
 
-  const active = mapInteractionType === "point";
+  const markerActive = useMapMarkerActive();
 
   function removeMarker() {
     useMapInteractionStore
@@ -87,7 +99,7 @@ function RemoveMarkerButton(props: IconButtonBaseProps) {
     }
   }
 
-  return active ? (
+  return markerActive ? (
     <BaseIconButton
       {...props}
       label={"Remove map marker"}
@@ -100,7 +112,7 @@ function RemoveMarkerButton(props: IconButtonBaseProps) {
 }
 
 export function ToolbarMarkerIcon(props: IconButtonBaseProps) {
-  const { isActive } = props;
+  const { isActive, setActive } = props;
 
   const interactionType = useMapInteractionStore((state) => state.interaction);
 
@@ -127,7 +139,7 @@ export function ToolbarMarkerIcon(props: IconButtonBaseProps) {
     : "Open marker options";
 
   const childrenProps: IconButtonBaseProps = {
-    setActive: props.setActive,
+    setActive,
     label: "",
     icon: props.icon,
   };

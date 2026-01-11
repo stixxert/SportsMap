@@ -12,8 +12,11 @@ import {
   subscribeToIndexStateUpdate,
   subscribeToMapInteractionStateUpdate,
 } from "@/features/maps/stores/activity-interaction-view-store";
+import { useMap } from "@/features/maps/stores/map-store";
 
-export function useMapInteraction(map: React.RefObject<Map | null>) {
+export function useMapInteraction() {
+  const map = useMap();
+
   useEffect(() => {
     if (!map.current) return;
 

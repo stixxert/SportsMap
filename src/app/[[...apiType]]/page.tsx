@@ -34,8 +34,6 @@ const Overlay = dynamic(
 );
 
 export default function MapPage() {
-  const mapRef = useRef<L.Map | null>(null);
-
   useMetaDataSync();
   useAccessTokenSync();
   useActivityCategorizationQuerySync();
@@ -52,10 +50,10 @@ export default function MapPage() {
   return (
     <Box sx={{ position: "relative", height: "100vh", width: "100%" }}>
       <Box sx={{ position: "absolute" }}>
-        <Overlay map={mapRef}></Overlay>
+        <Overlay></Overlay>
       </Box>
       <Box sx={{ position: "relative", height: "100%" }}>
-        <Map map={mapRef}></Map>
+        <Map></Map>
       </Box>
       {apiType === ApiType.Strava &&
         isAuthenticated !== null &&

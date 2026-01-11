@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { Box } from "@mui/material";
 import { FunctionToolbar } from "@/features/maps/components/overlay/Toolbar";
 import { ActivityDrawer } from "@/features/maps/components/activity/Drawer";
-import L from "leaflet";
 import { ViewController } from "@/features/maps/components/View";
 import { BottomMenu } from "@/features/maps/components/overlay/BottomMenu";
 
@@ -50,11 +49,7 @@ export function drawerVisible(selected: SelectionMenuTypes[] | null) {
   return false;
 }
 
-export default function Overlay({
-  map,
-}: {
-  map: React.RefObject<L.Map | null>;
-}) {
+export default function Overlay() {
   const [selected, setSelected] = useState<SelectionMenuTypes[] | null>(null);
 
   function viewControllerIsVisible() {
@@ -71,7 +66,7 @@ export default function Overlay({
           },
         })}
       >
-        <ViewController map={map} />
+        <ViewController />
       </Box>
       <Box
         sx={{
