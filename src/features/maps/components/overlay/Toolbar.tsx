@@ -60,38 +60,37 @@ export function FunctionToolbar({
     <Drawer
       variant={"permanent"}
       anchor={"right"}
-      sx={(theme) => ({
-        width: 80,
-        flexShrink: 0,
-        display: "flex",
-        overflow: "hidden",
-        "& .MuiDrawer-paper": {
-          overflow: "hidden",
-          height: "400px",
-          width: 80,
-          top: 0,
-          border: "none",
-          backgroundColor: "transparent",
-          paddingTop: 2,
-        },
+      slotProps={{
+        paper: {
+          sx: (theme) => ({
+            overflow: "hidden",
+            height: "auto",
+            width: "auto",
+            border: "none",
+            backgroundColor: "transparent",
+            paddingTop: 2,
+            paddingRight: 1,
+            paddingLeft: 1,
+            paddingBottom: 1,
 
-        [theme.breakpoints.down("sm")]: {
-          "& .MuiDrawer-paper": {
-            right: drawerVisible(selected) ? "80vw" : 0,
-          },
+            [theme.breakpoints.down("sm")]: {
+              right: drawerVisible(selected) ? "80vw" : 0,
+            },
+            [theme.breakpoints.up("sm")]: {
+              right: drawerVisible(selected) ? "45vw" : 0,
+            },
+          }),
         },
-        [theme.breakpoints.up("sm")]: {
-          "& .MuiDrawer-paper": {
-            right: drawerVisible(selected) ? "45vw" : 0,
-          },
-        },
-      })}
+      }}
     >
       <Stack
         direction={"column"}
         spacing={{ xs: 1 }}
-        alignItems={"center"}
-        paddingLeft={1}
+        display={"flex"}
+        alignContent={"center"}
+        justifyContent={"center"}
+        paddingBottom={2}
+        width={"100%"}
       >
         {icons.map((icon) => {
           const isActive = selectedContains(selected, icon.type);

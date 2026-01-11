@@ -10,6 +10,7 @@ import useZoomControls, {
 } from "@/features/maps/hooks/use-zoom-controls";
 import { BaseIconButton } from "@/features/maps/components/BaseIconButton";
 import { useMap } from "@/features/maps/stores/map-store";
+import { drawerVisible } from "@/features/maps/components/overlay/Overlay";
 
 type ViewButtonProps = {
   action: () => void;
@@ -41,17 +42,24 @@ export function ViewController() {
     <Drawer
       variant={"permanent"}
       anchor={"left"}
+      slotProps={{
+        paper: {
+          sx: {
+            overflow: "hidden",
+            height: "auto",
+            width: "auto",
+            border: "none",
+            backgroundColor: "transparent",
+            paddingTop: 2,
+            paddingRight: 1,
+            paddingLeft: 1,
+            paddingBottom: 1,
+          },
+        },
+      }}
       sx={{
-        width: 64,
         flexShrink: 0,
         display: "flex",
-        "& .MuiDrawer-paper": {
-          width: 64,
-          top: 0,
-          border: "none",
-          backgroundColor: "transparent",
-          paddingTop: 2,
-        },
       }}
     >
       <Stack

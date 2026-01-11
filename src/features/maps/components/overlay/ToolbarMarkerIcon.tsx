@@ -69,6 +69,7 @@ function SensitivityAdjustSlider() {
           [theme.breakpoints.up("sm")]: {
             height: "10vh",
           },
+          paddingRight: 3,
         })}
         orientation="vertical"
         min={1}
@@ -145,7 +146,8 @@ export function ToolbarMarkerIcon(props: IconButtonBaseProps) {
   };
 
   return (
-    <Box
+    <Stack
+      spacing={{ xs: 1 }}
       onMouseEnter={() => {
         setBoxHoverActive(true);
       }}
@@ -153,28 +155,23 @@ export function ToolbarMarkerIcon(props: IconButtonBaseProps) {
         setBoxHoverActive(false);
       }}
     >
-      {isActive || boxHoverActive ? (
-        <Stack direction={"column"} spacing={{ xs: 1 }} alignItems={"center"}>
-          <Box
-            onMouseEnter={() => setPrimaryHoverActive(true)}
-            onMouseLeave={() => setPrimaryHoverActive(false)}
-          >
-            <BaseIconButton
-              {...props}
-              label={primaryIconLabel}
-              icon={primaryIcon}
-            />
-          </Box>
-          <RemoveMarkerButton {...childrenProps} />
-          <SensitivityAdjustSlider />
-        </Stack>
-      ) : (
+      <Box
+        onMouseEnter={() => setPrimaryHoverActive(true)}
+        onMouseLeave={() => setPrimaryHoverActive(false)}
+      >
         <BaseIconButton
           {...props}
           secondaryColor={markerActive}
-          icon={<RoomIcon />}
+          label={primaryIconLabel}
+          icon={primaryIcon}
         />
+      </Box>
+      {(isActive || boxHoverActive) && (
+        <>
+          <RemoveMarkerButton {...childrenProps} />
+          <SensitivityAdjustSlider />
+        </>
       )}
-    </Box>
+    </Stack>
   );
 }

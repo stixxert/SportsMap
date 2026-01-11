@@ -4,8 +4,6 @@ import dynamic from "next/dynamic";
 
 import Box from "@mui/material/Box";
 import * as React from "react";
-import { useRef } from "react";
-import L from "leaflet";
 import {
   useAccessTokenSync,
   useAuthenticatedState,
