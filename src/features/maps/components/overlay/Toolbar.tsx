@@ -17,7 +17,7 @@ import {
   IconButtonBaseProps,
 } from "@/features/maps/components/BaseIconButton";
 import { ToolbarMarkerIcon } from "@/features/maps/components/overlay/ToolbarMarkerIcon";
-import { UserAvatar } from "@/features/profile/user-avatar";
+import { UserAvatar } from "@/features/profile/components/user-avatar";
 
 type FunctionIcon = {
   type: SelectionMenuTypes;
@@ -61,11 +61,12 @@ export function FunctionToolbar({
       variant={"permanent"}
       anchor={"right"}
       sx={(theme) => ({
-        width: 64,
+        width: 80,
         flexShrink: 0,
         display: "flex",
         "& .MuiDrawer-paper": {
-          width: 64,
+          height: "400px",
+          width: 80,
           top: 0,
           border: "none",
           backgroundColor: "transparent",
@@ -84,7 +85,12 @@ export function FunctionToolbar({
         },
       })}
     >
-      <Stack direction={"column"} spacing={{ xs: 1 }} alignItems={"center"}>
+      <Stack
+        direction={"column"}
+        spacing={{ xs: 1 }}
+        alignItems={"center"}
+        paddingLeft={1}
+      >
         {icons.map((icon) => {
           const isActive = selectedContains(selected, icon.type);
 

@@ -5,9 +5,8 @@ import {
   MenuItem,
   Menu,
   ListItemIcon,
-  Box,
 } from "@mui/material";
-import { useProfile } from "@/features/profile/use-profile";
+import { useProfile } from "@/features/profile/hooks/use-profile";
 import React, { useState } from "react";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";

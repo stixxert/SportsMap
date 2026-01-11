@@ -18,6 +18,10 @@ export function ActivityToolbarIcon(props: IconButtonBaseProps): JSX.Element {
       color="secondary"
       badgeContent={(!props.isActive && viewActivities?.length) || 0}
       max={999}
+      anchorOrigin={{
+        vertical: "top",
+        horizontal: "right",
+      }}
     >
       <BaseIconButton {...props} icon={<ListIcon />} />
     </Badge>

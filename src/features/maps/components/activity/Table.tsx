@@ -305,7 +305,7 @@ export function ActivityTable() {
     },
     muiTableHeadRowProps: {
       sx: (theme) => ({
-        backgroundColor: `${theme.palette.primary.dark}80`,
+        backgroundColor: `${theme.palette.primary.dark}F0`,
       }),
     },
     muiTableHeadCellProps: {
@@ -339,7 +339,7 @@ export function ActivityTable() {
     },
     muiTableFooterRowProps: {
       sx: (theme) => ({
-        backgroundColor: `${theme.palette.primary.dark}80`,
+        backgroundColor: `${theme.palette.primary.dark}F0`,
         border: "none",
       }),
     },

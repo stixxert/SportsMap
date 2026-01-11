@@ -5,6 +5,7 @@ import { FunctionToolbar } from "@/features/maps/components/overlay/Toolbar";
 import { ActivityDrawer } from "@/features/maps/components/activity/Drawer";
 import L from "leaflet";
 import { ViewController } from "@/features/maps/components/View";
+import { BottomMenu } from "@/features/maps/components/overlay/BottomMenu";
 
 export const MENU_OPTIONS_FOR_DRAWER = ["list", "filter"] as const;
 
@@ -56,9 +57,20 @@ export default function Overlay({
 }) {
   const [selected, setSelected] = useState<SelectionMenuTypes[] | null>(null);
 
+  function viewControllerIsVisible() {
+    return !drawerVisible(selected);
+  }
+
   return (
     <>
-      <Box sx={{ left: 0 }}>
+      <Box
+        sx={(theme) => ({
+          left: 0,
+          [theme.breakpoints.down("md")]: {
+            display: viewControllerIsVisible() ? "block" : "none",
+          },
+        })}
+      >
         <ViewController map={map} />
       </Box>
       <Box
@@ -68,6 +80,9 @@ export default function Overlay({
       >
         <ActivityDrawer drawerOpen={selectedContains(selected, "list")} />
         <FunctionToolbar selected={selected} setSelected={setSelected} />
+      </Box>
+      <Box sx={{ left: 0, bottom: 0 }}>
+        <BottomMenu />
       </Box>
     </>
   );

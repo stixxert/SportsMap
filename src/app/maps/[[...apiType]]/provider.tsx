@@ -11,7 +11,7 @@ import {
   useMetaDataSync,
 } from "@/features/activity/hooks/window-dependent-subscribes";
 import { useInteractionDependencies } from "@/features/maps/hooks/use-map-interaction";
-import { useProfile } from "@/features/profile/use-profile";
+import { useProfile } from "@/features/profile/hooks/use-profile";
 
 export default function ApiProvider({
   children,
