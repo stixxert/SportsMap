@@ -36,22 +36,23 @@ export function UserAvatar() {
 
   return (
     <>
-      <ButtonBase
-        sx={{
-          borderRadius: "50%",
-          width: "100%",
-          height: "100%",
-          "&:hover": {
-            transform: "scale(1.1)",
-          },
-          transform: clickOpen ? "scale(1.1)" : "scale(1)",
-        }}
-        onClick={handleClick}
+      {" "}
+      <Tooltip
+        sx={{ width: "100%", height: "100%" }}
+        title={"User options"}
+        disableInteractive
       >
-        <Tooltip
-          sx={{ width: "100%", height: "100%" }}
-          title={"User options"}
-          disableInteractive
+        <ButtonBase
+          sx={{
+            borderRadius: "50%",
+            width: "100%",
+            height: "100%",
+            "&:hover": {
+              transform: "scale(1.1)",
+            },
+            transform: clickOpen ? "scale(1.1)" : "scale(1)",
+          }}
+          onClick={handleClick}
         >
           <Avatar
             sx={(theme) => ({
@@ -60,8 +61,8 @@ export function UserAvatar() {
             })}
             src={user?.profile || user?.profileMedium}
           ></Avatar>
-        </Tooltip>
-      </ButtonBase>
+        </ButtonBase>
+      </Tooltip>
       <Menu
         id={"user-menu"}
         anchorEl={anchorEl}

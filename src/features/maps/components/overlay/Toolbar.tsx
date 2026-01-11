@@ -64,7 +64,9 @@ export function FunctionToolbar({
         width: 80,
         flexShrink: 0,
         display: "flex",
+        overflow: "hidden",
         "& .MuiDrawer-paper": {
+          overflow: "hidden",
           height: "400px",
           width: 80,
           top: 0,

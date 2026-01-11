@@ -6,12 +6,21 @@ import Box from "@mui/material/Box";
 import * as React from "react";
 import { useRef } from "react";
 import L from "leaflet";
-import { useAuthenticatedState } from "@/features/auth/hooks/authorization-hooks";
+import {
+  useAccessTokenSync,
+  useAuthenticatedState,
+  useSyncApiTypeToParams,
+} from "@/features/auth/hooks/authorization-hooks";
 import { useApiType } from "@/features/auth/stores/api-store";
 import { ApiType } from "@/types/configuration-types";
 import { LoginDialog } from "@/features/profile/components/login-dialog";
 import { usePrivacyNoticeState } from "@/features/profile/stores/privacy-notice";
 import { PrivacyDialog } from "@/features/profile/components/privacy-dialog";
+import {
+  useActivityCategorizationQuerySync,
+  useMetaDataSync,
+} from "@/features/activity/hooks/window-dependent-subscribes";
+import { useActivitySynchronization } from "@/features/activity/hooks/sync-state";
 
 const Map = dynamic(() => import("@/features/maps/components/Map"), {
   ssr: false,
@@ -26,6 +35,13 @@ const Overlay = dynamic(
 
 export default function MapPage() {
   const mapRef = useRef<L.Map | null>(null);
+
+  useMetaDataSync();
+  useAccessTokenSync();
+  useActivityCategorizationQuerySync();
+  useSyncApiTypeToParams();
+
+  useActivitySynchronization();
 
   const isAuthenticated = useAuthenticatedState();
 

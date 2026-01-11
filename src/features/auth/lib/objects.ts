@@ -4,7 +4,7 @@ import { assembleUrl } from "@/utils/url";
 const authorizeParams = {
   client_id: process.env.NEXT_PUBLIC_CLIENT_ID || "",
   response_type: "code",
-  redirect_uri: process.env.NEXT_PUBLIC_DOMAIN + "/authorize" || "",
+  redirect_uri: process.env.NEXT_PUBLIC_DOMAIN + "/login" || "",
   approval_prompt: "auto",
   scope: "activity:read,activity:read_all",
 } as const;

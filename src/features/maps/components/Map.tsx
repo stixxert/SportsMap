@@ -9,21 +9,11 @@ import "leaflet.heat";
 import { useCurrentActivities } from "@/features/activity/stores/activity-store";
 import { activitytogeojson, tile } from "@/features/maps/lib/points-utils";
 import * as React from "react";
-import { useMapInteraction } from "@/features/maps/hooks/use-map-interaction";
-
-function generateRandomLatLng(n: number) {
-  const coordinates = [];
-
-  for (let i = 0; i < n; i++) {
-    const latitude = (Math.random() * 90 - 45).toFixed(6); // Random latitude between -90 and 90
-    const longitude = (Math.random() * 180 - 90).toFixed(6); // Random longitude between -180 and 180
-    coordinates.push(
-      L.latLng({ lat: parseFloat(latitude), lng: parseFloat(longitude) }),
-    );
-  }
-
-  return coordinates;
-}
+import {
+  useInteractionDependencies,
+  useMapInteraction,
+} from "@/features/maps/hooks/use-map-interaction";
+import { useGeoIndexSync } from "@/features/maps/hooks/use-geo-index-sync";
 
 export default function Map({ map }: { map: React.RefObject<L.Map | null> }) {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -32,7 +22,11 @@ export default function Map({ map }: { map: React.RefObject<L.Map | null> }) {
 
   const activities = useCurrentActivities();
 
+  useGeoIndexSync();
+
   useMapInteraction(map);
+
+  useInteractionDependencies();
 
   useEffect(() => {
     if (map.current) return;

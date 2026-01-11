@@ -1,20 +1,19 @@
 "use client";
 
 import React, { useEffect } from "react";
-import L from "leaflet";
+import { Map } from "leaflet";
 import {
   createMapPointClickUpdate,
   createMapViewUpdate,
   setMapBoundsAsView,
 } from "@/features/maps/lib/map-view";
 import { subscribeToPointInteractionUpdate } from "@/features/maps/lib/map-visuals";
-import { subscribeToActivityStateUpdate } from "@/features/maps/stores/geospatial-store";
 import {
   subscribeToIndexStateUpdate,
   subscribeToMapInteractionStateUpdate,
 } from "@/features/maps/stores/activity-interaction-view-store";
 
-export function useMapInteraction(map: React.RefObject<L.Map | null>) {
+export function useMapInteraction(map: React.RefObject<Map | null>) {
   useEffect(() => {
     if (!map.current) return;
 
@@ -50,8 +49,6 @@ export function useMapInteraction(map: React.RefObject<L.Map | null>) {
 
 export function useInteractionDependencies() {
   useEffect(() => {
-    const unsubscribeActivityStateUpdate = subscribeToActivityStateUpdate();
-
     const unsubscribeMapInteraction = subscribeToMapInteractionStateUpdate();
 
     const unsubscribeToIndexStateUpdate = subscribeToIndexStateUpdate();
@@ -59,7 +56,6 @@ export function useInteractionDependencies() {
     return () => {
       unsubscribeToIndexStateUpdate();
       unsubscribeMapInteraction();
-      unsubscribeActivityStateUpdate();
     };
   }, []);
 }

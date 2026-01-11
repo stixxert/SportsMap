@@ -11,6 +11,7 @@ import {
 import { useState } from "react";
 import { styled } from "@mui/material/styles";
 import { usePrivacyNoticeStore } from "@/features/profile/stores/privacy-notice";
+import Link from "next/link";
 
 const TextStyle = styled(DialogContentText)(({ theme }) => ({
   [theme.breakpoints.down("md")]: {
@@ -55,7 +56,9 @@ export function LoginDialog({ open }: { open: boolean }) {
         <Button onClick={() => setPrivacyDialogOpen(true)}>
           Privacy Notice
         </Button>
-        <Button>Login with Strava</Button>
+        <Button>
+          <Link href={"/login"}>Login with Strava</Link>
+        </Button>
       </DialogActions>
     </Dialog>
   );

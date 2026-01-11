@@ -22,3 +22,7 @@ export type SyncMetaData = {
   athleteId: SummaryAthlete["id"];
   lastSync: Date;
 };
+
+export type SearchParams = Promise<{
+  [key: string]: string | string[] | undefined;
+}>;
