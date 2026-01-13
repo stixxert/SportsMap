@@ -11,20 +11,22 @@ import {
   useInteractionDependencies,
   useMapInteraction,
 } from "@/features/maps/hooks/use-map-interaction";
-import { useGeoIndexSync } from "@/features/maps/hooks/use-geo-index-sync";
 import { getMap, setMapCurrent } from "@/features/maps/stores/map-store";
-import { useActivitiesOnMap } from "@/features/maps/hooks/use-map-view";
+import {
+  useActivitiesOnMap,
+  useAthleteLocationAsSpawnView,
+} from "@/features/maps/hooks/use-map-view";
 
 export default function Map() {
   const mapRef = useRef<HTMLDivElement>(null);
-
-  useGeoIndexSync();
 
   useMapInteraction();
 
   useInteractionDependencies();
 
   useActivitiesOnMap();
+
+  const locationSpawnReady = useAthleteLocationAsSpawnView();
 
   useEffect(() => {
     const map = getMap();
@@ -36,8 +38,8 @@ export default function Map() {
     setMapCurrent(
       L.map(mapRef.current, {
         center: [0, 0],
-        zoom: 3,
-        minZoom: 2,
+        zoom: 2,
+        minZoom: 0,
         maxZoom: 15,
         zoomControl: false,
         worldCopyJump: true,
@@ -54,7 +56,12 @@ export default function Map() {
     <div
       id={"map"}
       ref={mapRef}
-      style={{ height: "100%", width: "100%" }}
+      style={{
+        height: "100%",
+        width: "100%",
+        // suspend visible map until a possible starting view is available (or not)
+        visibility: locationSpawnReady ? "visible" : "hidden",
+      }}
     ></div>
   );
 }

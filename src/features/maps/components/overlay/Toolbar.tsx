@@ -69,7 +69,7 @@ export function FunctionToolbar({
             border: "none",
             backgroundColor: "transparent",
             paddingTop: 2,
-            paddingRight: 1,
+            paddingRight: 2,
             paddingLeft: 1,
             paddingBottom: 1,
 

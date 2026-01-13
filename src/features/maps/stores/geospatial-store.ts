@@ -42,8 +42,9 @@ export function subscribeToActivityStateUpdate() {
     if (
       useGeospatialIndexStore.getState().activityView !== null &&
       activityView === useGeospatialIndexStore.getState().activityView
-    )
+    ) {
       return;
+    }
 
     useGeospatialIndexStore.getState().setIndex(null);
 

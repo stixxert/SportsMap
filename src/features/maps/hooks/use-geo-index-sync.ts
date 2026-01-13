@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect } from "react";
 import { subscribeToActivityStateUpdate } from "@/features/maps/stores/geospatial-store";
 

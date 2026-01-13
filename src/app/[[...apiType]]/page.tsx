@@ -19,6 +19,7 @@ import {
   useMetaDataSync,
 } from "@/features/activity/hooks/window-dependent-subscribes";
 import { useActivitySynchronization } from "@/features/activity/hooks/sync-state";
+import { useGeoIndexSync } from "@/features/maps/hooks/use-geo-index-sync";
 
 const Map = dynamic(() => import("@/features/maps/components/Map"), {
   ssr: false,
@@ -36,6 +37,8 @@ export default function MapPage() {
   useAccessTokenSync();
   useActivityCategorizationQuerySync();
   useSyncApiTypeToParams();
+
+  useGeoIndexSync();
 
   useActivitySynchronization();
 

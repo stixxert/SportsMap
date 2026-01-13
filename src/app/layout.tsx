@@ -18,6 +18,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Sports Map",
   description: "Sports Map interacts with Strava Activities",
+  icons: { icon: undefined },
 };
 
 export default function RootLayout({
@@ -25,7 +26,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  "use client";
   return (
     <html lang="en">
       <Head>

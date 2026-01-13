@@ -25,7 +25,9 @@ export function useProfile() {
     );
   }
 
-  const { data, error } = useSWR(constraintValid() ? "true" : null, fetcher);
+  const { data, error } = useSWR(constraintValid() ? "true" : null, fetcher, {
+    revalidateOnFocus: false,
+  });
 
   return { user: data as DetailedAthlete, error };
 }
