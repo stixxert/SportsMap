@@ -18,6 +18,7 @@ import {
 } from "@/features/auth/lib/api-configuration";
 import { useApiTypeStore } from "@/features/auth/stores/api-store";
 import { ApiType } from "@/types/configuration-types";
+import { rehydrateAccessToken } from "@/features/auth/stores/auth-store";
 
 export function useAuthorizationFlow() {
   const searchParams = useSearchParams();
@@ -41,7 +42,7 @@ export function useAuthorizationFlow() {
       router.push("/");
     }
 
-    codeExchange(code).then();
+    codeExchange(code).then(() => rehydrateAccessToken());
   });
 }
 

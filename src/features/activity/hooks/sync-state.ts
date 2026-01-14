@@ -27,6 +27,6 @@ export function useActivitySynchronization() {
 
     useActivitySyncStore.getState().setActivitiesSync(false);
 
-    setTimeout(() => synchronizeActivities(apiType, apiConfiguration));
+    void synchronizeActivities(apiType, apiConfiguration);
   }, [syncMetaData]);
 }
