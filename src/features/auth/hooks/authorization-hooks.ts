@@ -81,7 +81,9 @@ export function useSyncApiTypeToParams() {
 
   const castType = readApiTypeString(apiTypeSlug || "") || ApiType.Strava;
 
-  if (castType === useApiTypeStore.getState().apiType) return;
+  useEffect(() => {
+    if (castType === useApiTypeStore.getState().apiType) return;
 
-  useApiTypeStore.getState().setApiType(castType);
+    useApiTypeStore.getState().setApiType(castType);
+  }, [castType]);
 }

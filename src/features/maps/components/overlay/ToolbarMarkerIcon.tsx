@@ -8,21 +8,15 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import LocationOffIcon from "@mui/icons-material/LocationOff";
 
-import {
-  Box,
-  Stack,
-  Slider,
-  Tooltip,
-  Collapse,
-  List,
-  ListItem,
-} from "@mui/material";
+import { Box, Stack, Slider, Tooltip } from "@mui/material";
 import { useState } from "react";
 import {
   PointInteraction,
   useMapInteractionStore,
   usePointSensitivityStore,
 } from "@/features/maps/stores/map-interaction-store";
+import { setMapBoundsAsView } from "@/features/maps/lib/map-view";
+import { getMap } from "@/features/maps/stores/map-store";
 
 function useMapMarkerActive() {
   const mapInteractionType = useMapInteractionStore(
@@ -91,9 +85,11 @@ function RemoveMarkerButton(props: IconButtonBaseProps) {
   const markerActive = useMapMarkerActive();
 
   function removeMarker() {
-    useMapInteractionStore
-      .getState()
-      .setInteractionState({ interaction: null, value: null });
+    const map = getMap();
+
+    if (!map.current) return;
+
+    setMapBoundsAsView(map.current, true);
 
     if (setActive && !isActive) {
       setActive(false);

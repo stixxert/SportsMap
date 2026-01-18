@@ -1,9 +1,9 @@
 "use client";
 
 import { SummaryActivity } from "@/strava-api";
-import { ActivitiesCategoryParams } from "@/types/types";
 import * as zustand from "zustand";
-import { createAvailabilityStore, StoreAvailabilityStore } from "@/utils/store";
+import { AvailabilityStore, createAvailabilityStore } from "@/utils/store";
+import { ActivitySelectionOptions } from "@/features/activity/lib/data/store-actions";
 
 interface ActivitySyncState {
   activitiesSync: boolean | null;
@@ -11,8 +11,8 @@ interface ActivitySyncState {
 }
 
 interface ActivityCategoryParamState {
-  categoryParams: ActivitiesCategoryParams;
-  setCategoryParams: (categoryParams: ActivitiesCategoryParams) => void;
+  categoryParams: ActivitySelectionOptions;
+  setCategoryParams: (categoryParams: ActivitySelectionOptions) => void;
 }
 
 interface ActivityState {
@@ -38,14 +38,14 @@ export const useActivitySyncStore = zustand.create<ActivitySyncState>(
 export const useActivityCategoryParamStore =
   zustand.create<ActivityCategoryParamState>((set) => ({
     categoryParams: {},
-    setCategoryParams: (categoryParams: ActivitiesCategoryParams) =>
+    setCategoryParams: (categoryParams: ActivitySelectionOptions) =>
       set({
         categoryParams: categoryParams ? categoryParams : {},
       }),
   }));
 
 export const useActivityStore = zustand.create<
-  ActivityStore & StoreAvailabilityStore
+  ActivityStore & AvailabilityStore
 >((set) => ({
   ...createAvailabilityStore(set),
   activities: [],

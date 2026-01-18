@@ -1,8 +1,7 @@
 import {
+  ActivitySelectionOptions,
   getActivities,
-  openActivityDB,
-} from "@/features/activity/lib/activity-db";
-import { ActivitiesCategoryParams } from "@/types/types";
+} from "@/features/activity/lib/data/store-actions";
 import { ApiType } from "@/types/configuration-types";
 import { SummaryActivity } from "@/strava-api";
 import { useApiTypeStore } from "@/features/auth/stores/api-store";
@@ -11,17 +10,18 @@ import {
   useActivityStore,
   useActivitySyncStore,
 } from "@/features/activity/stores/activity-store";
+import { openActivityDatabase } from "@/lib/db/origin-related-activity-db";
 
 export async function getActivitiesByCategory(
   apiType?: ApiType,
-  categoryParams?: ActivitiesCategoryParams,
+  categoryParams?: ActivitySelectionOptions,
 ): Promise<SummaryActivity[]> {
   if (!apiType) {
     // TODO: Where to handle missing ApiType?
     return Promise.resolve([] as SummaryActivity[]);
   }
 
-  const db = await openActivityDB(apiType);
+  const db = await openActivityDatabase(apiType);
 
   return getActivities(db, categoryParams);
 }

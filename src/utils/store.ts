@@ -1,25 +1,24 @@
-type StoreStateType = "available" | "loading";
+type LoadingType = boolean | undefined;
 
-export interface StoreAvailabilityState {
-  availability: string;
+export interface AvailabilityState {
+  loading: LoadingType;
 }
 
-export interface StoreAvailabilityActions {
-  setAvailability: (newAvailability: StoreStateType) => void;
+export interface AvailabilityActions {
+  setLoading: (loading: LoadingType) => void;
 }
 
-export type StoreAvailabilityStore = StoreAvailabilityState &
-  StoreAvailabilityActions;
+export type AvailabilityStore = AvailabilityState & AvailabilityActions;
 
-export const storeAvailabilityDefaultState = {
-  availability: "loading",
+export const availabilityDefaultState = {
+  loading: undefined,
 };
 
 export const createAvailabilityStore = function <T>(set: T) {
   return {
-    ...storeAvailabilityDefaultState,
-    setAvailability: (newAvailability: StoreStateType) => (set: T) => ({
-      availability: newAvailability,
+    ...availabilityDefaultState,
+    setLoading: (loading: LoadingType) => (set: T) => ({
+      loading,
     }),
   };
 };

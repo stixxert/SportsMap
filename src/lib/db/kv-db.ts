@@ -4,7 +4,7 @@ import { DBSchema, deleteDB, IDBPDatabase, openDB } from "idb";
 
 const DBNAME = "keyval";
 
-type KValue = string | object | number | boolean | undefined;
+export type KValue = string | object | number | boolean | undefined;
 interface KVSchema extends DBSchema {
   keyval: {
     key: string;

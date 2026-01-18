@@ -30,7 +30,14 @@ const config: Config = {
   coverageDirectory: "coverage",
 
   coverageProvider: "v8",
-  testEnvironment: "jsdom",
+  testEnvironment: "./FixJSDOMEnvironment.ts",
+
+  transformIgnorePatterns: ["/node_modules/(?!(rbush|quickselect|lodash)/)"],
+  preset: "ts-jest",
+  transform: {
+    "^.+\\.(ts|tsx)?$": "ts-jest",
+    "^.+\\.(js|jsx)$": ["babel-jest", { configFile: "./babel.config.jest.js" }],
+  },
 };
 
 const createJestConfig = nextJest({

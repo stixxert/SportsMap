@@ -5,7 +5,7 @@ import {
   useApiTypeStore,
 } from "@/features/auth/stores/api-store";
 import { useEffect } from "react";
-import { synchronizeActivities } from "@/features/activity/lib/activity-sync";
+import { synchronizeActivities } from "@/features/activity/lib/sync/activity-sync";
 import { useActivitySyncStore } from "@/features/activity/stores/activity-store";
 import { useActivityMetadataStore } from "@/features/activity/stores/activity-metadata-store";
 

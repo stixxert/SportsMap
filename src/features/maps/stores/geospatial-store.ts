@@ -8,7 +8,7 @@ import {
   IndexType,
 } from "@/features/maps/lib/activity-geo-index";
 import { SummaryActivity } from "@/strava-api";
-import { createAvailabilityStore, StoreAvailabilityStore } from "@/utils/store";
+import { AvailabilityStore, createAvailabilityStore } from "@/utils/store";
 import { useMappableActivitiesStore } from "@/features/activity/stores/activity-store";
 
 interface GeospatialIndexState {
@@ -23,7 +23,7 @@ interface GeospatialIndexActions {
 type GeospatialIndexStore = GeospatialIndexState & GeospatialIndexActions;
 
 export const useGeospatialIndexStore = zustand.create<
-  GeospatialIndexStore & StoreAvailabilityStore
+  GeospatialIndexStore & AvailabilityStore
 >((set) => ({
   ...createAvailabilityStore(set),
   index: null,

@@ -14,12 +14,11 @@ import { ApiType } from "@/types/configuration-types";
 import { LoginDialog } from "@/features/profile/components/login-dialog";
 import { usePrivacyNoticeState } from "@/features/profile/stores/privacy-notice";
 import { PrivacyDialog } from "@/features/profile/components/privacy-dialog";
-import {
-  useActivityCategorizationQuerySync,
-  useMetaDataSync,
-} from "@/features/activity/hooks/window-dependent-subscribes";
+import { useActivityCategorizationQuerySync } from "@/features/activity/hooks/window-dependent-subscribes";
 import { useActivitySynchronization } from "@/features/activity/hooks/sync-state";
 import { useGeoIndexSync } from "@/features/maps/hooks/use-geo-index-sync";
+import { useActivitySyncStore } from "@/features/activity/stores/activity-store";
+import { useActivityMetadataStore } from "@/features/activity/stores/activity-metadata-store";
 
 const Map = dynamic(() => import("@/features/maps/components/Map"), {
   ssr: false,
@@ -33,7 +32,6 @@ const Overlay = dynamic(
 );
 
 export default function MapPage() {
-  useMetaDataSync();
   useAccessTokenSync();
   useActivityCategorizationQuerySync();
   useSyncApiTypeToParams();
@@ -41,6 +39,10 @@ export default function MapPage() {
   useGeoIndexSync();
 
   useActivitySynchronization();
+
+  const sync = useActivitySyncStore((state) => state.activitiesSync);
+
+  const meta = useActivityMetadataStore((state) => state.metaData);
 
   const isAuthenticated = useAuthenticatedState();
 

@@ -2,7 +2,7 @@
 
 import { ApiType } from "@/src/types/configuration-types";
 import * as zustand from "zustand";
-import { SyncMetaData } from "@/types/types";
+import { SyncMetaData } from "@/features/activity/lib/sync/sync-metadata";
 
 /* carrying the ApiType in the State is redundant, problem for later */
 

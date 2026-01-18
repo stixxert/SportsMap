@@ -1,11 +1,9 @@
 "use client";
 
-import { IndexType } from "@/features/maps/lib/activity-geo-index";
 import L, { LatLng, LatLngBounds, LeafletMouseEvent } from "leaflet";
 import { BBox } from "rbush";
 import { getClosestPointOnLine } from "@/utils/geo";
 import { SummaryActivity } from "@/strava-api";
-import { useGeospatialIndexStore } from "@/features/maps/stores/geospatial-store";
 import { useActivityInteractionViewStore } from "@/features/maps/stores/activity-interaction-view-store";
 import {
   PointInteraction,
@@ -17,57 +15,54 @@ import {
   getZoomDistanceSensitivity,
   lineSegmentToLatLng,
 } from "@/features/maps/utils/bounds";
+import { useSpatialIndexStore } from "@/features/activity-filter/stores/aggregation-stores";
+import { SpatialDataIndex } from "@/features/activity-aggregation/spatial-index/types";
+import { useApiTypeStore } from "@/features/auth/stores/api-store";
+import { openActivityDatabase } from "@/lib/db/origin-related-activity-db";
+import { ACTIVITY_STORE, INDEXES } from "@/features/activity/lib/data/schema";
 
-export function getIndexBboxResults(index: IndexType, bBox: BBox | BBox[]) {
+type ActivityId = NonNullable<SummaryActivity["id"]>;
+
+export function getIndexBboxResults(
+  index: SpatialDataIndex,
+  bBox: BBox | BBox[],
+) {
   if (Array.isArray(bBox)) return bBox.map((b) => index.search(b)).flat();
 
   return index.search(bBox);
 }
 
 export function getActivitiesOfBBox(
-  index: IndexType,
-  activityView: SummaryActivity[],
+  index: SpatialDataIndex,
   bBox: BBox | BBox[],
-) {
+): ActivityId[] {
   const results = getIndexBboxResults(index, bBox);
 
-  const activities: SummaryActivity[] = [];
-  const ids: number[] = [];
+  const activityIds: ActivityId[] = [];
 
   results.forEach((line) => {
-    if (!ids.find((id) => id === line.id)) {
-      const activity = activityView[line.id];
-
-      if (activities.find((_activity) => _activity.id === activity.id)) return;
-
-      activities.push(activity);
-      ids.push(line.id);
+    if (!activityIds.find((id) => id === line.data)) {
+      activityIds.push(line.data);
     }
   });
 
-  return activities;
+  return activityIds;
 }
 
 export function getActivitiesOfPoint(
-  index: IndexType,
-  activityView: SummaryActivity[],
+  index: SpatialDataIndex,
   point: LatLng,
   zoomLevel: number,
-) {
+): ActivityId[] {
   /* TODO: Represent points separated by enough time as another activity pass. Needs stream fetching to implement*/
   const bBox = getBoundsSearchBox(getPointBounds(point, zoomLevel));
 
   const results = getIndexBboxResults(index, bBox);
 
-  const activities: SummaryActivity[] = [];
-  const ids: number[] = [];
+  const activityIds: ActivityId[] = [];
 
   results.forEach((line) => {
-    if (!ids.find((id) => id === line.id)) {
-      const activity = activityView[line.id];
-
-      if (activities.find((_activity) => _activity.id === activity.id)) return;
-
+    if (!activityIds.find((id) => id === line.data)) {
       const lineClosestPoint = getClosestPointOnLine(
         lineSegmentToLatLng(line),
         point,
@@ -76,44 +71,51 @@ export function getActivitiesOfPoint(
       const distance = point.distanceTo(lineClosestPoint);
 
       if (distance <= getZoomDistanceSensitivity(zoomLevel || 2)) {
-        activities.push(activityView[line.id]);
-        ids.push(line.id);
+        activityIds.push(line.data);
       }
     }
   });
 
-  return activities;
+  return activityIds;
 }
 
-export function updateActivitiesInViewCallback() {
+export async function updateActivitiesInViewCallback() {
   const interaction = useMapInteractionStore.getState().interaction;
   const interactionValue = useMapInteractionStore.getState().value;
 
-  const activityView = useGeospatialIndexStore.getState().activityView;
+  const index = useSpatialIndexStore.getState().index;
 
-  const index = useGeospatialIndexStore.getState().index;
-
-  if (!index || !activityView) return;
+  if (!index) return;
 
   useActivityInteractionViewStore.getState().setActivityView(null);
 
-  let activities: SummaryActivity[];
+  let activityIds: ActivityId[];
 
   if (interaction === "mapview") {
     const searchBox = getBoundsSearchBox(interactionValue as LatLngBounds);
 
-    activities = getActivitiesOfBBox(index, activityView, searchBox);
+    activityIds = getActivitiesOfBBox(index, searchBox);
   } else if (interaction === "point") {
     const pointInteraction = interactionValue as PointInteraction;
-    activities = getActivitiesOfPoint(
+    activityIds = getActivitiesOfPoint(
       index,
-      activityView,
       pointInteraction.point,
       pointInteraction.zoomLevel,
     );
   } else {
     return;
   }
+
+  const apiType = useApiTypeStore.getState().apiType;
+
+  if (!apiType) return;
+
+  const db = await openActivityDatabase(apiType);
+
+  const activities = await Promise.all(
+    activityIds.map((id) => db.getFromIndex(ACTIVITY_STORE, INDEXES.ID, id)),
+  );
+
   useActivityInteractionViewStore.getState().setActivityView(activities);
 }
 

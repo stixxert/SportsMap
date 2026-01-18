@@ -1,15 +1,16 @@
 "use client";
 
 import { ActivitiesApi, Configuration, SummaryActivity } from "@/strava-api";
-import {
-  ACTIVITY_STORE_NAME,
-  INDEX_DATE,
-  addActivities,
-  openActivityDB,
-} from "@/features/activity/lib/activity-db";
+import { addActivities } from "@/features/activity/lib/data/store-actions";
 import { ApiType } from "@/src/types/configuration-types";
 import { useActivityMetadataStore } from "@/features/activity/stores/activity-metadata-store";
 import { useActivitySyncStore } from "@/features/activity/stores/activity-store";
+import { openActivityDatabase } from "@/lib/db/origin-related-activity-db";
+import {
+  ACTIVITY_STORE,
+  ActivityStoreSchema,
+  INDEXES,
+} from "@/features/activity/lib/data/schema";
 
 export const MAX_PAGE_SIZE = 200;
 export const SYNC_TIME_THRESHOLD = 1000 * 60 * 60; // 1 hr
@@ -45,11 +46,11 @@ export async function synchronizeActivities(
 
   const activitiesApi = new ActivitiesApi(apiConfiguration);
 
-  const db = await openActivityDB(apiType);
+  const db = await openActivityDatabase(apiType);
 
-  const activityStore = db.transaction(ACTIVITY_STORE_NAME, "readonly").store;
+  const activityStore = db.transaction(ACTIVITY_STORE, "readonly").store;
 
-  const index = activityStore.index(INDEX_DATE);
+  const index = activityStore.index(INDEXES.DATE);
 
   const cursor = await index.openCursor(null, "prev");
 
