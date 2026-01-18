@@ -11,12 +11,13 @@ import {
   openActivityDatabase,
   setMetaData,
 } from "@/lib/db/origin-related-activity-db";
-import { SummaryAthlete } from "@/strava-api";
 
 const SYNC_KEY_NAME = "sync";
 
+// TODO: Store athleteId? Where to get this from? Activities or profile API?
+
 export type SyncMetaData = {
-  athleteId: NonNullable<SummaryAthlete["id"]>;
+  //athleteId: NonNullable<SummaryAthlete["id"]>;
   lastSync: Date;
 };
 
@@ -51,8 +52,7 @@ export async function importMetaData(
     newMetaData.metaData =
       (await getSyncMetaData<SyncMetaData>(newApiType)) ?? null;
 
-  if (!newMetaData.metaData)
-    newMetaData.metaData = { athleteId: 0, lastSync: new Date(0) };
+  if (!newMetaData.metaData) newMetaData.metaData = { lastSync: new Date(0) };
 
   useActivityMetadataStore.getState().setAll(newMetaData);
 }

@@ -14,11 +14,14 @@ export const availabilityDefaultState = {
   loading: undefined,
 };
 
-export const createAvailabilityStore = function <T>(set: T) {
+export const createAvailabilityStore = function <
+  T extends (arg: Partial<AvailabilityStore>) => void,
+>(set: T) {
   return {
     ...availabilityDefaultState,
-    setLoading: (loading: LoadingType) => (set: T) => ({
-      loading,
-    }),
+    setLoading: (loading: LoadingType) =>
+      set({
+        loading,
+      }),
   };
 };

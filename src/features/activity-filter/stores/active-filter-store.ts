@@ -5,24 +5,12 @@ import * as zustand from "zustand";
 import { ActivityAggregationSelector } from "@/features/activity-aggregation/types/data";
 import { defaultFilter } from "@/features/activity-filter/default-filter";
 import { AvailabilityStore, createAvailabilityStore } from "@/utils/store";
-import {
-  breakdownActivities,
-  performActivityAggregation,
-} from "@/features/activity-aggregation/lib/aggregate";
+import { performActivityAggregation } from "@/features/activity-aggregation/lib/aggregate";
 import { openActivityDatabase } from "@/lib/db/origin-related-activity-db";
 import { useApiTypeStore } from "@/features/auth/stores/api-store";
 import { useSpatialIndexStore } from "@/features/activity-filter/stores/aggregation-stores";
-import {
-  SPATIAL_INDEX_KEY,
-  SpatialDataObject,
-} from "@/features/activity-aggregation/spatial-index/types";
-import {
-  getSpatialIndexFromAggregateIndex,
-  transformData,
-} from "@/features/activity-aggregation/spatial-index/aggregate";
+import { getSpatialIndexFromAggregateIndex } from "@/features/activity-aggregation/spatial-index/aggregate";
 import { useActivitySyncStore } from "@/features/activity/stores/activity-store";
-import { ACTIVITY_STORE } from "@/features/activity/lib/data/schema";
-import RBush from "rbush";
 
 interface ActivityFilterState {
   filter: ActivityAggregationSelector;

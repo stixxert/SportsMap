@@ -1,6 +1,5 @@
 import { ActivityLineSegments } from "@/features/activity-aggregation/types/data";
 import { SpatialDataType } from "@/features/activity-aggregation/spatial-index/types";
-import { SportType } from "@/strava-api";
 
 export const TASKS = {
   heat: "heat",

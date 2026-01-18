@@ -40,9 +40,9 @@ export default function MapPage() {
 
   useActivitySynchronization();
 
-  const sync = useActivitySyncStore((state) => state.activitiesSync);
+  useActivitySyncStore((state) => state.activitiesSync);
 
-  const meta = useActivityMetadataStore((state) => state.metaData);
+  useActivityMetadataStore((state) => state.metaData);
 
   const isAuthenticated = useAuthenticatedState();
 

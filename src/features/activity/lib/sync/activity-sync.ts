@@ -6,11 +6,7 @@ import { ApiType } from "@/src/types/configuration-types";
 import { useActivityMetadataStore } from "@/features/activity/stores/activity-metadata-store";
 import { useActivitySyncStore } from "@/features/activity/stores/activity-store";
 import { openActivityDatabase } from "@/lib/db/origin-related-activity-db";
-import {
-  ACTIVITY_STORE,
-  ActivityStoreSchema,
-  INDEXES,
-} from "@/features/activity/lib/data/schema";
+import { ACTIVITY_STORE, INDEXES } from "@/features/activity/lib/data/schema";
 
 export const MAX_PAGE_SIZE = 200;
 export const SYNC_TIME_THRESHOLD = 1000 * 60 * 60; // 1 hr
@@ -71,9 +67,7 @@ export async function synchronizeActivities(
 
   await addActivities(db, insertActivities);
 
-  useActivityMetadataStore
-    .getState()
-    .setMetaData({ athleteId: metaData.athleteId, lastSync: new Date() });
+  useActivityMetadataStore.getState().setMetaData({ lastSync: new Date() });
 
   setActivitiesSynced(true);
 }
