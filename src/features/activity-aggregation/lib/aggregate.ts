@@ -13,10 +13,12 @@ import { createSubscribeRegistry } from "@/lib/registry";
 import {
   AggregationInput,
   AggregationOutput,
+  MergeAggregationInput,
 } from "@/features/activity-aggregation/types/aggregation";
 import { breakdownActivity } from "@/features/activity-aggregation/lib/map-breakdown";
 import {
   AggregatedIndexValue,
+  getAggregatedData,
   setAggregatedData,
 } from "@/features/activity-aggregation/lib/schema";
 import { ActivityAggregationSelector } from "@/features/activity-aggregation/types/data";
@@ -26,7 +28,14 @@ const aggregateRegistry = createSubscribeRegistry<
   AggregationOutput<unknown>
 >();
 
+const mergeAggregateRegistry = createSubscribeRegistry<
+  MergeAggregationInput<unknown>[],
+  AggregationOutput<unknown>
+>();
+
 export const subscribeToAggregation = aggregateRegistry.subscribe;
+
+export const subscribeToMergeAggregation = mergeAggregateRegistry.subscribe;
 
 async function getBoundaryValue(
   index: IDBPIndex<
@@ -73,11 +82,32 @@ export function breakdownActivities(activities: SummaryActivity[]) {
   })) as AggregationInput;
 }
 
+function constructMappedAggregationIndexes(
+  outputs: AggregationOutput<unknown>[],
+): { [key: string]: unknown } {
+  return Object.assign(
+    {},
+    ...outputs.map((result) => ({
+      [result.aggregationType]: result.output,
+    })),
+  );
+}
+
 export async function performActivityAggregation(
   db: ActivityDatabase,
   selectionOptions: ActivityAggregationSelector,
 ) {
-  const activities = await getActivities(db, selectionOptions);
+  const existingAggregatedIndex = await getAggregatedData(db, selectionOptions);
+
+  const adjustedStartDateSearch = existingAggregatedIndex
+    ? existingAggregatedIndex.updatedAt
+    : selectionOptions.startDate;
+
+  const adjustedOptions = Object.assign({}, selectionOptions, {
+    startDate: adjustedStartDateSearch,
+  });
+
+  const activities = await getActivities(db, adjustedOptions);
 
   const aggregationInput = breakdownActivities(activities);
 
@@ -85,15 +115,24 @@ export async function performActivityAggregation(
     aggregate(aggregationInput),
   );
 
-  const mappedAggregationOutputs = aggregationResults.map((result) => ({
-    [result.aggregationType]: result.output,
-  }));
+  const mappedAggregationOutputs =
+    constructMappedAggregationIndexes(aggregationResults);
+
+  let mergedAggregationOutputs = mappedAggregationOutputs;
+
+  if (existingAggregatedIndex) {
+    const mergedOutputs = mergeAggregateRegistry.callbacks.map((aggregate) =>
+      aggregate([existingAggregatedIndex, mappedAggregationOutputs]),
+    );
+
+    mergedAggregationOutputs = constructMappedAggregationIndexes(mergedOutputs);
+  }
 
   const aggregatedRow = Object.assign(
     {},
     selectionOptions,
     { updatedAt: new Date(Date.now()) },
-    Object.assign({}, ...mappedAggregationOutputs),
+    mergedAggregationOutputs,
   ) as unknown as AggregatedIndexValue;
 
   await setAggregatedData(db, aggregatedRow);

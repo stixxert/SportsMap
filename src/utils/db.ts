@@ -1,7 +1,13 @@
 /* min/max lower/upper bound is inferred from https://w3c.github.io/IndexedDB/#key-construct */
 export const MAX_UPPER_BOUND = [];
 
-export const MIN_LOWER_BOUND = {
+export const MAX_UPPER_BOUNDS = {
+  string: [],
+  number: Infinity,
+  date: new Date(8640000000000000),
+};
+
+export const MIN_LOWER_BOUNDS = {
   string: "",
   number: -Infinity,
   date: new Date(-8640000000000000),

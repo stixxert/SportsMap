@@ -2,6 +2,7 @@ import {
   AggregationIndexerFn,
   AggregationInput,
   AggregationOutput,
+  MergeAggregationInput,
 } from "@/features/activity-aggregation/types/aggregation";
 import {
   SPATIAL_INDEX_KEY,
@@ -11,13 +12,15 @@ import {
 } from "@/features/activity-aggregation/spatial-index/types";
 import { createLineSegmentBounds } from "@/features/activity-aggregation/lib/map-breakdown";
 import RBush from "rbush";
-import { subscribeToAggregation } from "@/features/activity-aggregation/lib/aggregate";
+import {
+  subscribeToAggregation,
+  subscribeToMergeAggregation,
+} from "@/features/activity-aggregation/lib/aggregate";
 import { AggregatedIndexValue } from "@/features/activity-aggregation/lib/schema";
 
-export const transformData: AggregationIndexerFn<
-  AggregationInput,
-  AggregationOutput<SpatialDataIndex>
-> = (input: AggregationInput) => {
+export const transformData: AggregationIndexerFn = (
+  input: AggregationInput,
+) => {
   const activityLineBounds = input
     .map((activity) =>
       activity.input.map((line) =>
@@ -37,7 +40,37 @@ export const transformData: AggregationIndexerFn<
   };
 };
 
+export const mergeTransformedIndexes: AggregationIndexerFn<
+  MergeAggregationInput<unknown>[]
+> = (input: MergeAggregationInput<unknown>[]) => {
+  let mergedIndex: SpatialDataIndex | undefined = undefined;
+
+  for (const wrappedIndex of input) {
+    if (!Object.hasOwn(wrappedIndex, SPATIAL_INDEX_KEY)) continue;
+
+    const index = wrappedIndex[SPATIAL_INDEX_KEY];
+
+    if (!mergedIndex) {
+      mergedIndex = constructSpatialIndex(index);
+      continue;
+    }
+
+    mergedIndex = mergedIndex.load(constructSpatialIndex(index).all());
+  }
+
+  return {
+    output: (mergedIndex ?? new RBush<SpatialDataObject>()).toJSON(),
+    aggregationType: SPATIAL_INDEX_KEY,
+  };
+};
+
 subscribeToAggregation(transformData);
+
+subscribeToMergeAggregation(mergeTransformedIndexes);
+
+function constructSpatialIndex(index: unknown) {
+  return new RBush<SpatialDataObject>().fromJSON(index);
+}
 
 export function getSpatialIndexFromAggregateIndex(
   aggregateIndex: AggregatedIndexValue,
@@ -46,5 +79,5 @@ export function getSpatialIndexFromAggregateIndex(
 
   if (!spatialIndex) return undefined;
 
-  return new RBush<SpatialDataObject>().fromJSON(spatialIndex);
+  return constructSpatialIndex(spatialIndex);
 }

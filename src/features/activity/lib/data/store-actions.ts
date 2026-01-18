@@ -5,7 +5,7 @@ import {
   constructDiscreteKeyBound,
   constructKeyBound,
   MAX_UPPER_BOUND,
-  MIN_LOWER_BOUND,
+  MIN_LOWER_BOUNDS,
 } from "@/utils/db";
 import { ACTIVITY_STORE, INDEXES } from "@/features/activity/lib/data/schema";
 import { ActivityDatabase } from "@/lib/db/origin-related-activity-db";
@@ -49,7 +49,7 @@ export function constructSelectionOptionsKeyRange(
     }
 
     return constructKeyBound({
-      start: [lower, MIN_LOWER_BOUND.date],
+      start: [lower, MIN_LOWER_BOUNDS.date],
       end: [upper, MAX_UPPER_BOUND],
     });
   }
@@ -57,7 +57,7 @@ export function constructSelectionOptionsKeyRange(
   function typeProcedure(type: SportType | undefined) {
     if (type) return dateProcedure(type, type);
 
-    return dateProcedure(MIN_LOWER_BOUND.string, MAX_UPPER_BOUND);
+    return dateProcedure(MIN_LOWER_BOUNDS.string, MAX_UPPER_BOUND);
   }
 
   if (Array.isArray(sportType))

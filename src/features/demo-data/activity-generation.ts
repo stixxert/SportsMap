@@ -56,13 +56,39 @@ export function generateActivity(
 
 export function generateNumActivities(
   numActivities: number,
-  startIndex: number = 0,
+  startIndex?: number,
+  dateBounds?: { start?: Date; end?: Date },
 ) {
   return Array.from({ length: numActivities }).map((_, index) => {
-    const adjustedIndex = startIndex + index;
+    const adjustedIndex = (startIndex ?? 0) + index;
+
+    let startDate: Date | undefined = undefined;
+
+    if (dateBounds) {
+      if (dateBounds.start) {
+        if (dateBounds.end) {
+          startDate = new Date(
+            randomBetween(
+              dateBounds.start.getUTCDate(),
+              dateBounds.end.getUTCDate(),
+            ),
+          );
+        } else {
+          startDate = new Date(
+            randomBetween(dateBounds.start.getUTCDate(), START_DATE_BOUNDS[1]),
+          );
+        }
+      } else if (dateBounds.end) {
+        startDate = new Date(
+          randomBetween(START_DATE_BOUNDS[0], dateBounds.end.getUTCDate()),
+        );
+      }
+    }
+
     return generateActivity({
       name: `Activity ${adjustedIndex}`,
       id: adjustedIndex,
+      ...startDate,
     });
   });
 }

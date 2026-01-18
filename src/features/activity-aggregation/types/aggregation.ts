@@ -24,3 +24,5 @@ export type AggregationIndexerFn<
   T = AggregationInput,
   R = AggregationOutput<unknown>,
 > = (input: T) => R;
+
+export type MergeAggregationInput<T> = { [key: string]: T };

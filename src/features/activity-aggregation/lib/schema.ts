@@ -91,7 +91,7 @@ export async function setAggregatedData(
 export async function getAggregatedData(
   db: ActivityDatabase,
   selectionOptions: ActivityAggregationSelector,
-): Promise<AggregatedIndexValue[] | AggregatedIndexValue | undefined> {
+): Promise<AggregatedIndexValue | undefined> {
   const { sportType, startDate, endDate } = selectionOptions;
 
   async function getFromSportType(type: string) {

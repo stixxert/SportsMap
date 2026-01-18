@@ -10,6 +10,7 @@ import { seedActivities } from "@/features/activity/testing/seed-activities";
 import {
   performActivityAggregation,
   subscribeToAggregation,
+  subscribeToMergeAggregation,
 } from "@/features/activity-aggregation/lib/aggregate";
 import { SportType } from "@/strava-api";
 import { ActivityAggregationSelector } from "@/features/activity-aggregation/types/data";
@@ -19,11 +20,39 @@ import {
   getAggregatedData,
 } from "@/features/activity-aggregation/lib/schema";
 
-import { AggregationIndexerFn } from "@/features/activity-aggregation/types/aggregation";
+import {
+  AggregationIndexerFn,
+  MergeAggregationInput,
+} from "@/features/activity-aggregation/types/aggregation";
+import { MAX_UPPER_BOUNDS } from "@/utils/db";
 
 const transformData: AggregationIndexerFn = () => {
   return {
     output: "emptyIndex",
+    aggregationType: "testIndex",
+  };
+};
+
+const mergeTransformData: AggregationIndexerFn<
+  MergeAggregationInput<unknown>[]
+> = (input: MergeAggregationInput<unknown>[]) => {
+  let mergedIndex: string | undefined = undefined;
+
+  for (const wrappedIndex of input) {
+    if (!Object.hasOwn(wrappedIndex, "testIndex")) continue;
+
+    const index = wrappedIndex["testIndex"] as string;
+
+    if (!mergedIndex) {
+      mergedIndex = index;
+      continue;
+    }
+
+    mergedIndex = mergedIndex.concat(index);
+  }
+
+  return {
+    output: mergedIndex ?? "",
     aggregationType: "testIndex",
   };
 };
@@ -39,6 +68,8 @@ describe("Activity Aggregation", () => {
     await seedActivities(activityDatabase, 1000);
 
     subscribeToAggregation(transformData);
+
+    subscribeToMergeAggregation(mergeTransformData);
   });
 
   afterEach(async () => {
@@ -73,6 +104,7 @@ describe("Activity Aggregation", () => {
       expect(returnedIndex).toEqual(_databaseIndexCast);
     }
   });
+
   test("can aggregate data from multiple SportTypes", async () => {
     const options = {
       sportType: ALL_SPORTS_TYPES,
@@ -95,5 +127,40 @@ describe("Activity Aggregation", () => {
     const _databaseIndexCast = databaseReturnedIndex as AggregatedIndexValue;
 
     expect(returnedIndex).toEqual(_databaseIndexCast);
+  });
+
+  test("can use existing updatedAt, to fill in part of aggregation range", async () => {
+    const options = {
+      sportType: ALL_SPORTS_TYPES,
+      startDate: new Date(0),
+      endDate: MAX_UPPER_BOUNDS.date,
+    };
+
+    await performActivityAggregation(activityDatabase, options);
+
+    await seedActivities(activityDatabase, 1000, 1000, {
+      start: new Date(Date.now()),
+      end: new Date(new Date(Date.now()).getFullYear() + 1),
+    });
+
+    const optionsSecondPass = Object.assign({}, options);
+
+    const returnedIndex = await performActivityAggregation(
+      activityDatabase,
+      optionsSecondPass,
+    );
+
+    const databaseReturnedIndex = await getAggregatedData(
+      activityDatabase,
+      optionsSecondPass,
+    );
+
+    expect(!Array.isArray(databaseReturnedIndex));
+
+    const _databaseIndexCast = databaseReturnedIndex as AggregatedIndexValue;
+
+    expect(returnedIndex).toEqual(_databaseIndexCast);
+
+    expect(returnedIndex["testIndex"]).toEqual("emptyIndexemptyIndex");
   });
 });
