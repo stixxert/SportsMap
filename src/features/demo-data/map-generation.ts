@@ -1,15 +1,12 @@
 import { LatLngTuple } from "leaflet";
 import { M_PER_DEG_LAT, M_PER_DEG_LNG_EQ } from "@/utils/geo";
 import { randomBetween } from "@/utils/misc";
+import { toRadians } from "@/utils/unit";
 
 interface PolygonOptions {
   center: LatLngTuple;
   radiusInMeters: number;
   numberOfPoints: number;
-}
-
-function toRadians(degrees: number): number {
-  return degrees * (Math.PI / 180);
 }
 
 function destinationPoint(

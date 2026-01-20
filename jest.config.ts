@@ -32,11 +32,14 @@ const config: Config = {
   coverageProvider: "v8",
   testEnvironment: "./FixJSDOMEnvironment.ts",
 
-  transformIgnorePatterns: ["/node_modules/(?!(rbush|quickselect|lodash)/)"],
+  transformIgnorePatterns: ["/node_modules/(?!(rbush|quickselect)/)"],
   preset: "ts-jest",
   transform: {
     "^.+\\.(ts|tsx)?$": "ts-jest",
-    "^.+\\.(js|jsx)$": ["babel-jest", { configFile: "./babel.config.jest.js" }],
+    "^.+\\.(js|jsx)$": [
+      "babel-jest",
+      { configFile: "./babel.config.jest.cjs" },
+    ],
   },
 };
 
@@ -45,4 +48,13 @@ const createJestConfig = nextJest({
   dir: "./",
 });
 
-export default createJestConfig(config);
+/* https://github.com/vercel/next.js/issues/83397 */
+const exportedConfig = async () => {
+  const newConfig = await createJestConfig(config)();
+  newConfig.transformIgnorePatterns = [
+    "/node_modules/(?!(quickselect|rbush)/)",
+  ];
+  return newConfig;
+};
+
+export default exportedConfig;

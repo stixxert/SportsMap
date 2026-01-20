@@ -20,6 +20,8 @@ import {
   getAggregatedData,
 } from "@/features/activity-aggregation/lib/schema";
 
+import RBush from "rbush";
+
 import {
   AggregationIndexerFn,
   MergeAggregationInput,
@@ -37,6 +39,8 @@ const mergeTransformData: AggregationIndexerFn<
   MergeAggregationInput<unknown>[]
 > = (input: MergeAggregationInput<unknown>[]) => {
   let mergedIndex: string | undefined = undefined;
+
+  const bush = new RBush();
 
   for (const wrappedIndex of input) {
     if (!Object.hasOwn(wrappedIndex, "testIndex")) continue;

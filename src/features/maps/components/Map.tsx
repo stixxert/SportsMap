@@ -16,6 +16,7 @@ import {
   useActivitiesOnMap,
   useAthleteLocationAsSpawnView,
 } from "@/features/maps/hooks/use-map-view";
+import { ZOOM_BOUNDS } from "@/config/map";
 
 export default function Map() {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -39,8 +40,8 @@ export default function Map() {
       L.map(mapRef.current, {
         center: [0, 0],
         zoom: 2,
-        minZoom: 0,
-        maxZoom: 15,
+        minZoom: ZOOM_BOUNDS.min,
+        maxZoom: ZOOM_BOUNDS.max,
         zoomControl: false,
         worldCopyJump: true,
       }),

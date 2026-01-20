@@ -106,3 +106,11 @@ export function formatDate(date: Date) {
     new Date(date.getTime() + date.getTimezoneOffset() * 60 * 1000),
   );
 }
+
+export function toRadians(degrees: number): number {
+  return degrees * (Math.PI / 180);
+}
+
+export function toDegrees(radians: number): number {
+  return radians * (180 / Math.PI);
+}

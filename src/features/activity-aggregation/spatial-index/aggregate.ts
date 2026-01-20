@@ -1,7 +1,6 @@
 import {
   AggregationIndexerFn,
   AggregationInput,
-  AggregationOutput,
   MergeAggregationInput,
 } from "@/features/activity-aggregation/types/aggregation";
 import {
@@ -75,7 +74,7 @@ function constructSpatialIndex(index: unknown) {
 export function getSpatialIndexFromAggregateIndex(
   aggregateIndex: AggregatedIndexValue,
 ): SpatialDataIndex | undefined {
-  const spatialIndex = aggregateIndex.spatialIndex;
+  const spatialIndex = aggregateIndex[SPATIAL_INDEX_KEY];
 
   if (!spatialIndex) return undefined;
 

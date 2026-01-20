@@ -11,6 +11,7 @@ import {
   compressSpan,
   uncompressSpan,
 } from "@/features/activity-aggregation/lib/type-span";
+import { HeatTileIndexSchemaEntry } from "@/features/activity-aggregation/heat-tiles/types";
 
 export const AGGREGATED_INDEXES_STORE = "aggregated-indexes";
 
@@ -25,7 +26,8 @@ export const INDEXES = {
 
 export interface AggregatedIndexValue
   extends ActivityAggregationSelector,
-    SpatialIndexSchemaEntry {
+    SpatialIndexSchemaEntry,
+    HeatTileIndexSchemaEntry {
   updatedAt: Date;
 }
 
