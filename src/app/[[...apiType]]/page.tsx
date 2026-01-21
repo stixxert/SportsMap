@@ -19,6 +19,8 @@ import { useActivitySynchronization } from "@/features/activity/hooks/sync-state
 import { useGeoIndexSync } from "@/features/maps/hooks/use-geo-index-sync";
 import { useActivitySyncStore } from "@/features/activity/stores/activity-store";
 import { useActivityMetadataStore } from "@/features/activity/stores/activity-metadata-store";
+import { useAggregateWorkers } from "@/features/activity-aggregation/hooks/use-workers";
+import { useActivityFiltering } from "@/features/activity-filter/hooks/use-activity-filtering";
 
 const Map = dynamic(() => import("@/features/maps/components/Map"), {
   ssr: false,
@@ -32,11 +34,14 @@ const Overlay = dynamic(
 );
 
 export default function MapPage() {
+  useAggregateWorkers();
   useAccessTokenSync();
   useActivityCategorizationQuerySync();
   useSyncApiTypeToParams();
 
   useGeoIndexSync();
+
+  useActivityFiltering();
 
   useActivitySynchronization();
 

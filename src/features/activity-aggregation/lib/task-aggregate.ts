@@ -9,33 +9,19 @@ import {
   ActivityDatabase,
   ActivitySchema,
 } from "@/lib/db/origin-related-activity-db";
-import { createSubscribeRegistry } from "@/lib/registry";
 import {
   AggregationInput,
-  AggregationOutput,
-  MergeAggregationInput,
+  AggregationTaskType,
+  TaskAggregator,
 } from "@/features/activity-aggregation/types/aggregation";
 import { breakdownActivity } from "@/features/activity-aggregation/lib/map-breakdown";
 import {
-  AggregatedIndexValue,
+  AggregatedIndex,
   getAggregatedData,
   setAggregatedData,
 } from "@/features/activity-aggregation/lib/schema";
 import { ActivityAggregationSelector } from "@/features/activity-aggregation/types/data";
-
-const aggregateRegistry = createSubscribeRegistry<
-  AggregationInput,
-  AggregationOutput<unknown>
->();
-
-const mergeAggregateRegistry = createSubscribeRegistry<
-  MergeAggregationInput<unknown>[],
-  AggregationOutput<unknown>
->();
-
-export const subscribeToAggregation = aggregateRegistry.subscribe;
-
-export const subscribeToMergeAggregation = mergeAggregateRegistry.subscribe;
+import { aggregationHandlers } from "@/features/activity-aggregation/handlers";
 
 async function getBoundaryValue(
   index: IDBPIndex<
@@ -82,22 +68,16 @@ export function breakdownActivities(activities: SummaryActivity[]) {
   })) as AggregationInput;
 }
 
-function constructMappedAggregationIndexes(
-  outputs: AggregationOutput<unknown>[],
-): { [key: string]: unknown } {
-  return Object.assign(
-    {},
-    ...outputs.map((result) => ({
-      [result.aggregationType]: result.output,
-    })),
-  );
-}
-
 export async function performActivityAggregation(
   db: ActivityDatabase,
+  taskType: AggregationTaskType,
   selectionOptions: ActivityAggregationSelector,
-) {
-  const existingAggregatedIndex = await getAggregatedData(db, selectionOptions);
+): Promise<boolean> {
+  const existingAggregatedIndex = await getAggregatedData(
+    db,
+    taskType,
+    selectionOptions,
+  );
 
   const adjustedStartDateSearch = existingAggregatedIndex
     ? existingAggregatedIndex.updatedAt
@@ -111,31 +91,33 @@ export async function performActivityAggregation(
 
   const aggregationInput = breakdownActivities(activities);
 
-  const aggregationResults = aggregateRegistry.callbacks.map((aggregate) =>
-    aggregate(aggregationInput),
-  );
+  if (!aggregationHandlers[taskType])
+    throw new Error("Missing Aggregator Task processor");
 
-  const mappedAggregationOutputs =
-    constructMappedAggregationIndexes(aggregationResults);
+  const { aggregate, mergeAggregate } = aggregationHandlers[taskType];
 
-  let mergedAggregationOutputs = mappedAggregationOutputs;
+  const aggregationResults = aggregate(aggregationInput);
+
+  let mergedAggregationOutputs = aggregationResults;
 
   if (existingAggregatedIndex) {
-    const mergedOutputs = mergeAggregateRegistry.callbacks.map((aggregate) =>
-      aggregate([existingAggregatedIndex, mappedAggregationOutputs]),
-    );
+    if (!mergeAggregate)
+      throw new Error("Missing Aggregator Merge Task processor");
 
-    mergedAggregationOutputs = constructMappedAggregationIndexes(mergedOutputs);
+    mergedAggregationOutputs = mergeAggregate([
+      existingAggregatedIndex.index,
+      aggregationResults,
+    ]);
   }
 
   const aggregatedRow = Object.assign(
     {},
     selectionOptions,
     { updatedAt: new Date(Date.now()) },
-    mergedAggregationOutputs,
-  ) as unknown as AggregatedIndexValue;
+    { index: mergedAggregationOutputs },
+  ) as unknown as AggregatedIndex;
 
-  await setAggregatedData(db, aggregatedRow);
+  await setAggregatedData(db, taskType, aggregatedRow);
 
-  return aggregatedRow;
+  return true;
 }

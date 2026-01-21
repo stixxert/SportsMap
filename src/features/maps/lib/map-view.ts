@@ -16,7 +16,7 @@ import {
   lineSegmentToLatLng,
 } from "@/features/maps/utils/bounds";
 import { useSpatialIndexStore } from "@/features/activity-filter/stores/aggregation-stores";
-import { SpatialDataIndex } from "@/features/activity-aggregation/spatial-index/types";
+import { SpatialDataIndex } from "@/features/activity-aggregation";
 import { useApiTypeStore } from "@/features/auth/stores/api-store";
 import { openActivityDatabase } from "@/lib/db/origin-related-activity-db";
 import { ACTIVITY_STORE, INDEXES } from "@/features/activity/lib/data/schema";
@@ -114,7 +114,7 @@ export async function updateActivitiesInViewCallback() {
 
   const activities = await Promise.all(
     activityIds.map((id) => db.getFromIndex(ACTIVITY_STORE, INDEXES.ID, id)),
-  );
+  ).then((result) => result.filter((val) => val !== undefined));
 
   useActivityInteractionViewStore.getState().setActivityView(activities);
 }

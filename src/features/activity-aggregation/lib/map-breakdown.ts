@@ -5,7 +5,7 @@ import {
   ActivityLineSegments,
   DataIndexObject,
   LineSegment,
-} from "@/features/activity-aggregation/types/data";
+} from "@/features/activity-aggregation";
 
 export function createLineSegmentBounds<T = undefined, R = DataIndexObject<T>>(
   points: LineSegment,

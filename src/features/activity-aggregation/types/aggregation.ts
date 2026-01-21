@@ -1,12 +1,31 @@
-import { ActivityLineSegments } from "@/features/activity-aggregation/types/data";
+import {
+  ActivityAggregationSelector,
+  ActivityLineSegments,
+} from "@/features/activity-aggregation/types/data";
 import { SpatialDataType } from "@/features/activity-aggregation/spatial-index/types";
+import { ApiType } from "@/types/configuration-types";
 
-export const TASKS = {
-  heat: "heat",
-  spatial: "spatial",
+export const AggregationTask = {
+  heat: "heatIndex",
+  spatial: "spatialIndex",
 } as const;
 
-export type TaskType = (typeof TASKS)[keyof typeof TASKS];
+export interface AggregationTask {
+  taskType: AggregationTaskType;
+  originType: ApiType;
+  selector: ActivityAggregationSelector;
+}
+
+export interface AggregationResult {
+  completed: boolean;
+  data: string | unknown | undefined;
+}
+export interface AggregationTaskResult extends AggregationResult {
+  taskType: AggregationTaskType;
+}
+
+export type AggregationTaskType =
+  (typeof AggregationTask)[keyof typeof AggregationTask];
 
 export interface BrokenDownActivityType {
   input: ActivityLineSegments;
@@ -15,14 +34,15 @@ export interface BrokenDownActivityType {
 
 export type AggregationInput = BrokenDownActivityType[];
 
-export interface AggregationOutput<T> {
-  aggregationType: string;
-  output: T;
-}
+export type AggregationOutput = unknown;
 
 export type AggregationIndexerFn<
   T = AggregationInput,
-  R = AggregationOutput<unknown>,
+  R = AggregationOutput,
 > = (input: T) => R;
 
+export interface TaskAggregator {
+  aggregate: AggregationIndexerFn;
+  mergeAggregate: AggregationIndexerFn<unknown[]>;
+}
 export type MergeAggregationInput<T> = { [key: string]: T };

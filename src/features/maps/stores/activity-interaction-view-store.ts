@@ -1,7 +1,7 @@
 import * as zustand from "zustand";
 
 import { SummaryActivity } from "@/strava-api";
-import { createAvailabilityStore, StoreAvailabilityStore } from "@/utils/store";
+import { createAvailabilityStore, AvailabilityStore } from "@/utils/store";
 import { useMapInteractionStore } from "@/features/maps/stores/map-interaction-store";
 import { updateActivitiesInViewCallback } from "@/features/maps/lib/map-view";
 import { useGeospatialIndexStore } from "@/features/maps/stores/geospatial-store";
@@ -18,7 +18,7 @@ type ActivityInteractionViewStore = ActivityInteractionViewState &
   ActivityInteractionViewActions;
 
 export const useActivityInteractionViewStore = zustand.create<
-  ActivityInteractionViewStore & StoreAvailabilityStore
+  ActivityInteractionViewStore & AvailabilityStore
 >((set) => ({
   ...createAvailabilityStore(set),
   activityView: null,
