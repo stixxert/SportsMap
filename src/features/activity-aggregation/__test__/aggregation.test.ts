@@ -21,12 +21,12 @@ import {
   AggregationIndexerFn,
   AggregationOutput,
   AggregationTask,
+  AggregationWorkerActions,
 } from "@/features/activity-aggregation/types/aggregation";
 import { MAX_UPPER_BOUNDS } from "@/utils/db";
-import AggregationMockWorker from "@/features/activity-aggregation/__mock__/aggregation.worker";
 import { AGGREGATE_WORKER_COUNT } from "@/features/activity-aggregation/hooks/use-workers";
-import { aggregateHandlers } from "@/features/activity-aggregation/spatial-index/aggregate";
 import { aggregationHandlers } from "@/features/activity-aggregation/handlers";
+import { processWorkerTask } from "@/features/activity-aggregation/lib/task-aggregate";
 
 const transformData: AggregationIndexerFn = () => "emptyIndex";
 
@@ -50,13 +50,21 @@ const mergeTransformData: AggregationIndexerFn<AggregationOutput[]> = (
   return mergedIndex ?? "";
 };
 
+const mockComlinkWrappedWorker: AggregationWorkerActions = {
+  processWorkerTask,
+};
+
+jest.mock("comlink", () => {
+  return { wrap: () => mockComlinkWrappedWorker };
+});
+
 describe("Activity Aggregation", () => {
   let activityDatabase: ActivityDatabase;
 
   let workerPool: Worker[];
 
   beforeEach(async () => {
-    global.Worker = AggregationMockWorker;
+    global.Worker = jest.fn();
 
     globalThis.indexedDB = new IDBFactory();
 

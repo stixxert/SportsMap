@@ -2,7 +2,6 @@ import {
   AggregationIndexerFn,
   AggregationInput,
   AggregationOutput,
-  AggregationTask,
 } from "@/features/activity-aggregation/types/aggregation";
 import {
   SpatialDataIndex,

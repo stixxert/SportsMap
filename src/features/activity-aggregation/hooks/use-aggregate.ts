@@ -9,7 +9,11 @@ export function useAggregateDispatcher() {
 
   return useCallback(
     (originType: ApiType, selectionOptions: ActivityAggregationSelector) =>
-      dispatchActivityAggregation(originType, selectionOptions, workers),
+      dispatchActivityAggregation(
+        originType,
+        selectionOptions,
+        workers as Worker[],
+      ),
     [workers],
   );
 }

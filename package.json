@@ -34,6 +34,7 @@
     "@types/rbush": "^4.0.0",
     "bresenham": "^0.0.4",
     "canvas": "^3.2.1",
+    "comlink": "^4.4.2",
     "cookies-next": "^6.1.1",
     "geojson-vt": "^4.0.2",
     "idb": "^8.0.3",

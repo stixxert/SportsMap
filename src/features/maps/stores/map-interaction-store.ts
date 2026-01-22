@@ -10,9 +10,9 @@ export type PointInteraction = {
   zoomLevel: number;
 };
 
-interface MapInteractionState {
+export interface MapInteractionState {
   interaction: InteractionType | null;
-  value: LatLngBounds | LatLng | PointInteraction | null;
+  value: LatLngBounds | PointInteraction | null;
 }
 
 interface MapInteractionActions {

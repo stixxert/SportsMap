@@ -5,3 +5,6 @@ import "@/features/activity-aggregation/lib/schema";
 /* Store dependencies */
 import "@/features/activity/lib/sync/sync-metadata";
 import "@/features/activity-filter/stores/active-filter-store";
+
+/* Map indexing */
+import "@/features/maps/stores/activity-interaction-view-store";

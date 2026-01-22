@@ -1,125 +1,51 @@
 "use client";
 
-import L, { LatLng, LatLngBounds, LeafletMouseEvent } from "leaflet";
-import { BBox } from "rbush";
-import { getClosestPointOnLine } from "@/utils/geo";
-import { SummaryActivity } from "@/strava-api";
+import { Map, LatLng, LeafletMouseEvent, LatLngBounds } from "leaflet";
 import { useActivityInteractionViewStore } from "@/features/maps/stores/activity-interaction-view-store";
 import {
   PointInteraction,
   useMapInteractionStore,
 } from "@/features/maps/stores/map-interaction-store";
+import { getZoomDistanceSensitivity } from "@/features/maps/utils/bounds";
+import { SummaryActivity } from "@/strava-api";
 import {
+  convLatLngToPoint,
   getBoundsSearchBox,
   getPointBounds,
-  getZoomDistanceSensitivity,
-  lineSegmentToLatLng,
-} from "@/features/maps/utils/bounds";
-import { useSpatialIndexStore } from "@/features/activity-filter/stores/aggregation-stores";
-import { SpatialDataIndex } from "@/features/activity-aggregation";
-import { useApiTypeStore } from "@/features/auth/stores/api-store";
-import { openActivityDatabase } from "@/lib/db/origin-related-activity-db";
-import { ACTIVITY_STORE, INDEXES } from "@/features/activity/lib/data/schema";
-
-type ActivityId = NonNullable<SummaryActivity["id"]>;
-
-export function getIndexBboxResults(
-  index: SpatialDataIndex,
-  bBox: BBox | BBox[],
-) {
-  if (Array.isArray(bBox)) return bBox.map((b) => index.search(b)).flat();
-
-  return index.search(bBox);
-}
-
-export function getActivitiesOfBBox(
-  index: SpatialDataIndex,
-  bBox: BBox | BBox[],
-): ActivityId[] {
-  const results = getIndexBboxResults(index, bBox);
-
-  const activityIds: ActivityId[] = [];
-
-  results.forEach((line) => {
-    if (!activityIds.find((id) => id === line.data)) {
-      activityIds.push(line.data);
-    }
-  });
-
-  return activityIds;
-}
-
-export function getActivitiesOfPoint(
-  index: SpatialDataIndex,
-  point: LatLng,
-  zoomLevel: number,
-): ActivityId[] {
-  /* TODO: Represent points separated by enough time as another activity pass. Needs stream fetching to implement*/
-  const bBox = getBoundsSearchBox(getPointBounds(point, zoomLevel));
-
-  const results = getIndexBboxResults(index, bBox);
-
-  const activityIds: ActivityId[] = [];
-
-  results.forEach((line) => {
-    if (!activityIds.find((id) => id === line.data)) {
-      const lineClosestPoint = getClosestPointOnLine(
-        lineSegmentToLatLng(line),
-        point,
-      );
-
-      const distance = point.distanceTo(lineClosestPoint);
-
-      if (distance <= getZoomDistanceSensitivity(zoomLevel || 2)) {
-        activityIds.push(line.data);
-      }
-    }
-  });
-
-  return activityIds;
-}
+} from "@/features/maps/utils/latlng-bounds";
+import { getViewActivities } from "@/features/maps/lib/spatial/dispatch-worker";
 
 export async function updateActivitiesInViewCallback() {
-  const interaction = useMapInteractionStore.getState().interaction;
-  const interactionValue = useMapInteractionStore.getState().value;
+  const { interaction, value } = useMapInteractionStore.getState();
 
-  const index = useSpatialIndexStore.getState().index;
+  if (!(interaction && value)) return;
 
-  if (!index) return;
-
-  useActivityInteractionViewStore.getState().setActivityView(null);
-
-  let activityIds: ActivityId[];
+  let activities: SummaryActivity[];
 
   if (interaction === "mapview") {
-    const searchBox = getBoundsSearchBox(interactionValue as LatLngBounds);
+    const bounds = getBoundsSearchBox(value as LatLngBounds);
 
-    activityIds = getActivitiesOfBBox(index, searchBox);
+    activities = await getViewActivities({ bounds });
   } else if (interaction === "point") {
-    const pointInteraction = interactionValue as PointInteraction;
-    activityIds = getActivitiesOfPoint(
-      index,
-      pointInteraction.point,
-      pointInteraction.zoomLevel,
-    );
+    const pointInteraction = value as PointInteraction;
+
+    const { point, zoomLevel } = pointInteraction;
+
+    const bounds = getBoundsSearchBox(getPointBounds(point, zoomLevel));
+
+    activities = await getViewActivities({
+      point: convLatLngToPoint(point),
+      bounds,
+      zoomLevel,
+    });
   } else {
-    return;
+    activities = [];
   }
-
-  const apiType = useApiTypeStore.getState().apiType;
-
-  if (!apiType) return;
-
-  const db = await openActivityDatabase(apiType);
-
-  const activities = await Promise.all(
-    activityIds.map((id) => db.getFromIndex(ACTIVITY_STORE, INDEXES.ID, id)),
-  ).then((result) => result.filter((val) => val !== undefined));
 
   useActivityInteractionViewStore.getState().setActivityView(activities);
 }
 
-export function setMapBoundsAsView(map: L.Map, forceUpdate?: boolean) {
+export function setMapBoundsAsView(map: Map, forceUpdate?: boolean) {
   if (useMapInteractionStore.getState().interaction === "point" && !forceUpdate)
     return;
 
@@ -131,8 +57,10 @@ export function setMapBoundsAsView(map: L.Map, forceUpdate?: boolean) {
   });
 }
 
-export function setPointAsView(map: L.Map, point: LatLng) {
+export function setPointAsView(map: Map, point: LatLng) {
   const zoomLevel = map.getZoom();
+
+  const distance = getZoomDistanceSensitivity(zoomLevel) * 2;
 
   useMapInteractionStore.getState().setPointInteraction({
     point,
@@ -140,10 +68,10 @@ export function setPointAsView(map: L.Map, point: LatLng) {
   });
 }
 
-export function createMapViewUpdate(map: L.Map) {
+export function createMapViewUpdate(map: Map) {
   return () => setMapBoundsAsView(map);
 }
 
-export function createMapPointClickUpdate(map: L.Map) {
+export function createMapPointClickUpdate(map: Map) {
   return (event: LeafletMouseEvent) => setPointAsView(map, event.latlng);
 }

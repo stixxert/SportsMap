@@ -16,13 +16,15 @@ interface ActivityFilterActions {
 
 type ActivityFilterStore = ActivityFilterState & ActivityFilterActions;
 
-const useActivityFilterStore = zustand.create<ActivityFilterStore>((set) => ({
-  filter: defaultFilter,
-  setFilter: (filter: ActivityAggregationSelector) =>
-    set({
-      filter,
-    }),
-}));
+export const useActivityFilterStore = zustand.create<ActivityFilterStore>(
+  (set) => ({
+    filter: defaultFilter,
+    setFilter: (filter: ActivityAggregationSelector) =>
+      set({
+        filter,
+      }),
+  }),
+);
 
 export const useActivityFilter = () =>
   useActivityFilterStore((state) => state.filter);

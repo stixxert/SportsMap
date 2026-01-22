@@ -1,5 +1,5 @@
-import { useEffect } from "react";
 import { useWorkerStore } from "@/features/activity-aggregation/stores/worker-store";
+import { useEffect } from "react";
 
 export const AGGREGATE_WORKER_COUNT = 2;
 

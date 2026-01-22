@@ -2,7 +2,6 @@ import {
   BaseHeatTile,
   BaseHeatTileDataIndex,
   BaseHeatTileDataObject,
-  Point,
   TileBounds,
 } from "@/features/activity-aggregation/heat-tiles/types";
 import { toDegrees, toRadians } from "@/utils/unit";
@@ -11,6 +10,7 @@ import { ZOOM_BOUNDS } from "@/config/map";
 import lineclip from "lineclip";
 import bresenham from "bresenham";
 import RBush from "rbush";
+import { Point } from "@/types/types";
 
 const TILE_SIZE = 256;
 

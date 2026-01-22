@@ -7,10 +7,7 @@ import L from "leaflet";
 
 import "leaflet.heat";
 import * as React from "react";
-import {
-  useInteractionDependencies,
-  useMapInteraction,
-} from "@/features/maps/hooks/use-map-interaction";
+import { useMapInteraction } from "@/features/maps/hooks/use-map-interaction";
 import { getMap, setMapCurrent } from "@/features/maps/stores/map-store";
 import {
   useActivitiesOnMap,
@@ -22,8 +19,6 @@ export default function Map() {
   const mapRef = useRef<HTMLDivElement>(null);
 
   useMapInteraction();
-
-  useInteractionDependencies();
 
   useActivitiesOnMap();
 

@@ -4,7 +4,6 @@ import React from "react";
 
 import { AppRouterCacheProvider as MUIProvider } from "@mui/material-nextjs/v15-appRouter";
 
-import "@/features/registrations";
 import { usePageReloadOnUnfreeze } from "@/src/hooks/page-unfreeze-reload";
 
 export default function AppProvider({

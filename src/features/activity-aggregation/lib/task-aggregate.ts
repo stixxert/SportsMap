@@ -8,6 +8,7 @@ import { SummaryActivity } from "@/strava-api";
 import {
   ActivityDatabase,
   ActivitySchema,
+  openActivityDatabase,
 } from "@/lib/db/origin-related-activity-db";
 import {
   AggregationInput,
@@ -22,6 +23,7 @@ import {
 } from "@/features/activity-aggregation/lib/schema";
 import { ActivityAggregationSelector } from "@/features/activity-aggregation/types/data";
 import { aggregationHandlers } from "@/features/activity-aggregation/handlers";
+import { ApiType } from "@/types/configuration-types";
 
 async function getBoundaryValue(
   index: IDBPIndex<
@@ -41,25 +43,15 @@ async function getBoundaryValue(
   return cursor ? (cursor?.value as SummaryActivity) : null;
 }
 
-/*
-async function aggregateActivityDatabase(db: ActivityDatabase) {
-  const tx = db.transaction(ACTIVITY_STORE, "readonly");
+export async function processWorkerTask(
+  taskType: AggregationTaskType,
+  originType: ApiType,
+  selector: ActivityAggregationSelector,
+) {
+  const db = await openActivityDatabase(originType);
 
-  const store = tx.store;
-
-  const dateIndex = store.index(INDEXES.DATE);
-
-  const first = await getBoundaryValue(dateIndex, "first");
-
-  const last = await getBoundaryValue(dateIndex, "last");
-
-  const allActivities = await store.getAll();
-
-  const breakdown = allActivities.map((activity) => ({
-    input: breakdownActivity(activity),
-    owner: activity.id,
-  })) as AggregationInput;
-}*/
+  await performActivityAggregation(db, taskType, selector);
+}
 
 export function breakdownActivities(activities: SummaryActivity[]) {
   return activities.map((activity) => ({
@@ -72,7 +64,7 @@ export async function performActivityAggregation(
   db: ActivityDatabase,
   taskType: AggregationTaskType,
   selectionOptions: ActivityAggregationSelector,
-): Promise<boolean> {
+): Promise<void> {
   const existingAggregatedIndex = await getAggregatedData(
     db,
     taskType,
@@ -118,6 +110,4 @@ export async function performActivityAggregation(
   ) as unknown as AggregatedIndex;
 
   await setAggregatedData(db, taskType, aggregatedRow);
-
-  return true;
 }

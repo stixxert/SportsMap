@@ -4,7 +4,9 @@ import { SummaryActivity } from "@/strava-api";
 import { createAvailabilityStore, AvailabilityStore } from "@/utils/store";
 import { useMapInteractionStore } from "@/features/maps/stores/map-interaction-store";
 import { updateActivitiesInViewCallback } from "@/features/maps/lib/map-view";
-import { useGeospatialIndexStore } from "@/features/maps/stores/geospatial-store";
+import { useFilterAggregationProcessingStore } from "@/features/activity-filter/stores/active-filter-store";
+import { useApiTypeStore } from "@/features/auth/stores/api-store";
+import { updateIndexWithMarshalling } from "@/features/maps/lib/spatial/dispatch-worker";
 
 interface ActivityInteractionViewState {
   activityView: SummaryActivity[] | null;
@@ -26,23 +28,18 @@ export const useActivityInteractionViewStore = zustand.create<
     set({ activityView: activityView }),
 }));
 
-export function subscribeToMapInteractionStateUpdate() {
-  return useMapInteractionStore.subscribe((state, prevState) => {
-    if (
-      state.interaction === "mapview" &&
-      state.interaction === prevState.interaction &&
-      state.value === prevState.value
-    )
-      return;
+useMapInteractionStore.subscribe((state, prevState) => {
+  if (
+    state.interaction === "mapview" &&
+    state.interaction === prevState.interaction &&
+    state.value === prevState.value
+  )
+    return;
 
-    updateActivitiesInViewCallback();
-  });
-}
+  void updateActivitiesInViewCallback();
+});
 
-export function subscribeToIndexStateUpdate() {
-  return useGeospatialIndexStore.subscribe((state, prevState) => {
-    if (state.activityView === prevState.activityView) return;
-
-    updateActivitiesInViewCallback();
-  });
-}
+useFilterAggregationProcessingStore.subscribe(() =>
+  updateIndexWithMarshalling(),
+);
+useApiTypeStore.subscribe(() => updateIndexWithMarshalling());

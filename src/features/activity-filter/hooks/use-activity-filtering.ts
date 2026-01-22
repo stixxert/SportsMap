@@ -38,8 +38,6 @@ export function useActivityFiltering() {
       // TODO: What to catch?
       await performAggregate(type, options);
 
-      console.log("completed?");
-
       setFilterProcessingActive(false);
     },
     [performAggregate, setFilterProcessingActive],

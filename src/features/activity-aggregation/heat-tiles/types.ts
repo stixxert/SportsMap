@@ -3,8 +3,7 @@ import {
   DataIndexObject,
 } from "@/features/activity-aggregation/types/data";
 import { SchemaEntry } from "@/features/activity-aggregation/lib/schema";
-
-export type Point = [number, number];
+import { Point } from "@/types/types";
 
 /* [xmin, ymin, xmax, ymax] - flipped to [ymin, xmax, ...] for LatLng */
 export type TileBounds = [number, number, number, number];

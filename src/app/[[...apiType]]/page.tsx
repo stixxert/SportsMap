@@ -14,13 +14,8 @@ import { ApiType } from "@/types/configuration-types";
 import { LoginDialog } from "@/features/profile/components/login-dialog";
 import { usePrivacyNoticeState } from "@/features/profile/stores/privacy-notice";
 import { PrivacyDialog } from "@/features/profile/components/privacy-dialog";
-import { useActivityCategorizationQuerySync } from "@/features/activity/hooks/window-dependent-subscribes";
-import { useActivitySynchronization } from "@/features/activity/hooks/sync-state";
-import { useGeoIndexSync } from "@/features/maps/hooks/use-geo-index-sync";
 import { useActivitySyncStore } from "@/features/activity/stores/activity-store";
 import { useActivityMetadataStore } from "@/features/activity/stores/activity-metadata-store";
-import { useAggregateWorkers } from "@/features/activity-aggregation/hooks/use-workers";
-import { useActivityFiltering } from "@/features/activity-filter/hooks/use-activity-filtering";
 
 const Map = dynamic(() => import("@/features/maps/components/Map"), {
   ssr: false,
@@ -33,18 +28,14 @@ const Overlay = dynamic(
   },
 );
 
+const MapDependenciesWrapper = dynamic(
+  () => import("@/features/maps/components/MapDependenciesWrapper"),
+  {
+    ssr: false,
+  },
+);
+
 export default function MapPage() {
-  useAggregateWorkers();
-  useAccessTokenSync();
-  useActivityCategorizationQuerySync();
-  useSyncApiTypeToParams();
-
-  useGeoIndexSync();
-
-  useActivityFiltering();
-
-  useActivitySynchronization();
-
   useActivitySyncStore((state) => state.activitiesSync);
 
   useActivityMetadataStore((state) => state.metaData);
@@ -56,17 +47,19 @@ export default function MapPage() {
   const apiType = useApiType();
 
   return (
-    <Box sx={{ position: "relative", height: "100vh", width: "100%" }}>
-      <Box sx={{ position: "absolute" }}>
-        <Overlay></Overlay>
+    <MapDependenciesWrapper>
+      <Box sx={{ position: "relative", height: "100vh", width: "100%" }}>
+        <Box sx={{ position: "absolute" }}>
+          <Overlay></Overlay>
+        </Box>
+        <Box sx={{ position: "relative", height: "100%" }}>
+          <Map></Map>
+        </Box>
+        {apiType === ApiType.Strava &&
+          isAuthenticated !== null &&
+          !isAuthenticated && <LoginDialog open={!isAuthenticated} />}
+        {privacyDialog && <PrivacyDialog />}
       </Box>
-      <Box sx={{ position: "relative", height: "100%" }}>
-        <Map></Map>
-      </Box>
-      {apiType === ApiType.Strava &&
-        isAuthenticated !== null &&
-        !isAuthenticated && <LoginDialog open={!isAuthenticated} />}
-      {privacyDialog && <PrivacyDialog />}
-    </Box>
+    </MapDependenciesWrapper>
   );
 }

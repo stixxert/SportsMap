@@ -4,6 +4,7 @@ import {
 } from "@/features/activity-aggregation/types/data";
 import { SpatialDataType } from "@/features/activity-aggregation/spatial-index/types";
 import { ApiType } from "@/types/configuration-types";
+import { processWorkerTask } from "@/features/activity-aggregation/lib/task-aggregate";
 
 export const AggregationTask = {
   heat: "heatIndex",
@@ -20,8 +21,9 @@ export interface AggregationResult {
   completed: boolean;
   data: string | unknown | undefined;
 }
-export interface AggregationTaskResult extends AggregationResult {
-  taskType: AggregationTaskType;
+
+export interface AggregationWorkerActions {
+  processWorkerTask: typeof processWorkerTask;
 }
 
 export type AggregationTaskType =

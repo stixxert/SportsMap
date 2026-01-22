@@ -1,3 +1,8 @@
-import { constructWorkerMessageHandler } from "@/features/activity-aggregation/lib/dispatch-aggregate";
+import * as Comlink from "comlink";
+import { processWorkerTask } from "@/features/activity-aggregation/lib/task-aggregate";
 
-self.onmessage = constructWorkerMessageHandler(self.postMessage);
+const actions = {
+  processWorkerTask,
+};
+
+Comlink.expose(actions);
