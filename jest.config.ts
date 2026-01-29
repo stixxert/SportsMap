@@ -52,7 +52,7 @@ const createJestConfig = nextJest({
 const exportedConfig = async () => {
   const newConfig = await createJestConfig(config)();
   newConfig.transformIgnorePatterns = [
-    "/node_modules/(?!(quickselect|rbush)/)",
+    "/node_modules/(?!(quickselect|rbush|lineclip)/)",
   ];
   return newConfig;
 };

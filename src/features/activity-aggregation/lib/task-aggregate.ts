@@ -13,7 +13,6 @@ import {
 import {
   AggregationInput,
   AggregationTaskType,
-  TaskAggregator,
 } from "@/features/activity-aggregation/types/aggregation";
 import { breakdownActivity } from "@/features/activity-aggregation/lib/map-breakdown";
 import {
@@ -80,6 +79,10 @@ export async function performActivityAggregation(
   });
 
   const activities = await getActivities(db, adjustedOptions);
+
+  if (!activities.length) {
+    return;
+  }
 
   const aggregationInput = breakdownActivities(activities);
 

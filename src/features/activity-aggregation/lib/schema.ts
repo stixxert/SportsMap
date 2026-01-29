@@ -24,8 +24,13 @@ export const INDEXES = {
   TYPE_START_END: "TYPE_START_END",
 };
 
-export interface AggregatedIndex extends ActivityAggregationSelector {
+export interface AggregateIndex {
   index: unknown;
+}
+
+export interface AggregatedIndex
+  extends ActivityAggregationSelector,
+    AggregateIndex {
   updatedAt: Date;
 }
 

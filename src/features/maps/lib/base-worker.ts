@@ -1,3 +1,4 @@
+import * as zustand from "zustand";
 import { MapIndexWorkerUpdate } from "@/features/maps/types/types";
 import { ApiType } from "@/types/configuration-types";
 import { MIN_LOWER_BOUNDS } from "@/utils/db";
@@ -17,4 +18,24 @@ export function createMapIndexWorkerStateStore(): MapIndexWorkerState {
       },
     },
   };
+}
+
+export interface WorkerReadinessState {
+  ready: boolean;
+}
+
+export interface WorkerReadinessActions {
+  setReady: (ready: boolean) => void;
+}
+
+export type WorkerReadinessStore = WorkerReadinessState &
+  WorkerReadinessActions;
+
+export function createWorkerReadinessStateStore() {
+  return zustand.create<WorkerReadinessStore>((set) => ({
+    ready: false,
+    setReady: (ready: boolean) => {
+      set({ ready });
+    },
+  }));
 }

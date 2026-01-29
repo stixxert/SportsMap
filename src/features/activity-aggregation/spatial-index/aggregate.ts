@@ -8,15 +8,19 @@ import {
   SpatialDataObject,
   SpatialDataType,
 } from "@/features/activity-aggregation/spatial-index/types";
-import { createLineSegmentBounds } from "@/features/activity-aggregation/lib/map-breakdown";
+import {
+  convPolylineToLineSegments,
+  createLineSegmentBounds,
+} from "@/features/activity-aggregation/lib/map-breakdown";
 import RBush from "rbush";
 import { AggregatedIndex } from "@/features/activity-aggregation/lib/schema";
+
 export const transformData: AggregationIndexerFn = (
   input: AggregationInput,
 ) => {
   const activityLineBounds = input
     .map((activity) =>
-      activity.input.map((line) =>
+      convPolylineToLineSegments(activity.input).map((line) =>
         createLineSegmentBounds<SpatialDataType>(line, {
           data: activity.owner,
         }),
@@ -49,7 +53,7 @@ export const mergeTransformedIndexes: AggregationIndexerFn<
   return (mergedIndex ?? new RBush<SpatialDataObject>()).toJSON();
 };
 
-export const aggregateHandlers = {
+export const spatialAggregateHandlers = {
   aggregate: transformData,
   mergeAggregate: mergeTransformedIndexes,
 };

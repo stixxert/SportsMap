@@ -1,10 +1,8 @@
-import {
-  ActivityAggregationSelector,
-  ActivityLineSegments,
-} from "@/features/activity-aggregation/types/data";
+import { ActivityAggregationSelector } from "@/features/activity-aggregation/types/data";
 import { SpatialDataType } from "@/features/activity-aggregation/spatial-index/types";
 import { ApiType } from "@/types/configuration-types";
 import { processWorkerTask } from "@/features/activity-aggregation/lib/task-aggregate";
+import { Point } from "@/types/types";
 
 export const AggregationTask = {
   heat: "heatIndex",
@@ -30,7 +28,7 @@ export type AggregationTaskType =
   (typeof AggregationTask)[keyof typeof AggregationTask];
 
 export interface BrokenDownActivityType {
-  input: ActivityLineSegments;
+  input: Point[];
   owner: SpatialDataType;
 }
 

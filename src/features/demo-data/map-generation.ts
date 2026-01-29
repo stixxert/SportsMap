@@ -1,24 +1,24 @@
-import { LatLngTuple } from "leaflet";
 import { M_PER_DEG_LAT, M_PER_DEG_LNG_EQ } from "@/utils/geo";
 import { randomBetween } from "@/utils/misc";
 import { toRadians } from "@/utils/unit";
+import { Point } from "@/types/types";
 
 interface PolygonOptions {
-  center: LatLngTuple;
+  center: Point;
   radiusInMeters: number;
   numberOfPoints: number;
 }
 
 function destinationPoint(
-  start: LatLngTuple,
+  start: Point,
   bearingDegrees: number,
   distanceMeters: number,
-): LatLngTuple {
+): Point {
   const mPerDegLon = M_PER_DEG_LNG_EQ * Math.cos(toRadians(start[0]));
 
   const bearingRad = toRadians(bearingDegrees);
 
-  const delta: LatLngTuple = [
+  const delta: Point = [
     distanceMeters * Math.cos(bearingRad),
     distanceMeters * Math.sin(bearingRad),
   ];
@@ -29,10 +29,10 @@ function destinationPoint(
   ];
 }
 
-function generatePolygon(options: PolygonOptions): LatLngTuple[] {
+function generatePolygon(options: PolygonOptions): Point[] {
   const { center, radiusInMeters, numberOfPoints } = options;
 
-  const points: LatLngTuple[] = [];
+  const points: Point[] = [];
   const angleStep = 360 / numberOfPoints;
 
   for (let i = 0; i < numberOfPoints; i++) {
@@ -51,18 +51,19 @@ function generatePolygon(options: PolygonOptions): LatLngTuple[] {
   }
 
   // Close the polygon by adding the first point at the end
-  points.push({ ...points[0] });
+
+  points.push(points[0]);
 
   return points;
 }
 
-export function generateActivityMap(options: PolygonOptions): LatLngTuple[] {
+export function generateActivityMap(options: PolygonOptions): Point[] {
   const points = generatePolygon({
     ...options,
   });
 
   // Add intermediate points for more realistic GPS tracking
-  const detailedPoints: LatLngTuple[] = [];
+  const detailedPoints: Point[] = [];
 
   for (let i = 0; i < points.length - 1; i++) {
     detailedPoints.push(points[i]);
@@ -71,30 +72,32 @@ export function generateActivityMap(options: PolygonOptions): LatLngTuple[] {
     const intermediateCount = 2 + Math.floor(Math.random() * 3);
     for (let j = 1; j <= intermediateCount; j++) {
       const fraction = j / (intermediateCount + 1);
-      const intermediate: LatLngTuple = [
+      const intermediate: Point = [
         points[i][0] + (points[i + 1][0] - points[i][0]) * fraction,
         points[i][1] + (points[i + 1][1] - points[i][1]) * fraction,
       ];
-      // Add noise to intermediate points
+
       detailedPoints.push(intermediate);
     }
   }
 
-  detailedPoints.push(points[points.length - 1]);
   return detailedPoints;
 }
 
-const RANDOM_BOUNDS = [-160, 160];
+const RANDOM_BOUNDS = [
+  [-85, 85],
+  [-160, 160],
+];
 const RANDOM_RADIUS_BOUNDS = [500, 20000];
 const RANDOM_NUM_POINTS_BOUNDS = [10, 100];
 
 export function generateRandomActivityMap(): {
   options: PolygonOptions;
-  map: LatLngTuple[];
+  map: Point[];
 } {
-  const center: LatLngTuple = [
-    randomBetween(RANDOM_BOUNDS[0], RANDOM_BOUNDS[1]),
-    randomBetween(RANDOM_BOUNDS[0], RANDOM_BOUNDS[1]),
+  const center: Point = [
+    randomBetween(RANDOM_BOUNDS[0][0], RANDOM_BOUNDS[0][1]),
+    randomBetween(RANDOM_BOUNDS[0][1], RANDOM_BOUNDS[1][1]),
   ];
 
   const radiusInMeters = randomBetween(

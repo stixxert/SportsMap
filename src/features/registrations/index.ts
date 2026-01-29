@@ -8,3 +8,4 @@ import "@/features/activity-filter/stores/active-filter-store";
 
 /* Map indexing */
 import "@/features/maps/stores/activity-interaction-view-store";
+import "@/features/maps/stores/worker-store";

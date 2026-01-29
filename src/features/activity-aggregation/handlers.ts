@@ -1,7 +1,8 @@
 import { AggregationTask } from "@/features/activity-aggregation/types/aggregation";
-import { aggregateHandlers } from "@/features/activity-aggregation/spatial-index/aggregate";
+import { spatialAggregateHandlers } from "@/features/activity-aggregation/spatial-index/aggregate";
+import { heatAggregateHandlers } from "@/features/activity-aggregation/heat-tiles/aggregate";
 
 export const aggregationHandlers = {
-  [AggregationTask.spatial]: aggregateHandlers,
-  [AggregationTask.heat]: aggregateHandlers,
+  [AggregationTask.spatial]: spatialAggregateHandlers,
+  [AggregationTask.heat]: heatAggregateHandlers,
 };

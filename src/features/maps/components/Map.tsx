@@ -1,11 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-
 import "leaflet/dist/leaflet.css";
-import L from "leaflet";
 
-import "leaflet.heat";
 import * as React from "react";
 import { useMapInteraction } from "@/features/maps/hooks/use-map-interaction";
 import { getMap, setMapCurrent } from "@/features/maps/stores/map-store";
@@ -14,9 +10,11 @@ import {
   useAthleteLocationAsSpawnView,
 } from "@/features/maps/hooks/use-map-view";
 import { ZOOM_BOUNDS } from "@/config/map";
+import { useAthleteLocationAsSpawnView } from "@/features/maps/hooks/use-map-view";
+import { useMapInstance } from "@/features/maps/hooks/use-map-instance";
 
 export default function Map() {
-  const mapRef = useRef<HTMLDivElement>(null);
+  const mapRef = useMapInstance();
 
   useMapInteraction();
 

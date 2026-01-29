@@ -18,6 +18,7 @@ import { getSpatialIndexFromAggregateIndex } from "@/features/activity-aggregati
 import { getAggregatedData } from "@/features/activity-aggregation/lib/schema";
 import { openActivityDatabase } from "@/lib/db/origin-related-activity-db";
 import { AggregationTask } from "@/features/activity-aggregation/types/aggregation";
+
 export const SPATIAL_SEARCH_WORKER = "spatialSearch";
 
 interface WorkerState extends MapIndexWorkerState {
