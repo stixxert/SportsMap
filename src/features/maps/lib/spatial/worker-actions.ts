@@ -18,11 +18,13 @@ import { getSpatialIndexFromAggregateIndex } from "@/features/activity-aggregati
 import { getAggregatedData } from "@/features/activity-aggregation/lib/schema";
 import { openActivityDatabase } from "@/lib/db/origin-related-activity-db";
 import { AggregationTask } from "@/features/activity-aggregation/types/aggregation";
+import { compressSpan } from "@/features/activity-aggregation/lib/type-span";
 
 export const SPATIAL_SEARCH_WORKER = "spatialSearch";
 
 interface WorkerState extends MapIndexWorkerState {
   index: SpatialDataIndex;
+  updatedAt: Date;
 }
 
 function getViewActivitiesWrapper(workerState: WorkerState) {
@@ -35,7 +37,7 @@ function getViewActivitiesWrapper(workerState: WorkerState) {
 }
 
 const workerState: WorkerState = Object.assign(
-  { index: new RBush<SpatialDataObject>() },
+  { index: new RBush<SpatialDataObject>(), updatedAt: new Date(0) },
   createMapIndexWorkerStateStore(),
 );
 
@@ -53,15 +55,33 @@ export const spatialIndexWorkerActions = Object.assign(
         newState.selector,
       );
 
-      let newIndex = new RBush<SpatialDataObject>();
+      if (!aggregatedIndex) throw new Error("Missing aggregated index");
+
+      if (
+        compressSpan(aggregatedIndex.sportType) ===
+          compressSpan(workerState.indexObservationState.selector.sportType) &&
+        aggregatedIndex.startDate.getTime() ===
+          workerState.indexObservationState.selector.startDate.getTime() &&
+        aggregatedIndex.endDate.getTime() ===
+          workerState.indexObservationState.selector.endDate.getTime() &&
+        workerState.updatedAt.getTime() === aggregatedIndex.updatedAt.getTime()
+      )
+        return true;
+
+      let newIndex;
 
       if (aggregatedIndex) {
         const _newIndex = getSpatialIndexFromAggregateIndex(aggregatedIndex);
 
         if (_newIndex) newIndex = _newIndex;
-      }
+      } else newIndex = new RBush<SpatialDataObject>();
 
-      Object.assign(workerState, { index: newIndex });
+      Object.assign(workerState, {
+        index: newIndex,
+        updatedAt: aggregatedIndex.updatedAt,
+      });
+
+      return true;
     },
   },
   workerState,

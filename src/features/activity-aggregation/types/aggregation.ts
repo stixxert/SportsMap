@@ -5,7 +5,6 @@ import { processWorkerTask } from "@/features/activity-aggregation/lib/task-aggr
 import { Point } from "@/types/types";
 
 export const AggregationTask = {
-  heat: "heatIndex",
   spatial: "spatialIndex",
 } as const;
 

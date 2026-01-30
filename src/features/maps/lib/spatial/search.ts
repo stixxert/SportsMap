@@ -2,22 +2,20 @@
 
 import { SpatialDataIndex } from "@/features/activity-aggregation";
 import { BBox } from "rbush";
-import {
-  getZoomDistanceSensitivity,
-  lineSegmentToLatLng,
-} from "@/features/maps/utils/bounds";
-import { getClosestPointOnLine, pointDistanceTo } from "@/utils/geo";
+import { lineSegmentToLatLng } from "@/features/maps/utils/bounds";
+import { getClosestPointOnLine } from "@/utils/geo";
 import { ActivityId } from "@/features/maps/types/types";
 import { openActivityDatabase } from "@/lib/db/origin-related-activity-db";
 import { ACTIVITY_STORE, INDEXES } from "@/features/activity/lib/data/schema";
 import { ApiType } from "@/types/configuration-types";
 import { SummaryActivity } from "@/strava-api";
 import { Point } from "@/types/types";
+import haversine from "haversine-distance";
 
 export interface AgnosticInteractionSearch {
   point?: Point;
   bounds: BBox | BBox[];
-  zoomLevel?: number;
+  radius?: number;
 }
 
 export function getIndexBboxResults(
@@ -50,11 +48,9 @@ export function getActivitiesOfPoint(
   index: SpatialDataIndex,
   view: AgnosticInteractionSearch,
 ): ActivityId[] {
-  /* TODO: Represent points separated by enough time as another activity pass. Needs stream fetching to implement*/
+  const { point, bounds, radius } = view;
 
-  const { point, bounds, zoomLevel } = view;
-
-  if (!(point && bounds && zoomLevel)) return [];
+  if (!(point && bounds && radius)) return [];
 
   const results = getIndexBboxResults(index, bounds);
 
@@ -66,10 +62,11 @@ export function getActivitiesOfPoint(
         lineSegmentToLatLng(line),
         point,
       );
-
-      const distance = pointDistanceTo(point, lineClosestPoint);
-
-      if (distance <= getZoomDistanceSensitivity(zoomLevel || 2)) {
+      const distance = haversine(
+        { lat: point[0], lng: point[1] },
+        { lat: lineClosestPoint[0], lng: lineClosestPoint[1] },
+      );
+      if (distance <= radius) {
         activityIds.push(line.data);
       }
     }

@@ -49,7 +49,6 @@ interface BaseIndexSchema {
 
 export interface AggregatedIndexesSchema extends DBSchema {
   [AggregationTask.spatial]: BaseIndexSchema;
-  [AggregationTask.heat]: BaseIndexSchema;
 }
 
 function setupStore(db: ActivityDatabase, storeName: AggregationTaskType) {

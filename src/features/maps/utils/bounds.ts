@@ -3,12 +3,13 @@
 import { BBox } from "rbush";
 import { usePointSensitivityStore } from "@/features/maps/stores/map-interaction-store";
 import { Point } from "@/types/types";
+import { ZOOM_BOUNDS } from "@/config/map";
 
-export function getZoomDistanceSensitivityNoLookup(
+function getZoomDistanceSensitivityNoLookup(
   searchSensitivity: number,
   zoomLevel: number,
 ) {
-  return searchSensitivity * (15 - zoomLevel) ** 3;
+  return searchSensitivity * (ZOOM_BOUNDS.max + 1 - zoomLevel) ** 3;
 }
 
 export function getZoomDistanceSensitivity(zoomLevel: number) {

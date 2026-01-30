@@ -56,3 +56,21 @@ export function convPolylineToLineSegments(polyline: Point[]): Point[][] {
 export function breakdownActivity(activity: SummaryActivity): Point[] {
   return decode(activity.map?.summaryPolyline || "");
 }
+
+export function getActivityMapLatLngBounds(activity: SummaryActivity) {
+  const pts = breakdownActivity(activity);
+
+  const lats = pts.map(([lat]) => lat);
+  const lngs = pts.map(([, lng]) => lng);
+
+  const minLat = Math.min(...lats);
+  const minLng = Math.min(...lngs);
+
+  const maxLat = Math.max(...lats);
+  const maxLng = Math.max(...lngs);
+
+  const se = [minLat, maxLng] as Point;
+  const nw = [maxLat, minLng] as Point;
+
+  return [se, nw];
+}

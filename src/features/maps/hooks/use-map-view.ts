@@ -1,12 +1,42 @@
-import { useEffect, useRef } from "react";
-import { activitytogeojson, tile } from "@/features/maps/lib/points-utils";
+import { useEffect, useMemo, useRef } from "react";
+import {
+  activitiesToGeoJSON,
+  createActivityVectorGrid,
+} from "@/features/maps/lib/draw-activities";
 import { useMap } from "@/features/maps/stores/map-store";
 import L from "leaflet";
 import { useCurrentActivities } from "@/features/activity/stores/activity-store";
 import { useProfile } from "@/features/profile/hooks/use-profile";
 
 import useSWRImmutable from "swr/immutable";
-import { fetchLocation } from "@/features/maps/lib/location-search";
+import { fetchLocation } from "@/features/maps/lib/profile-location";
+import { setMapBoundsAsView } from "@/features/maps/lib/map-view";
+import { useSpatialIndexReadinessStore } from "@/features/maps/lib/spatial/dispatch-worker";
+
+/* Timing issue; start(or any?) index update does not update map */
+export function useInitialMapView() {
+  const map = useMap();
+  const initialPlacementDone = useRef(false);
+
+  const viewReady = useAthleteLocationAsSpawnView();
+
+  const spatialIndexReady = useSpatialIndexReadinessStore(
+    (state) => state.ready,
+  );
+
+  useEffect(() => {
+    if (initialPlacementDone.current) return;
+
+    if (!map.current) return;
+
+    if (!spatialIndexReady) return;
+
+    if (!viewReady) return;
+
+    setMapBoundsAsView(map.current);
+    initialPlacementDone.current = true;
+  }, [map, spatialIndexReady, viewReady]);
+}
 
 export function useActivitiesOnMap() {
   const map = useMap();
@@ -18,16 +48,18 @@ export function useActivitiesOnMap() {
   useEffect(() => {
     if (!map.current) return;
 
-    function doStuff() {
-      const geojson = activitytogeojson(activities);
-      if (activityLayer.current) {
-        activityLayer.current.remove();
-      }
-
-      activityLayer.current = tile(map.current!, geojson);
+    const geojson = activitiesToGeoJSON(activities);
+    if (activityLayer.current) {
+      activityLayer.current.remove();
     }
 
-    doStuff();
+    if (!geojson) return;
+
+    const layer = createActivityVectorGrid(map.current, geojson);
+
+    if (!layer) return;
+
+    activityLayer.current = layer;
 
     return () => {
       if (activityLayer.current) activityLayer.current.remove();
@@ -41,28 +73,21 @@ export function useAthleteLocationAsSpawnView() {
 
   const map = useMap();
 
-  const profile = useProfile();
+  const { user, error: profileError, profileUsable } = useProfile();
 
-  function dependenciesReady() {
-    const { user, error } = profile;
+  const dependenciesReady = user && !profileError;
 
-    return user && !error;
-  }
+  const searchKey = useMemo(() => {
+    if (!dependenciesReady) return null;
 
-  function getSearchKey() {
-    if (!dependenciesReady()) return;
+    const { city, state, country } = user;
 
-    const { user } = profile;
+    if (!(city || state || country)) return null;
 
-    if (!(user.city || user.state || user.country)) return null;
+    return { city: city, county: state, country: country };
+  }, [user, dependenciesReady]);
 
-    return [user.city, user.state, user.country];
-  }
-
-  const { data, error, isLoading } = useSWRImmutable(
-    getSearchKey(),
-    ([city, state, country]) => fetchLocation(city, state, country),
-  );
+  const { data, error, isLoading } = useSWRImmutable(searchKey, fetchLocation);
 
   useEffect(() => {
     if (!data || error) return;
@@ -77,10 +102,11 @@ export function useAthleteLocationAsSpawnView() {
   }, [map, data, error]);
 
   /* dependencies ready, no search key means no location in user profile */
-  if (dependenciesReady()) {
-    if (getSearchKey() === null) return true;
+  if (dependenciesReady) {
+    if (searchKey === null) return true;
 
     return !isLoading;
-  }
+  } else if (!profileUsable) return true;
+
   return false;
 }

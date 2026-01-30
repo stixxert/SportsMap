@@ -57,7 +57,10 @@ export function LoginDialog({ open }: { open: boolean }) {
           Privacy Notice
         </Button>
         <Button>
-          <Link href={"/login"}>Login with Strava</Link>
+          <a href={"/demo"}>Try demo</a>
+        </Button>
+        <Button>
+          <a href={"/login"}>Login with Strava</a>
         </Button>
       </DialogActions>
     </Dialog>

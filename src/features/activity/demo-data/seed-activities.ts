@@ -1,5 +1,5 @@
 import { ACTIVITY_STORE } from "@/features/activity/lib/data/schema";
-import { generateNumActivities } from "@/features/demo-data/activity-generation";
+import { generateNumActivities } from "@/features/activity/demo-data/activity-generation";
 import { ActivityDatabase } from "@/lib/db/origin-related-activity-db";
 
 export async function seedActivities(

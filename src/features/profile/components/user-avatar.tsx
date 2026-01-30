@@ -86,7 +86,7 @@ export function UserAvatar() {
             Logout
           </MenuItem>
         ) : (
-          <Link href={"/authorize"}>
+          <Link href={"/login"}>
             <MenuItem>
               <ListItemIcon>
                 <LoginIcon fontSize="small" />

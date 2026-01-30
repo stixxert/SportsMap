@@ -6,7 +6,7 @@ import {
   openActivityDatabase,
 } from "@/lib/db/origin-related-activity-db";
 import { ApiType } from "@/types/configuration-types";
-import { seedActivities } from "@/features/activity/testing/seed-activities";
+import { seedActivities } from "@/features/activity/demo-data/seed-activities";
 import { dispatchActivityAggregation } from "@/features/activity-aggregation/lib/dispatch-aggregate";
 
 import { SportType } from "@/strava-api";
@@ -27,6 +27,7 @@ import { MAX_UPPER_BOUNDS } from "@/utils/db";
 import { AGGREGATE_WORKER_COUNT } from "@/features/activity-aggregation/hooks/use-workers";
 import { aggregationHandlers } from "@/features/activity-aggregation/handlers";
 import { processWorkerTask } from "@/features/activity-aggregation/lib/task-aggregate";
+import { getActivities } from "@/features/activity/lib/data/store-actions";
 
 const transformData: AggregationIndexerFn = () => "emptyIndex";
 
@@ -63,6 +64,8 @@ describe("Activity Aggregation", () => {
 
   let workerPool: Worker[];
 
+  let firstInsertionOptions: { start?: Date; end?: Date };
+
   beforeEach(async () => {
     global.Worker = jest.fn();
 
@@ -74,14 +77,17 @@ describe("Activity Aggregation", () => {
 
     activityDatabase = await openActivityDatabase(ApiType.Demo);
 
-    await seedActivities(activityDatabase, 1000);
-
-    aggregationHandlers[AggregationTask.spatial] = {
-      aggregate: transformData,
-      mergeAggregate: mergeTransformData,
+    firstInsertionOptions = {
+      end: new Date(
+        new Date(Date.now()).setFullYear(
+          new Date(Date.now()).getFullYear() - 1,
+        ),
+      ),
     };
 
-    aggregationHandlers[AggregationTask.heat] = {
+    await seedActivities(activityDatabase, 1000, 0, firstInsertionOptions);
+
+    aggregationHandlers[AggregationTask.spatial] = {
       aggregate: transformData,
       mergeAggregate: mergeTransformData,
     };
@@ -113,11 +119,18 @@ describe("Activity Aggregation", () => {
         options,
       );
 
-      expect(databaseReturnedIndex).toBeDefined();
-
-      expect((databaseReturnedIndex as AggregatedIndex).index).toEqual(
-        "emptyIndex",
+      const activitiesInCategory = await getActivities(
+        activityDatabase,
+        options,
       );
+
+      if (activitiesInCategory.length > 0) {
+        expect(databaseReturnedIndex).toBeDefined();
+
+        expect((databaseReturnedIndex as AggregatedIndex).index).toEqual(
+          "emptyIndex",
+        );
+      } else expect(databaseReturnedIndex).not.toBeDefined();
     }
   });
 
@@ -137,11 +150,15 @@ describe("Activity Aggregation", () => {
       options,
     );
 
-    expect(databaseReturnedIndex).toBeDefined();
+    const activitiesInCategory = await getActivities(activityDatabase, options);
 
-    expect((databaseReturnedIndex as AggregatedIndex).index).toEqual(
-      "emptyIndex",
-    );
+    if (activitiesInCategory.length > 0) {
+      expect(databaseReturnedIndex).toBeDefined();
+
+      expect((databaseReturnedIndex as AggregatedIndex).index).toEqual(
+        "emptyIndex",
+      );
+    } else expect(databaseReturnedIndex).not.toBeDefined();
   });
 
   test("can use existing updatedAt, to fill in part of aggregation range", async () => {
@@ -154,29 +171,33 @@ describe("Activity Aggregation", () => {
     const indexType = AggregationTask.spatial;
     await dispatchActivityAggregation(ApiType.Demo, options, workerPool);
 
-    await seedActivities(activityDatabase, 1000, 1000, {
-      start: new Date(Date.now()),
-      end: new Date(new Date(Date.now()).getFullYear() + 1),
-    });
+    const opt = {
+      start: firstInsertionOptions.end || new Date(0),
+      end: new Date(
+        new Date(Date.now()).setFullYear(
+          new Date(Date.now()).getFullYear() + 1,
+        ),
+      ),
+    };
 
-    const optionsSecondPass = Object.assign({}, options);
+    await seedActivities(activityDatabase, 1000, 1000, opt);
 
-    await dispatchActivityAggregation(
-      ApiType.Demo,
-      optionsSecondPass,
-      workerPool,
-    );
+    await dispatchActivityAggregation(ApiType.Demo, options, workerPool);
 
     const databaseReturnedIndex = await getAggregatedData(
       activityDatabase,
       indexType,
-      optionsSecondPass,
+      options,
     );
 
-    expect(databaseReturnedIndex).toBeDefined();
+    const activitiesInCategory = await getActivities(activityDatabase, options);
 
-    expect((databaseReturnedIndex as AggregatedIndex).index).toEqual(
-      "emptyIndexemptyIndex",
-    );
+    if (activitiesInCategory.length > 0) {
+      expect(databaseReturnedIndex).toBeDefined();
+
+      expect((databaseReturnedIndex as AggregatedIndex).index).toEqual(
+        "emptyIndexemptyIndex",
+      );
+    } else expect(databaseReturnedIndex).not.toBeDefined();
   });
 });

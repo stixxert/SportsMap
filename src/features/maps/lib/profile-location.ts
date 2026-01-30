@@ -14,11 +14,15 @@ const apiOptions = {
 };
 
 /* returns location or null, if no location found, or error encountered. */
-export async function fetchLocation(
-  city?: string,
-  county?: string,
-  country?: string,
-): Promise<SearchResult> {
+export async function fetchLocation({
+  city,
+  county,
+  country,
+}: {
+  city: string | undefined;
+  county: string | undefined;
+  country: string | undefined;
+}): Promise<SearchResult> {
   if (!process.env.NEXT_PUBLIC_LOCATION_SEARCH_API) {
     return Promise.resolve(null);
   }

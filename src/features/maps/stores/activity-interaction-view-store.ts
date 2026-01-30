@@ -8,7 +8,7 @@ import { useFilterAggregationProcessingStore } from "@/features/activity-filter/
 import { useApiTypeStore } from "@/features/auth/stores/api-store";
 import { updateIndexWithMarshalling } from "@/features/maps/lib/spatial/dispatch-worker";
 
-interface ActivityInteractionViewState {
+export interface ActivityInteractionViewState {
   activityView: SummaryActivity[] | null;
 }
 

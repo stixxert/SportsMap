@@ -1,12 +1,17 @@
 "use client";
 
-import { Map, LatLng, LeafletMouseEvent, LatLngBounds } from "leaflet";
+import {
+  Map,
+  LatLng,
+  LeafletMouseEvent,
+  LatLngBounds,
+  LatLngTuple,
+} from "leaflet";
 import { useActivityInteractionViewStore } from "@/features/maps/stores/activity-interaction-view-store";
 import {
   PointInteraction,
   useMapInteractionStore,
 } from "@/features/maps/stores/map-interaction-store";
-import { getZoomDistanceSensitivity } from "@/features/maps/utils/bounds";
 import { SummaryActivity } from "@/strava-api";
 import {
   convLatLngToPoint,
@@ -14,6 +19,8 @@ import {
   getPointBounds,
 } from "@/features/maps/utils/latlng-bounds";
 import { getViewActivities } from "@/features/maps/lib/spatial/dispatch-worker";
+import { getActivityMapLatLngBounds } from "@/features/activity-aggregation/lib/map-breakdown";
+import { getZoomDistanceSensitivity } from "@/features/maps/utils/bounds";
 
 export async function updateActivitiesInViewCallback() {
   const { interaction, value } = useMapInteractionStore.getState();
@@ -36,7 +43,7 @@ export async function updateActivitiesInViewCallback() {
     activities = await getViewActivities({
       point: convLatLngToPoint(point),
       bounds,
-      zoomLevel,
+      radius: getZoomDistanceSensitivity(zoomLevel),
     });
   } else {
     activities = [];
@@ -60,8 +67,6 @@ export function setMapBoundsAsView(map: Map, forceUpdate?: boolean) {
 export function setPointAsView(map: Map, point: LatLng) {
   const zoomLevel = map.getZoom();
 
-  const distance = getZoomDistanceSensitivity(zoomLevel) * 2;
-
   useMapInteractionStore.getState().setPointInteraction({
     point,
     zoomLevel,
@@ -74,4 +79,10 @@ export function createMapViewUpdate(map: Map) {
 
 export function createMapPointClickUpdate(map: Map) {
   return (event: LeafletMouseEvent) => setPointAsView(map, event.latlng);
+}
+
+export function setActivityAsMapBounds(map: Map, activity: SummaryActivity) {
+  const bounds = getActivityMapLatLngBounds(activity) as LatLngTuple[];
+
+  map.fitBounds(bounds, { padding: [50, 50], animate: true, duration: 1 });
 }

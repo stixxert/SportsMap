@@ -31,7 +31,8 @@
       "@/assets/*": ["./src/assets/*"],
       "@/config/*": ["./src/config/*"],
       "@/testing/*": ["./src/testing/*"],
-      "@/types/*": ["./src/types/*"]
+      "@/types/*": ["./src/types/*"],
+      "@/providers/*": ["./src/providers/*"]
     }
   },
   "include": [

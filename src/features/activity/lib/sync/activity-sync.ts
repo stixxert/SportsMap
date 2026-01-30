@@ -7,6 +7,7 @@ import { useActivityMetadataStore } from "@/features/activity/stores/activity-me
 import { useActivitySyncStore } from "@/features/activity/stores/activity-store";
 import { openActivityDatabase } from "@/lib/db/origin-related-activity-db";
 import { ACTIVITY_STORE, INDEXES } from "@/features/activity/lib/data/schema";
+import { generateNumActivities } from "@/features/activity/demo-data/activity-generation";
 
 export const MAX_PAGE_SIZE = 200;
 export const SYNC_TIME_THRESHOLD = 1000 * 60 * 60; // 1 hr
@@ -50,19 +51,28 @@ export async function synchronizeActivities(
 
   const cursor = await index.openCursor(null, "prev");
 
-  let insertActivities: SummaryActivity[];
+  let insertActivities: SummaryActivity[] = [];
 
-  if (cursor) {
-    // DB has some or all activities
-    const lastActivity = cursor.value as SummaryActivity;
+  if (apiType !== ApiType.Demo) {
+    if (cursor) {
+      // DB has some or all activities
+      const lastActivity = cursor.value as SummaryActivity;
 
-    insertActivities = await findUninsertedActivities(
-      lastActivity,
-      activitiesApi,
-    );
+      insertActivities = await findUninsertedActivities(
+        lastActivity,
+        activitiesApi,
+      );
+    } else {
+      // DB has no activities
+      insertActivities = await getAllActivities(activitiesApi);
+    }
   } else {
-    // DB has no activities
-    insertActivities = await getAllActivities(activitiesApi);
+    if (!cursor) {
+      insertActivities = generateNumActivities(1000, 0, {
+        start: new Date(0),
+        end: new Date(Date.now()),
+      });
+    }
   }
 
   await addActivities(db, insertActivities);

@@ -19,6 +19,7 @@ import {
 } from "material-react-table";
 import { SummaryActivity } from "@/strava-api";
 import { useEffect, useMemo, useState } from "react";
+import { useMapActivityInteraction } from "@/features/maps/hooks/use-map-interaction";
 
 const StyledGridOverlay = styled("div")(({ theme }) => ({
   display: "flex",
@@ -265,6 +266,13 @@ export function ActivityTable() {
     setSelectedRows({});
   }, [setSelectedRows, viewActivities]);
 
+  const {
+    addHighlightedActivity,
+    removeHighlightedActivity,
+    toggleHighlightedActivity,
+    toggleActivityInFocus,
+  } = useMapActivityInteraction();
+
   const table = useMaterialReactTable({
     columns: columns,
     data: viewActivities || [],
@@ -319,7 +327,13 @@ export function ActivityTable() {
       },
     },
     muiTableBodyRowProps: ({ row }) => ({
-      onClick: () => toggleSelectedRow(row.id),
+      onMouseEnter: () => addHighlightedActivity(row.original.id ?? 0),
+      onMouseLeave: () => removeHighlightedActivity(row.original.id ?? 0),
+      onClick: () => {
+        toggleActivityInFocus(row.original.id ?? null);
+        toggleSelectedRow(row.id);
+        setTimeout(() => removeHighlightedActivity(row.original.id ?? 0), 1500);
+      },
       selected: isSelectedRow(row.id),
       sx: (theme) => ({
         backgroundColor: isSelectedRow(row.id)

@@ -1,12 +1,12 @@
 import { encode, LatLngTuple } from "@googlemaps/polyline-codec";
-import { generateRandomActivityMap } from "@/features/demo-data/map-generation";
+import { generateRandomActivityMap } from "@/features/activity/demo-data/map-generation";
 import { SportType, SummaryActivity } from "@/strava-api";
 import { randomBetween, randomFromArray } from "@/utils/misc";
 
 const DISTANCE_BOUNDS = [1000, 100000];
 const ELEVATION_GAIN_BOUNDS = [10, 10000];
 
-const START_DATE_BOUNDS = [new Date(0).getUTCDate(), Date.now()];
+const START_DATE_BOUNDS = [new Date(0).getTime(), Date.now()];
 const MOVING_TIME_BOUNDS = [60 * 10, 60 * 60 * 24 * 1.5];
 
 const defaultOptions = {
@@ -28,11 +28,13 @@ export function generateActivity(
     options ? options : {},
   );
 
-  const _map = generateRandomActivityMap();
+  const _map = generateRandomActivityMap({
+    radiusInMeters: randomBetween(DISTANCE_BOUNDS[0], DISTANCE_BOUNDS[1] / 10),
+  });
 
   const map = {
     id: crypto.randomUUID(),
-    summary_polyline: encode(_map.map as LatLngTuple[]),
+    summaryPolyline: encode(_map.map as LatLngTuple[]),
   };
 
   const distance = randomBetween(DISTANCE_BOUNDS[0], DISTANCE_BOUNDS[1]);
@@ -68,19 +70,16 @@ export function generateNumActivities(
       if (dateBounds.start) {
         if (dateBounds.end) {
           startDate = new Date(
-            randomBetween(
-              dateBounds.start.getUTCDate(),
-              dateBounds.end.getUTCDate(),
-            ),
+            randomBetween(dateBounds.start.getTime(), dateBounds.end.getTime()),
           );
         } else {
           startDate = new Date(
-            randomBetween(dateBounds.start.getUTCDate(), START_DATE_BOUNDS[1]),
+            randomBetween(dateBounds.start.getTime(), START_DATE_BOUNDS[1]),
           );
         }
       } else if (dateBounds.end) {
         startDate = new Date(
-          randomBetween(START_DATE_BOUNDS[0], dateBounds.end.getUTCDate()),
+          randomBetween(START_DATE_BOUNDS[0], dateBounds.end.getTime()),
         );
       }
     }
@@ -88,7 +87,7 @@ export function generateNumActivities(
     return generateActivity({
       name: `Activity ${adjustedIndex}`,
       id: adjustedIndex,
-      ...startDate,
+      startDate,
     });
   });
 }

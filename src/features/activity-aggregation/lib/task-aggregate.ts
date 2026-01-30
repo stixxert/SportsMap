@@ -70,12 +70,13 @@ export async function performActivityAggregation(
     selectionOptions,
   );
 
-  const adjustedStartDateSearch = existingAggregatedIndex
-    ? existingAggregatedIndex.updatedAt
-    : selectionOptions.startDate;
+  let adjustedStartDate = selectionOptions.startDate;
+
+  if (existingAggregatedIndex)
+    adjustedStartDate = existingAggregatedIndex.updatedAt;
 
   const adjustedOptions = Object.assign({}, selectionOptions, {
-    startDate: adjustedStartDateSearch,
+    startDate: adjustedStartDate,
   });
 
   const activities = await getActivities(db, adjustedOptions);
@@ -87,7 +88,9 @@ export async function performActivityAggregation(
   const aggregationInput = breakdownActivities(activities);
 
   if (!aggregationHandlers[taskType])
-    throw new Error("Missing Aggregator Task processor");
+    throw new Error(
+      `Missing Aggregator Task processor for: ${taskType.toString()}`,
+    );
 
   const { aggregate, mergeAggregate } = aggregationHandlers[taskType];
 
@@ -97,7 +100,9 @@ export async function performActivityAggregation(
 
   if (existingAggregatedIndex) {
     if (!mergeAggregate)
-      throw new Error("Missing Aggregator Merge Task processor");
+      throw new Error(
+        `Missing Aggregator Merge Task processor for: ${taskType.toString()}`,
+      );
 
     mergedAggregationOutputs = mergeAggregate([
       existingAggregatedIndex.index,
@@ -105,11 +110,25 @@ export async function performActivityAggregation(
     ]);
   }
 
+  await setAggregatedRow(
+    db,
+    taskType,
+    selectionOptions,
+    mergedAggregationOutputs,
+  );
+}
+
+async function setAggregatedRow(
+  db: ActivityDatabase,
+  taskType: AggregationTaskType,
+  selectionOptions: ActivityAggregationSelector,
+  index: unknown,
+) {
   const aggregatedRow = Object.assign(
     {},
     selectionOptions,
     { updatedAt: new Date(Date.now()) },
-    { index: mergedAggregationOutputs },
+    { index: index },
   ) as unknown as AggregatedIndex;
 
   await setAggregatedData(db, taskType, aggregatedRow);

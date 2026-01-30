@@ -85,19 +85,19 @@ export function generateActivityMap(options: PolygonOptions): Point[] {
 }
 
 const RANDOM_BOUNDS = [
-  [-85, 85],
-  [-160, 160],
+  [-70, 70],
+  [-180, 180],
 ];
+
 const RANDOM_RADIUS_BOUNDS = [500, 20000];
 const RANDOM_NUM_POINTS_BOUNDS = [10, 100];
 
-export function generateRandomActivityMap(): {
-  options: PolygonOptions;
+export function generateRandomActivityMap(options: Partial<PolygonOptions>): {
   map: Point[];
 } {
   const center: Point = [
     randomBetween(RANDOM_BOUNDS[0][0], RANDOM_BOUNDS[0][1]),
-    randomBetween(RANDOM_BOUNDS[0][1], RANDOM_BOUNDS[1][1]),
+    randomBetween(RANDOM_BOUNDS[1][0], RANDOM_BOUNDS[1][1]),
   ];
 
   const radiusInMeters = randomBetween(
@@ -110,11 +110,12 @@ export function generateRandomActivityMap(): {
     RANDOM_NUM_POINTS_BOUNDS[1],
   );
 
-  const options = {
+  options = {
     center,
     radiusInMeters,
     numberOfPoints,
+    ...options,
   };
 
-  return { options, map: generateActivityMap(options) };
+  return { map: generateActivityMap(options as PolygonOptions) };
 }

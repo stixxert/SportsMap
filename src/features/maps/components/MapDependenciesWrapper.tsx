@@ -10,6 +10,8 @@ import {
 import { useActivityCategorizationQuerySync } from "@/features/activity/hooks/window-dependent-subscribes";
 import { useActivityFiltering } from "@/features/activity-filter/hooks/use-activity-filtering";
 import { useActivitySynchronization } from "@/features/activity/hooks/sync-state";
+import MapLoadingState from "@/features/maps/components/overlay/MapLoadingState";
+import * as React from "react";
 
 export default function MapDependenciesWrapper({
   children,
@@ -26,5 +28,9 @@ export default function MapDependenciesWrapper({
 
   useActivitySynchronization();
 
-  return <>{children}</>;
+  return (
+    <>
+      {children} <MapLoadingState />
+    </>
+  );
 }

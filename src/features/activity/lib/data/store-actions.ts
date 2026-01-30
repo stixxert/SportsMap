@@ -8,7 +8,12 @@ import {
   MIN_LOWER_BOUNDS,
 } from "@/utils/db";
 import { ACTIVITY_STORE, INDEXES } from "@/features/activity/lib/data/schema";
-import { ActivityDatabase } from "@/lib/db/origin-related-activity-db";
+import {
+  ActivityDatabase,
+  openActivityDatabase,
+} from "@/lib/db/origin-related-activity-db";
+import { ActivityId } from "@/features/maps/types/types";
+import { ApiType } from "@/types/configuration-types";
 
 export type ActivitySelectionOptions = {
   startDate?: Date;
@@ -116,4 +121,21 @@ export async function getActivities(
   }
 
   return store.getAll();
+}
+
+export async function getActivity(
+  dataOrigin: ApiType,
+  activityId: ActivityId,
+): Promise<SummaryActivity | undefined> {
+  const db = await openActivityDatabase(dataOrigin);
+
+  const activity = await db.getFromIndex(
+    ACTIVITY_STORE,
+    INDEXES.ID,
+    activityId,
+  );
+
+  if (!activity) return undefined;
+
+  return activity;
 }

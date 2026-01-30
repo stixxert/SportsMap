@@ -25,9 +25,15 @@ export function useProfile() {
     );
   }
 
-  const { data, error } = useSWR(constraintValid() ? "true" : null, fetcher, {
-    revalidateOnFocus: false,
-  });
+  const { data, isLoading, isValidating, error } = useSWR(
+    constraintValid() ? "true" : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+    },
+  );
 
-  return { user: data as DetailedAthlete, error };
+  const profileUsable = apiType === ApiType.Strava; // || isLoading || isValidating || Boolean(data);
+
+  return { user: data as DetailedAthlete, error, profileUsable };
 }
