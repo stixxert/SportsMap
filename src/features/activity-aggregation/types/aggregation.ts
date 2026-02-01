@@ -1,22 +1,22 @@
 import { ActivityAggregationSelector } from "@/features/activity-aggregation/types/data";
-import { SpatialDataType } from "@/features/activity-aggregation/spatial-index/types";
+import {
+  SPATIAL_INDEX_KEY,
+  SpatialDataType,
+} from "@/features/activity-aggregation/spatial-index/types";
 import { ApiType } from "@/types/configuration-types";
 import { processWorkerTask } from "@/features/activity-aggregation/lib/task-aggregate";
 import { Point } from "@/types/types";
+import { FEATURE_COLLECTION_INDEX_KEY } from "@/features/activity-aggregation/map-activity-features/types";
 
 export const AggregationTask = {
-  spatial: "spatialIndex",
+  spatial: SPATIAL_INDEX_KEY,
+  featureCollection: FEATURE_COLLECTION_INDEX_KEY,
 } as const;
 
 export interface AggregationTask {
   taskType: AggregationTaskType;
   originType: ApiType;
   selector: ActivityAggregationSelector;
-}
-
-export interface AggregationResult {
-  completed: boolean;
-  data: string | unknown | undefined;
 }
 
 export interface AggregationWorkerActions {

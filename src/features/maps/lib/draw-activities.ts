@@ -9,23 +9,12 @@ import { Feature, FeatureCollection, Position } from "geojson";
 import "leaflet/dist/leaflet.css";
 import "leaflet.vectorgrid";
 import { ZOOM_BOUNDS } from "@/config/map";
+import { featuresToCollection, mapPointsToFeature } from "@/utils/geo";
 
-export function createActivityFeatureMap(
-  activity: SummaryActivity,
-): Feature | undefined {
+export function createActivityFeatureMap(activity: SummaryActivity) {
   const points = decode(activity.map?.summaryPolyline || "");
 
-  if (!points.length) return undefined;
-
-  return {
-    id: activity.id,
-    type: "Feature",
-    geometry: {
-      type: "LineString",
-      coordinates: points.map((pt) => [pt[1], pt[0]] as Position),
-    },
-    properties: {},
-  };
+  return mapPointsToFeature(points, activity.id ?? 0);
 }
 
 export function activityToGeoJSON(
@@ -50,17 +39,7 @@ export function activitiesToGeoJSON(
 
   if (!maps.length) return undefined;
 
-  return {
-    type: "FeatureCollection",
-    features: maps,
-  };
-}
-
-export function featuresToCollection(features: Feature[]): FeatureCollection {
-  return {
-    type: "FeatureCollection",
-    features: features,
-  };
+  return featuresToCollection(maps);
 }
 
 export const allActivityProps: PathOptions = {

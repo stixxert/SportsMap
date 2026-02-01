@@ -1,13 +1,13 @@
 import * as React from "react";
-import { Drawer, Stack } from "@mui/material";
+import { Drawer, Stack, Box } from "@mui/material";
 
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 
 import {
-  drawerVisible,
   selectedContains,
   SelectionMenuTypes,
   updateSelected,
+  useDrawerOpenWidth,
 } from "@/features/maps/components/overlay/Overlay";
 import { JSX } from "react";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -36,12 +36,12 @@ const icons: FunctionIcon[] = [
     icon: ActivityToolbarIcon,
     activeIcon: <ChevronRightIcon />,
   },
-  /* TODO: Implement filtering of activity categories */
-  /*{
+  {
     type: "filter",
     label: "Filter activities",
     icon: <FilterAltIcon />,
-  },*/
+    activeIcon: <ChevronRightIcon />,
+  },
   {
     type: "marker",
     label: "Marker on map",
@@ -56,30 +56,23 @@ export function FunctionToolbar({
   selected: SelectionMenuTypes[] | null;
   setSelected: (selected: SelectionMenuTypes[] | null) => void;
 }) {
+  const drawerWidth = useDrawerOpenWidth(selected);
+
   return (
     <Drawer
       variant={"permanent"}
       anchor={"right"}
       slotProps={{
         paper: {
-          sx: (theme) => ({
-            overflow: "hidden",
-            height: "auto",
-            width: "auto",
-            border: "none",
+          sx: {
+            display: "flex",
+            position: "fixed",
+            right: drawerWidth,
+            top: 0,
+            marginTop: 2,
             backgroundColor: "transparent",
-            paddingTop: 2,
-            paddingRight: 2,
-            paddingLeft: 1,
-            paddingBottom: 1,
-
-            [theme.breakpoints.down("sm")]: {
-              right: drawerVisible(selected) ? "80vw" : 0,
-            },
-            [theme.breakpoints.up("sm")]: {
-              right: drawerVisible(selected) ? "45vw" : 0,
-            },
-          }),
+            border: "none",
+          },
         },
       }}
     >
@@ -90,7 +83,7 @@ export function FunctionToolbar({
         alignContent={"center"}
         justifyContent={"center"}
         paddingBottom={2}
-        width={"100%"}
+        paddingRight={2}
       >
         {icons.map((icon) => {
           const isActive = selectedContains(selected, icon.type);

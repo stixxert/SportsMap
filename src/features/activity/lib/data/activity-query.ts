@@ -26,7 +26,7 @@ export async function getActivitiesByCategory(
   return getActivities(db, categoryParams);
 }
 
-export function activityDependenciesCallback() {
+export async function activityDependenciesCallback() {
   if (!useActivitySyncStore.getState().activitiesSync) return;
 
   const apiType = useApiTypeStore.getState().apiType;
@@ -34,12 +34,10 @@ export function activityDependenciesCallback() {
   const categoryParams =
     useActivityCategoryParamStore.getState().categoryParams;
 
-  setTimeout(async () => {
-    const activities = await getActivitiesByCategory(
-      apiType || undefined,
-      categoryParams,
-    );
+  const activities = await getActivitiesByCategory(
+    apiType || undefined,
+    categoryParams,
+  );
 
-    useActivityStore.getState().setActivities(activities);
-  });
+  useActivityStore.getState().setActivities(activities);
 }

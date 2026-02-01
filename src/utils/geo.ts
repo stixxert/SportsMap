@@ -1,6 +1,7 @@
 "use client";
 
 import { Point } from "@/types/types";
+import { Feature, FeatureCollection, Position } from "geojson";
 
 /* https://stackoverflow.com/a/6853926 */
 export function getClosestPointOnLine(linePoints: Point[], queryPoint: Point) {
@@ -36,42 +37,29 @@ export function pointDistanceTo(a: Point, b: Point) {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-/* https://stackoverflow.com/a/6853926 */
-export function pointDistanceToLine(
-  linePoints: number[][],
-  queryPoint: number[],
-) {
-  /* const closestPoint = getClosestPointOnLine(linePoints, queryPoint);
-
-  const dx = queryPoint[0] - closestPoint[0];
-  const dy = queryPoint[1] - closestPoint[1];
-
-  return [dx, dy]; */
-  /*  return Math.sqrt(dx * dx + dy * dy); */
-}
-
 export const M_PER_DEG_LNG_EQ = 113200;
 export const M_PER_DEG_LAT = 111000;
 
-const DEG_TO_RAD = Math.PI / 180;
+export function mapPointsToFeature(
+  points: Point[],
+  id: number,
+): Feature | undefined {
+  if (!points.length) return undefined;
 
-export function metersDistanceToLatLng(referenceLat: number, distance: number) {
-  const m_per_deg_lng = M_PER_DEG_LNG_EQ * Math.cos(referenceLat * DEG_TO_RAD);
-
-  const m_dist_lat = distance / M_PER_DEG_LAT;
-  const m_dist_lng = distance / m_per_deg_lng;
-
-  return [m_dist_lat, m_dist_lng];
+  return {
+    id: id,
+    type: "Feature",
+    geometry: {
+      type: "LineString",
+      coordinates: points.map((pt) => [pt[1], pt[0]] as Position),
+    },
+    properties: {},
+  };
 }
 
-export function latLngDistanceToMeters(
-  referenceLat: number,
-  latLongDistance: number[],
-) {
-  const m_per_deg_lng = M_PER_DEG_LNG_EQ * Math.cos(referenceLat * DEG_TO_RAD);
-
-  const m_dist_lat = M_PER_DEG_LAT * latLongDistance[0];
-  const m_dist_lng = m_per_deg_lng * latLongDistance[1];
-
-  return Math.sqrt(m_dist_lat ** 2 + m_dist_lng ** 2);
+export function featuresToCollection(features: Feature[]): FeatureCollection {
+  return {
+    type: "FeatureCollection",
+    features: features,
+  };
 }

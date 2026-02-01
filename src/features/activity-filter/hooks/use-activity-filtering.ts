@@ -1,6 +1,5 @@
 import {
   useActivityFilter,
-  useFilterAggregationProcessingStatus,
   useFilterAggregationProcessingStore,
 } from "@/features/activity-filter/stores/active-filter-store";
 import { useApiType } from "@/features/auth/stores/api-store";
@@ -9,12 +8,6 @@ import { useAggregateDispatcher } from "@/features/activity-aggregation";
 import { useCallback, useEffect } from "react";
 import { ApiType } from "@/types/configuration-types";
 import { ActivityAggregationSelector } from "@/features/activity-aggregation";
-import { getAggregatedData } from "@/features/activity-aggregation/lib/schema";
-import { openActivityDatabase } from "@/lib/db/origin-related-activity-db";
-import { AggregationTask } from "@/features/activity-aggregation/types/aggregation";
-import { useSpatialIndexStore } from "@/features/activity-filter/stores/aggregation-stores";
-import { getSpatialIndexFromAggregateIndex } from "@/features/activity-aggregation/spatial-index/aggregate";
-
 export function useActivityFiltering() {
   const filterOptions = useActivityFilter();
 
@@ -26,7 +19,6 @@ export function useActivityFiltering() {
 
   const performAggregate = useAggregateDispatcher();
 
-  const filterProcessingActive = useFilterAggregationProcessingStatus();
   const setFilterProcessingActive = useFilterAggregationProcessingStore(
     (state) => state.setLoading,
   );
@@ -61,29 +53,4 @@ export function useActivityFiltering() {
     runAggregationProcessing,
     setFilterProcessingActive,
   ]);
-
-  async function spatialUpdateCallback(
-    type: ApiType,
-    options: ActivityAggregationSelector,
-  ) {
-    if (!type) return;
-
-    const db = await openActivityDatabase(type);
-
-    const index = await getAggregatedData(db, AggregationTask.spatial, options);
-
-    useSpatialIndexStore
-      .getState()
-      .setIndex(
-        index ? (getSpatialIndexFromAggregateIndex(index) ?? null) : null,
-      );
-  }
-
-  useEffect(() => {
-    if (filterProcessingActive !== false) return;
-
-    if (!apiType) return;
-
-    void spatialUpdateCallback(apiType, filterOptions);
-  }, [apiType, filterOptions, filterProcessingActive]);
 }

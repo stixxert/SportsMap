@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 
-import { Box } from "@mui/material";
+import { Box, Drawer, useTheme, useMediaQuery } from "@mui/material";
 import { FunctionToolbar } from "@/features/maps/components/overlay/Toolbar";
-import { ActivityDrawer } from "@/features/maps/components/activity/Drawer";
+import { OverlayDrawer } from "@/features/maps/components/overlay/OverlayDrawer";
 import { ViewController } from "@/features/maps/components/View";
 import { BottomMenu } from "@/features/maps/components/overlay/BottomMenu";
+import { FilterOptionBox } from "@/features/maps/components/activity/FilterOptionBox";
+import { ActivityTable } from "@/features/maps/components/activity/ActivityTable";
 
 export const MENU_OPTIONS_FOR_DRAWER = ["list", "filter"] as const;
 
@@ -26,7 +28,17 @@ export function updateSelected(
 ) {
   let updatedSelected = selected ? selected.slice() : [];
 
-  if (drawerVisible(selected) && newSelected in MENU_OPTIONS_FOR_DRAWER) {
+  console.log(
+    selected,
+    newSelected,
+    drawerVisible(selected),
+    newSelected in MENU_OPTIONS_FOR_DRAWER,
+  );
+
+  if (
+    drawerVisible(selected) &&
+    MENU_OPTIONS_FOR_DRAWER.find((v) => v === newSelected)
+  ) {
     for (const drawerOption of MENU_OPTIONS_FOR_DRAWER) {
       if (selectedContains(selected, drawerOption)) {
         updatedSelected = updatedSelected.filter(
@@ -49,12 +61,29 @@ export function drawerVisible(selected: SelectionMenuTypes[] | null) {
   return false;
 }
 
+export function useDrawerOpenWidth(selected: SelectionMenuTypes[] | null) {
+  const theme = useTheme();
+
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
+  if (selectedContains(selected, "list")) {
+    if (isSmallScreen) return "25vw";
+    return "40vw";
+  } else if (selectedContains(selected, "filter")) {
+    return "25vw";
+  }
+
+  return "0";
+}
+
 export default function Overlay() {
   const [selected, setSelected] = useState<SelectionMenuTypes[] | null>(null);
 
   function viewControllerIsVisible() {
     return !drawerVisible(selected);
   }
+
+  console.log(selected);
 
   return (
     <>
@@ -68,14 +97,10 @@ export default function Overlay() {
       >
         <ViewController />
       </Box>
-      <Box
-        sx={{
-          right: 0,
-        }}
-      >
-        <ActivityDrawer drawerOpen={selectedContains(selected, "list")} />
-        <FunctionToolbar selected={selected} setSelected={setSelected} />
-      </Box>
+
+      <OverlayDrawer selected={selected} />
+      <FunctionToolbar selected={selected} setSelected={setSelected} />
+
       <Box sx={{ left: 0, bottom: 0 }}>
         <BottomMenu />
       </Box>

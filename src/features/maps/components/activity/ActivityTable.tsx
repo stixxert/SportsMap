@@ -269,7 +269,6 @@ export function ActivityTable() {
   const {
     addHighlightedActivity,
     removeHighlightedActivity,
-    toggleHighlightedActivity,
     toggleActivityInFocus,
   } = useMapActivityInteraction();
 

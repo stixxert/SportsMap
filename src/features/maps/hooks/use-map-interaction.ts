@@ -17,10 +17,10 @@ import { SummaryActivity } from "@/strava-api";
 import {
   createActivityFeatureMap,
   createActivityVectorGrid,
-  featuresToCollection,
   highlightActivityProps,
 } from "@/features/maps/lib/draw-activities";
 import { Feature } from "geojson";
+import { featuresToCollection } from "@/utils/geo";
 
 export function useMapInteraction() {
   const map = useMap();

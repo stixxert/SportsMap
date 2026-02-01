@@ -1,17 +1,22 @@
 import { useEffect, useMemo, useRef } from "react";
-import {
-  activitiesToGeoJSON,
-  createActivityVectorGrid,
-} from "@/features/maps/lib/draw-activities";
+import { createActivityVectorGrid } from "@/features/maps/lib/draw-activities";
 import { useMap } from "@/features/maps/stores/map-store";
 import L from "leaflet";
-import { useCurrentActivities } from "@/features/activity/stores/activity-store";
 import { useProfile } from "@/features/profile/hooks/use-profile";
 
 import useSWRImmutable from "swr/immutable";
 import { fetchLocation } from "@/features/maps/lib/profile-location";
 import { setMapBoundsAsView } from "@/features/maps/lib/map-view";
 import { useSpatialIndexReadinessStore } from "@/features/maps/lib/spatial/dispatch-worker";
+import {
+  useActivityFilter,
+  useFilterAggregationProcessingStatus,
+} from "@/features/activity-filter/stores/active-filter-store";
+import { useApiType } from "@/features/auth/stores/api-store";
+import { openActivityDatabase } from "@/lib/db/origin-related-activity-db";
+import { getAggregatedData } from "@/features/activity-aggregation/lib/schema";
+import { AggregationTask } from "@/features/activity-aggregation/types/aggregation";
+import { getFeatureCollectionFromIndex } from "@/features/activity-aggregation/map-activity-features/aggregate";
 
 /* Timing issue; start(or any?) index update does not update map */
 export function useInitialMapView() {
@@ -41,30 +46,49 @@ export function useInitialMapView() {
 export function useActivitiesOnMap() {
   const map = useMap();
 
+  const apiType = useApiType();
+
   const activityLayer = useRef<L.VectorGrid | null>(null);
 
-  const activities = useCurrentActivities();
+  const filterLoading = useFilterAggregationProcessingStatus();
 
-  useEffect(() => {
+  const activityFilter = useActivityFilter();
+
+  const updateMapFeatures = async () => {
     if (!map.current) return;
 
-    const geojson = activitiesToGeoJSON(activities);
-    if (activityLayer.current) {
-      activityLayer.current.remove();
-    }
+    if (filterLoading === undefined && filterLoading) return;
 
-    if (!geojson) return;
+    if (!apiType) return;
 
-    const layer = createActivityVectorGrid(map.current, geojson);
+    const db = await openActivityDatabase(apiType);
+
+    const aggregatedData = await getAggregatedData(
+      db,
+      AggregationTask.featureCollection,
+      activityFilter,
+    );
+
+    if (!aggregatedData) return;
+
+    const featureCollection = getFeatureCollectionFromIndex(aggregatedData);
+
+    if (!featureCollection) return;
+
+    const layer = createActivityVectorGrid(map.current, featureCollection);
 
     if (!layer) return;
 
     activityLayer.current = layer;
+  };
+
+  useEffect(() => {
+    void updateMapFeatures();
 
     return () => {
       if (activityLayer.current) activityLayer.current.remove();
     };
-  }, [activities, map]);
+  });
 }
 
 /* true: map ready. false; not */
