@@ -3,10 +3,10 @@
 import {
   useApiConfigurationStore,
   useApiTypeStore,
-} from "@/features/auth/stores/api-store";
+} from "@/lib/auth/api-store";
 import { useEffect } from "react";
-import { synchronizeActivities } from "@/features/activity/lib/sync/activity-sync";
-import { useActivitySyncStore } from "@/features/activity/stores/activity-store";
+import { synchronizeActivities } from "@/features/activity/lib/activity-sync";
+import { useActivitySyncStore } from "@/lib/activity/sync-state";
 import { useActivityMetadataStore } from "@/features/activity/stores/activity-metadata-store";
 
 /* needs sync using hook, as localstorage of metadata requires a reference to the client browser */

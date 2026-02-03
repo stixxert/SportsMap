@@ -1,11 +1,10 @@
 import * as zustand from "zustand";
 
 import { SummaryActivity } from "@/strava-api";
-import { createAvailabilityStore, AvailabilityStore } from "@/utils/store";
 import { useMapInteractionStore } from "@/features/maps/stores/map-interaction-store";
 import { updateActivitiesInViewCallback } from "@/features/maps/lib/map-view";
-import { useFilterAggregationProcessingStore } from "@/features/activity-filter/stores/active-filter-store";
-import { useApiTypeStore } from "@/features/auth/stores/api-store";
+import { useFilterProcessingResults } from "@/lib/filter/active-filter-store";
+import { useApiTypeStore } from "@/lib/auth/api-store";
 import { updateIndexWithMarshalling } from "@/features/maps/lib/spatial/dispatch-worker";
 
 export interface ActivityInteractionViewState {
@@ -19,14 +18,12 @@ interface ActivityInteractionViewActions {
 type ActivityInteractionViewStore = ActivityInteractionViewState &
   ActivityInteractionViewActions;
 
-export const useActivityInteractionViewStore = zustand.create<
-  ActivityInteractionViewStore & AvailabilityStore
->((set) => ({
-  ...createAvailabilityStore(set),
-  activityView: null,
-  setActivityView: (activityView: SummaryActivity[] | null) =>
-    set({ activityView: activityView }),
-}));
+export const useActivityInteractionViewStore =
+  zustand.create<ActivityInteractionViewStore>((set) => ({
+    activityView: null,
+    setActivityView: (activityView: SummaryActivity[] | null) =>
+      set({ activityView: activityView }),
+  }));
 
 useMapInteractionStore.subscribe((state, prevState) => {
   if (
@@ -39,7 +36,5 @@ useMapInteractionStore.subscribe((state, prevState) => {
   void updateActivitiesInViewCallback();
 });
 
-useFilterAggregationProcessingStore.subscribe(() =>
-  updateIndexWithMarshalling(),
-);
+useFilterProcessingResults.subscribe(() => updateIndexWithMarshalling());
 useApiTypeStore.subscribe(() => updateIndexWithMarshalling());

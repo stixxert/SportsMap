@@ -3,10 +3,10 @@ import {
   AggregationInput,
   AggregationOutput,
 } from "@/features/activity-aggregation/types/aggregation";
-import { AggregatedIndex } from "@/features/activity-aggregation/lib/schema";
 
 import { FeatureCollection } from "geojson";
 import { featuresToCollection, mapPointsToFeature } from "@/utils/geo";
+import { parseFeatureCollection } from "@/lib/activity-aggregation/feature-collection-index";
 
 export const transformData: AggregationIndexerFn = (
   input: AggregationInput,
@@ -47,17 +47,3 @@ export const featureCollectionAggregateHandlers = {
   aggregate: transformData,
   mergeAggregate: mergeTransformedIndexes,
 };
-
-function parseFeatureCollection(index: unknown): FeatureCollection {
-  return JSON.parse(index as string);
-}
-
-export function getFeatureCollectionFromIndex(
-  aggregateIndex: AggregatedIndex,
-): FeatureCollection | undefined {
-  const featureData = aggregateIndex.index;
-
-  if (!featureData) return undefined;
-
-  return parseFeatureCollection(featureData);
-}

@@ -1,16 +1,17 @@
 "use client";
 
 import {
-  Map,
   LatLng,
-  LeafletMouseEvent,
   LatLngBounds,
   LatLngTuple,
+  LeafletMouseEvent,
+  Map,
 } from "leaflet";
 import { useActivityInteractionViewStore } from "@/features/maps/stores/activity-interaction-view-store";
 import {
   PointInteraction,
   useMapInteractionStore,
+  usePointSensitivityStore,
 } from "@/features/maps/stores/map-interaction-store";
 import { SummaryActivity } from "@/strava-api";
 import {
@@ -19,8 +20,15 @@ import {
   getPointBounds,
 } from "@/features/maps/utils/latlng-bounds";
 import { getViewActivities } from "@/features/maps/lib/spatial/dispatch-worker";
-import { getActivityMapLatLngBounds } from "@/features/activity-aggregation/lib/map-breakdown";
-import { getZoomDistanceSensitivity } from "@/features/maps/utils/bounds";
+import { getActivityMapLatLngBounds } from "@/lib/activity-map-breakdown";
+import { calculatePointRadius } from "@/features/maps/utils/point";
+
+export function getZoomDistanceSensitivity(zoomLevel: number) {
+  return calculatePointRadius(
+    usePointSensitivityStore.getState().pointSensitivity,
+    zoomLevel,
+  );
+}
 
 export async function updateActivitiesInViewCallback() {
   const { interaction, value } = useMapInteractionStore.getState();

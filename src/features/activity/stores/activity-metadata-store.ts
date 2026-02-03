@@ -1,10 +1,11 @@
 "use client";
 
-import { ApiType } from "@/src/types/configuration-types";
 import * as zustand from "zustand";
-import { SyncMetaData } from "@/features/activity/lib/sync/sync-metadata";
+import { SyncMetaData } from "@/features/activity/lib/sync-metadata";
 
-/* carrying the ApiType in the State is redundant, problem for later */
+import { ApiType } from "@/lib/auth/api-types";
+
+/* carrying the ApiType in the State is (kinda) redundant, problem for later */
 
 export interface SyncMetaDataState {
   metaData: SyncMetaData | null;

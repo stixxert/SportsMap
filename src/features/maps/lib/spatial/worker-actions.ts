@@ -1,24 +1,23 @@
 "use client";
 
 import {
-  createMapIndexWorkerStateStore,
+  defaultMapIndexWorkerState,
   MapIndexWorkerState,
+  MapIndexWorkerUpdate,
 } from "@/features/maps/lib/base-worker";
 import {
-  AgnosticInteractionSearch,
+  InteractionSearch,
   getViewActivitiesImpl,
 } from "@/features/maps/lib/spatial/search";
+import { openActivityDatabase } from "@/lib/activity/db";
+import { compressSpan } from "@/lib/activity/sport-type-compression";
+import { AggregationCategory } from "@/types/activity-aggregation";
+import { getAggregatedData } from "@/lib/activity-aggregation/aggregation-schema";
 import {
+  aggregateIndexGetSpatialIndex,
+  constructSpatialIndex,
   SpatialDataIndex,
-  SpatialDataObject,
-} from "@/features/activity-aggregation";
-import RBush from "rbush";
-import { MapIndexWorkerUpdate } from "@/features/maps/types/types";
-import { getSpatialIndexFromAggregateIndex } from "@/features/activity-aggregation/spatial-index/aggregate";
-import { getAggregatedData } from "@/features/activity-aggregation/lib/schema";
-import { openActivityDatabase } from "@/lib/db/origin-related-activity-db";
-import { AggregationTask } from "@/features/activity-aggregation/types/aggregation";
-import { compressSpan } from "@/features/activity-aggregation/lib/type-span";
+} from "@/lib/activity-aggregation/spatial-index";
 
 export const SPATIAL_SEARCH_WORKER = "spatialSearch";
 
@@ -28,7 +27,7 @@ interface WorkerState extends MapIndexWorkerState {
 }
 
 function getViewActivitiesWrapper(workerState: WorkerState) {
-  return (view: AgnosticInteractionSearch) =>
+  return (view: InteractionSearch) =>
     getViewActivitiesImpl(
       workerState.indexObservationState.originType,
       workerState.index,
@@ -37,8 +36,8 @@ function getViewActivitiesWrapper(workerState: WorkerState) {
 }
 
 const workerState: WorkerState = Object.assign(
-  { index: new RBush<SpatialDataObject>(), updatedAt: new Date(0) },
-  createMapIndexWorkerStateStore(),
+  { index: constructSpatialIndex(), updatedAt: new Date(0) },
+  { ...defaultMapIndexWorkerState },
 );
 
 export const spatialIndexWorkerActions = Object.assign(
@@ -51,7 +50,7 @@ export const spatialIndexWorkerActions = Object.assign(
 
       const aggregatedIndex = await getAggregatedData(
         db,
-        AggregationTask.spatial,
+        AggregationCategory.Spatial,
         newState.selector,
       );
 
@@ -71,10 +70,10 @@ export const spatialIndexWorkerActions = Object.assign(
       let newIndex;
 
       if (aggregatedIndex) {
-        const _newIndex = getSpatialIndexFromAggregateIndex(aggregatedIndex);
+        const _newIndex = aggregateIndexGetSpatialIndex(aggregatedIndex);
 
         if (_newIndex) newIndex = _newIndex;
-      } else newIndex = new RBush<SpatialDataObject>();
+      } else newIndex = constructSpatialIndex();
 
       Object.assign(workerState, {
         index: newIndex,

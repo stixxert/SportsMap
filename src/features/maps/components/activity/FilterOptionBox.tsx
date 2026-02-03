@@ -2,9 +2,9 @@ import * as React from "react";
 
 import Box from "@mui/material/Box";
 import { SportType } from "@/strava-api";
-import { useSetActivityFilter } from "@/features/activity-filter/stores/active-filter-store";
-import { ActivityAggregationSelector } from "@/features/activity-aggregation";
+import { useSetActivityFilter } from "@/lib/filter/active-filter-store";
 import { MAX_UPPER_BOUNDS } from "@/utils/db";
+import { ActivityAggregationSelector } from "@/types/activity-selection";
 
 interface SportTypeFilter {
   displayName: string;

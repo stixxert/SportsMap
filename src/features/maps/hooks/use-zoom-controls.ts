@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useEffect } from "react";
 import { Map } from "leaflet";
 import { createGeolocationUpdateCallback } from "@/features/maps/lib/map-visuals";
-import { getMap, useMap } from "@/features/maps/stores/map-store";
+import { useMap } from "@/features/maps/stores/map-store";
 
 function checkZoomBounds(map: Map) {
   const bounds = { min: false, max: false };

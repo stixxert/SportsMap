@@ -3,9 +3,13 @@
 import React from "react";
 
 import { AppRouterCacheProvider as MUIProvider } from "@mui/material-nextjs/v15-appRouter";
+import dynamic from "next/dynamic";
 
 import { usePageReloadOnUnfreeze } from "@/src/hooks/page-unfreeze-reload";
-import { ClientSideProvider } from "@/providers/ClientOnlyProvider";
+
+const CacheProvider = dynamic(() => import("@/providers/CacheProvider"), {
+  ssr: false,
+});
 
 export default function AppProvider({
   children,
@@ -15,7 +19,7 @@ export default function AppProvider({
   usePageReloadOnUnfreeze();
   return (
     <MUIProvider>
-      <ClientSideProvider>{children}</ClientSideProvider>
+      <CacheProvider>{children}</CacheProvider>
     </MUIProvider>
   );
 }

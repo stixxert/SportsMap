@@ -1,11 +1,10 @@
 import * as Comlink from "comlink";
 
-import { ActivityAggregationSelector } from "@/features/activity-aggregation";
-import {
-  AggregationTask,
-  AggregationWorkerActions,
-} from "@/features/activity-aggregation/types/aggregation";
-import { ApiType } from "@/types/configuration-types";
+import { AggregationWorkerActions } from "@/features/activity-aggregation/types/aggregation";
+import { ActivityAggregationSelector } from "@/types/activity-selection";
+import { AggregationCategory } from "@/types/activity-aggregation";
+
+import { ApiType } from "@/lib/auth/api-types";
 
 export async function dispatchActivityAggregation(
   originType: ApiType,
@@ -23,7 +22,7 @@ export async function dispatchActivityAggregation(
   );
 
   await Promise.all(
-    Object.values(AggregationTask).map((taskType, index) =>
+    Object.values(AggregationCategory).map((taskType, index) =>
       wrappedWorkers[index % numWorkers].processWorkerTask(
         taskType,
         originType,

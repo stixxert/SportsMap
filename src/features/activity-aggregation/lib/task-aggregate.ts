@@ -1,46 +1,26 @@
-/*
- * Transform source data (activities) into types of elements.
- */
+"use client";
 
-import { getActivities } from "@/features/activity/lib/data/store-actions";
-import { IDBPIndex } from "idb";
+import { getActivities } from "@/features/activity/lib/store-actions";
+import { openActivityDatabase } from "@/lib/activity/db";
+
 import { SummaryActivity } from "@/strava-api";
-import {
-  ActivityDatabase,
-  ActivitySchema,
-  openActivityDatabase,
-} from "@/lib/db/origin-related-activity-db";
-import {
-  AggregationInput,
-  AggregationTaskType,
-} from "@/features/activity-aggregation/types/aggregation";
-import { breakdownActivity } from "@/features/activity-aggregation/lib/map-breakdown";
+
+import { AggregationInput } from "@/features/activity-aggregation/types/aggregation";
+
+import { breakdownActivity } from "@/lib/activity-map-breakdown";
+import { aggregationHandlers } from "@/features/activity-aggregation/handlers";
+import { ActivityAggregationSelector } from "@/types/activity-selection";
 import {
   AggregatedIndex,
+  AggregationTaskType,
+} from "@/types/activity-aggregation";
+import {
   getAggregatedData,
   setAggregatedData,
-} from "@/features/activity-aggregation/lib/schema";
-import { ActivityAggregationSelector } from "@/features/activity-aggregation/types/data";
-import { aggregationHandlers } from "@/features/activity-aggregation/handlers";
-import { ApiType } from "@/types/configuration-types";
+} from "@/lib/activity-aggregation/aggregation-schema";
+import { ActivityDatabase } from "@/lib/activity/activity-schema";
 
-async function getBoundaryValue(
-  index: IDBPIndex<
-    ActivitySchema,
-    ["activities"],
-    "activities",
-    string,
-    "readonly"
-  >,
-  boundary: "first" | "last",
-) {
-  const cursor = await index.openCursor(
-    undefined,
-    boundary === "first" ? "next" : "prev",
-  );
-
-  return cursor ? (cursor?.value as SummaryActivity) : null;
-}
+import { ApiType } from "@/lib/auth/api-types";
 
 export async function processWorkerTask(
   taskType: AggregationTaskType,

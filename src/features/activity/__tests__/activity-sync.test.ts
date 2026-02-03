@@ -5,7 +5,7 @@ import {
   findUninsertedActivities,
   getAllActivities,
   MAX_PAGE_SIZE,
-} from "../lib/sync/activity-sync";
+} from "../lib/activity-sync";
 
 const fetchFunction = (activities: unknown[]) =>
   jest.fn(async (url) =>

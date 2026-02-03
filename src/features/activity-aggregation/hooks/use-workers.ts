@@ -1,5 +1,7 @@
-import { useWorkerStore } from "@/features/activity-aggregation/stores/worker-store";
+"use client";
+
 import { useEffect } from "react";
+import { useWorkerStore } from "@/features/activity-aggregation/stores/worker-store";
 import { aggregationHandlers } from "@/features/activity-aggregation/handlers";
 
 export const AGGREGATE_WORKER_COUNT = Object.keys(aggregationHandlers).length;

@@ -1,22 +1,22 @@
-import { useEffect, useMemo, useRef } from "react";
-import { createActivityVectorGrid } from "@/features/maps/lib/draw-activities";
+import { useEffect, useRef } from "react";
+import { createActivityVectorGrid } from "@/features/maps/lib/activity-map-features";
 import { useMap } from "@/features/maps/stores/map-store";
 import L from "leaflet";
-import { useProfile } from "@/features/profile/hooks/use-profile";
 
 import useSWRImmutable from "swr/immutable";
-import { fetchLocation } from "@/features/maps/lib/profile-location";
+import { fetchLocation } from "@/features/maps/lib/location-query";
 import { setMapBoundsAsView } from "@/features/maps/lib/map-view";
 import { useSpatialIndexReadinessStore } from "@/features/maps/lib/spatial/dispatch-worker";
 import {
   useActivityFilter,
-  useFilterAggregationProcessingStatus,
-} from "@/features/activity-filter/stores/active-filter-store";
-import { useApiType } from "@/features/auth/stores/api-store";
-import { openActivityDatabase } from "@/lib/db/origin-related-activity-db";
-import { getAggregatedData } from "@/features/activity-aggregation/lib/schema";
-import { AggregationTask } from "@/features/activity-aggregation/types/aggregation";
-import { getFeatureCollectionFromIndex } from "@/features/activity-aggregation/map-activity-features/aggregate";
+  useFilterProcessingResultsStatus,
+} from "@/lib/filter/active-filter-store";
+import { useApiType } from "@/lib/auth/api-store";
+import { openActivityDatabase } from "@/lib/activity/db";
+import { AggregationCategory } from "@/types/activity-aggregation";
+import { getAggregatedData } from "@/lib/activity-aggregation/aggregation-schema";
+import { ProfileState, useProfile } from "@/src/hooks/user-profile";
+import { aggregateIndexGetFeatureCollectionIndex } from "@/lib/activity-aggregation/feature-collection-index";
 
 /* Timing issue; start(or any?) index update does not update map */
 export function useInitialMapView() {
@@ -50,14 +50,14 @@ export function useActivitiesOnMap() {
 
   const activityLayer = useRef<L.VectorGrid | null>(null);
 
-  const filterLoading = useFilterAggregationProcessingStatus();
+  const filterProcessingResultsReady = useFilterProcessingResultsStatus();
 
   const activityFilter = useActivityFilter();
 
   const updateMapFeatures = async () => {
     if (!map.current) return;
 
-    if (filterLoading === undefined && filterLoading) return;
+    if (!filterProcessingResultsReady) return;
 
     if (!apiType) return;
 
@@ -65,13 +65,14 @@ export function useActivitiesOnMap() {
 
     const aggregatedData = await getAggregatedData(
       db,
-      AggregationTask.featureCollection,
+      AggregationCategory.FeatureCollection,
       activityFilter,
     );
 
     if (!aggregatedData) return;
 
-    const featureCollection = getFeatureCollectionFromIndex(aggregatedData);
+    const featureCollection =
+      aggregateIndexGetFeatureCollectionIndex(aggregatedData);
 
     if (!featureCollection) return;
 
@@ -97,19 +98,11 @@ export function useAthleteLocationAsSpawnView() {
 
   const map = useMap();
 
-  const { user, error: profileError, profileUsable } = useProfile();
+  const profile = useProfile();
 
-  const dependenciesReady = user && !profileError;
+  const { profileUsable } = profile;
 
-  const searchKey = useMemo(() => {
-    if (!dependenciesReady) return null;
-
-    const { city, state, country } = user;
-
-    if (!(city || state || country)) return null;
-
-    return { city: city, county: state, country: country };
-  }, [user, dependenciesReady]);
+  const searchKey = dependenciesReady(profile) ? getSearchKey(profile) : null;
 
   const { data, error, isLoading } = useSWRImmutable(searchKey, fetchLocation);
 
@@ -126,11 +119,25 @@ export function useAthleteLocationAsSpawnView() {
   }, [map, data, error]);
 
   /* dependencies ready, no search key means no location in user profile */
-  if (dependenciesReady) {
+  if (dependenciesReady(profile)) {
     if (searchKey === null) return true;
 
     return !isLoading;
   } else if (!profileUsable) return true;
 
   return false;
+
+  function dependenciesReady({ user, error }: Partial<ProfileState>) {
+    return Boolean(user && !error);
+  }
+
+  function getSearchKey({ user }: Partial<ProfileState>) {
+    if (!user) return null;
+
+    const { city, state, country } = user;
+
+    if (!(city || state || country)) return null;
+
+    return { city: city, county: state, country: country };
+  }
 }

@@ -1,33 +1,31 @@
 import "fake-indexeddb/auto";
 import { IDBFactory } from "fake-indexeddb";
 import { beforeEach } from "@jest/globals";
-import {
-  ActivityDatabase,
-  openActivityDatabase,
-} from "@/lib/db/origin-related-activity-db";
-import { ApiType } from "@/types/configuration-types";
-import { seedActivities } from "@/features/activity/demo-data/seed-activities";
+import { openActivityDatabase } from "@/lib/activity/db";
+import { seedActivities } from "@/lib/demo-data/seed-activities";
 import { dispatchActivityAggregation } from "@/features/activity-aggregation/lib/dispatch-aggregate";
 
 import { SportType } from "@/strava-api";
-import { ActivityAggregationSelector } from "@/features/activity-aggregation/types/data";
-import {
-  AggregatedIndex,
-  ALL_SPORTS_TYPES,
-  getAggregatedData,
-} from "@/features/activity-aggregation/lib/schema";
 
 import {
   AggregationIndexerFn,
   AggregationOutput,
-  AggregationTask,
   AggregationWorkerActions,
 } from "@/features/activity-aggregation/types/aggregation";
 import { MAX_UPPER_BOUNDS } from "@/utils/db";
 import { AGGREGATE_WORKER_COUNT } from "@/features/activity-aggregation/hooks/use-workers";
 import { aggregationHandlers } from "@/features/activity-aggregation/handlers";
 import { processWorkerTask } from "@/features/activity-aggregation/lib/task-aggregate";
-import { getActivities } from "@/features/activity/lib/data/store-actions";
+import { getActivities } from "@/features/activity/lib/store-actions";
+import { ActivityAggregationSelector } from "@/types/activity-selection";
+import {
+  AggregatedIndex,
+  AggregationCategory,
+} from "@/types/activity-aggregation";
+import { getAggregatedData } from "@/lib/activity-aggregation/aggregation-schema";
+import { ActivityDatabase } from "@/lib/activity/activity-schema";
+
+import { ApiType } from "@/lib/auth/api-types";
 
 const transformData: AggregationIndexerFn = () => "emptyIndex";
 
@@ -54,6 +52,8 @@ const mergeTransformData: AggregationIndexerFn<AggregationOutput[]> = (
 const mockComlinkWrappedWorker: AggregationWorkerActions = {
   processWorkerTask,
 };
+
+const ALL_SPORTS_TYPES = Object.keys(SportType) as SportType[];
 
 jest.mock("comlink", () => {
   return { wrap: () => mockComlinkWrappedWorker };
@@ -87,7 +87,7 @@ describe("Activity Aggregation", () => {
 
     await seedActivities(activityDatabase, 1000, 0, firstInsertionOptions);
 
-    aggregationHandlers[AggregationTask.spatial] = {
+    aggregationHandlers[AggregationCategory.Spatial] = {
       aggregate: transformData,
       mergeAggregate: mergeTransformData,
     };
@@ -103,7 +103,7 @@ describe("Activity Aggregation", () => {
       endDate: new Date(Date.now()),
     };
 
-    const indexType = AggregationTask.spatial;
+    const indexType = AggregationCategory.Spatial;
 
     for (const sportType of Object.keys(SportType)) {
       const options: ActivityAggregationSelector = {
@@ -141,7 +141,7 @@ describe("Activity Aggregation", () => {
       endDate: new Date(Date.now()),
     };
 
-    const indexType = AggregationTask.spatial;
+    const indexType = AggregationCategory.Spatial;
     await dispatchActivityAggregation(ApiType.Demo, options, workerPool);
 
     const databaseReturnedIndex = await getAggregatedData(
@@ -168,7 +168,7 @@ describe("Activity Aggregation", () => {
       endDate: MAX_UPPER_BOUNDS.date,
     };
 
-    const indexType = AggregationTask.spatial;
+    const indexType = AggregationCategory.Spatial;
     await dispatchActivityAggregation(ApiType.Demo, options, workerPool);
 
     const opt = {

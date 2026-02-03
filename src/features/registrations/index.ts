@@ -1,10 +1,9 @@
 /* Extensions to activity data storage */
-import "@/features/activity/lib/data/schema";
+import "@/features/activity/lib/activity-schema";
 import "@/features/activity-aggregation/lib/schema";
 
 /* Store dependencies */
-import "@/features/activity/lib/sync/sync-metadata";
-import "@/features/activity-filter/stores/active-filter-store";
+import "@/features/activity/lib/sync-metadata";
 
 /* Map indexing */
 import "@/features/maps/stores/activity-interaction-view-store";

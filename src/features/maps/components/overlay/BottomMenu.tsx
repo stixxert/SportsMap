@@ -1,6 +1,6 @@
 import { Typography, Stack, Avatar, Drawer } from "@mui/material";
 import React from "react";
-import { usePrivacyNoticeStore } from "@/features/profile/stores/privacy-notice";
+import { usePrivacyNoticeStore } from "@/components/privacy-notice/privacy-notice";
 import GitHubIcon from "@mui/icons-material/GitHub";
 
 export function BottomMenu() {

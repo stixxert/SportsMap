@@ -1,14 +1,14 @@
 import * as Comlink from "comlink";
-import { AgnosticInteractionSearch } from "@/features/maps/lib/spatial/search";
+import { InteractionSearch } from "@/features/maps/lib/spatial/search";
 import { SummaryActivity } from "@/strava-api";
-import { MapIndexWorkerUpdate } from "@/features/maps/types/types";
-import { useApiTypeStore } from "@/features/auth/stores/api-store";
+import { useApiTypeStore } from "@/lib/auth/api-store";
 import {
   useActivityFilterStore,
-  useFilterAggregationProcessingStore,
-} from "@/features/activity-filter/stores/active-filter-store";
+  useFilterProcessingResults,
+} from "@/lib/filter/active-filter-store";
 import { spatialIndexWorkerActions } from "@/features/maps/lib/spatial/worker-actions";
-import { createWorkerReadinessStateStore } from "@/features/maps/lib/base-worker";
+import { createReadinessStore } from "@/utils/ready-state-store";
+import { MapIndexWorkerUpdate } from "@/features/maps/lib/base-worker";
 
 export type WorkerActions = typeof spatialIndexWorkerActions;
 
@@ -18,14 +18,14 @@ const worker: { ref: Remote<WorkerActions> | undefined } = {
   ref: undefined,
 };
 
-export const useSpatialIndexReadinessStore = createWorkerReadinessStateStore();
+export const useSpatialIndexReadinessStore = createReadinessStore();
 
 export function setSpatialSearchWorker(newWorker: Worker) {
   worker.ref = Comlink.wrap(newWorker);
 }
 
 export async function getViewActivities(
-  view: AgnosticInteractionSearch,
+  view: InteractionSearch,
 ): Promise<SummaryActivity[]> {
   if (!worker.ref) {
     throw new Error("Spatial search worker not initialised");
@@ -47,9 +47,10 @@ export async function updateIndexWithMarshalling() {
 
   if (!originType) return;
 
-  const filterLoading = useFilterAggregationProcessingStore.getState().loading;
+  const filterProcessingResultsReady =
+    useFilterProcessingResults.getState().ready;
 
-  if (filterLoading) return;
+  if (!filterProcessingResultsReady) return;
 
   const selector = useActivityFilterStore.getState().filter;
 

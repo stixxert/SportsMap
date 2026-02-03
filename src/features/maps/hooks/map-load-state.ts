@@ -1,22 +1,17 @@
 import { useSpatialIndexReadinessStore } from "@/features/maps/lib/spatial/dispatch-worker";
-import { useActivitySyncStore } from "@/features/activity/stores/activity-store";
-import { useFilterAggregationProcessingStatus } from "@/features/activity-filter/stores/active-filter-store";
-
-export interface ReadyState {
-  ready: boolean;
-  status?: string;
-}
+import { useActivitySyncStore } from "@/lib/activity/sync-state";
+import { useFilterProcessingResultsStatus } from "@/lib/filter/active-filter-store";
 
 export function useMapLoadState() {
   const syncDone = useActivitySyncStore((state) => state.activitiesSync);
 
-  const filterProcessing = useFilterAggregationProcessingStatus();
+  const filterProcessingResultsReady = useFilterProcessingResultsStatus();
 
   const mapIndexReady = useSpatialIndexReadinessStore((state) => state.ready);
 
   if (!syncDone) return { ready: false, status: "Retrieving activities" };
 
-  if (filterProcessing)
+  if (!filterProcessingResultsReady)
     return { ready: false, status: "Processing activity filter" };
 
   if (!mapIndexReady)

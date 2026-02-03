@@ -3,17 +3,16 @@ import {
   AggregationInput,
   AggregationOutput,
 } from "@/features/activity-aggregation/types/aggregation";
-import {
-  SpatialDataIndex,
-  SpatialDataObject,
-  SpatialDataType,
-} from "@/features/activity-aggregation/spatial-index/types";
+
 import {
   convPolylineToLineSegments,
   createLineSegmentBounds,
-} from "@/features/activity-aggregation/lib/map-breakdown";
-import RBush from "rbush";
-import { AggregatedIndex } from "@/features/activity-aggregation/lib/schema";
+} from "@/lib/activity-map-breakdown";
+import {
+  constructSpatialIndex,
+  SpatialDataIndex,
+  SpatialDataType,
+} from "@/lib/activity-aggregation/spatial-index";
 
 export const transformData: AggregationIndexerFn = (
   input: AggregationInput,
@@ -28,7 +27,7 @@ export const transformData: AggregationIndexerFn = (
     )
     .flat();
 
-  const index = new RBush<SpatialDataObject>();
+  const index = constructSpatialIndex();
   index.load(activityLineBounds);
 
   return index.toJSON();
@@ -43,31 +42,19 @@ export const mergeTransformedIndexes: AggregationIndexerFn<
     if (!index) continue;
 
     if (!mergedIndex) {
-      mergedIndex = constructSpatialIndex(index);
+      mergedIndex = constructSpatialIndex().fromJSON(index);
       continue;
     }
 
-    mergedIndex = mergedIndex.load(constructSpatialIndex(index).all());
+    mergedIndex = mergedIndex.load(
+      constructSpatialIndex().fromJSON(index).all(),
+    );
   }
 
-  return (mergedIndex ?? new RBush<SpatialDataObject>()).toJSON();
+  return (mergedIndex ?? constructSpatialIndex()).toJSON();
 };
 
 export const spatialAggregateHandlers = {
   aggregate: transformData,
   mergeAggregate: mergeTransformedIndexes,
 };
-
-function constructSpatialIndex(index: unknown) {
-  return new RBush<SpatialDataObject>().fromJSON(index);
-}
-
-export function getSpatialIndexFromAggregateIndex(
-  aggregateIndex: AggregatedIndex,
-): SpatialDataIndex | undefined {
-  const spatialIndex = aggregateIndex.index;
-
-  if (!spatialIndex) return undefined;
-
-  return constructSpatialIndex(spatialIndex);
-}

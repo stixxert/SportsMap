@@ -4,18 +4,14 @@ import dynamic from "next/dynamic";
 
 import Box from "@mui/material/Box";
 import * as React from "react";
-import {
-  useAccessTokenSync,
-  useAuthenticatedState,
-  useSyncApiTypeToParams,
-} from "@/features/auth/hooks/authorization-hooks";
-import { useApiType } from "@/features/auth/stores/api-store";
-import { ApiType } from "@/types/configuration-types";
-import { LoginDialog } from "@/features/profile/components/login-dialog";
-import { usePrivacyNoticeState } from "@/features/profile/stores/privacy-notice";
-import { PrivacyDialog } from "@/features/profile/components/privacy-dialog";
-import { useActivitySyncStore } from "@/features/activity/stores/activity-store";
+import { useAuthenticatedState } from "@/lib/auth/authenticate";
+import { useApiType } from "@/lib/auth/api-store";
+import { MapLoginDialog } from "@/features/maps/components/map-login-dialog";
+import { usePrivacyNoticeState } from "@/components/privacy-notice/privacy-notice";
+import { PrivacyDialog } from "@/components/privacy-notice/privacy-dialog";
+import { useActivitySyncStore } from "@/lib/activity/sync-state";
 import { useActivityMetadataStore } from "@/features/activity/stores/activity-metadata-store";
+import { ApiType } from "@/lib/auth/api-types";
 
 const Map = dynamic(() => import("@/features/maps/components/Map"), {
   ssr: false,
@@ -57,7 +53,7 @@ export default function MapPage() {
         </Box>
         {apiType === ApiType.Strava &&
           isAuthenticated !== null &&
-          !isAuthenticated && <LoginDialog open={!isAuthenticated} />}
+          !isAuthenticated && <MapLoginDialog open={!isAuthenticated} />}
         {privacyDialog && <PrivacyDialog />}
       </Box>
     </MapDependenciesWrapper>

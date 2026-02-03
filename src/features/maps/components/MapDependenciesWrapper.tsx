@@ -2,16 +2,16 @@ import "@/features/registrations";
 
 import { ReactNode } from "react";
 import { useMapWorkers } from "@/features/maps/hooks/use-workers";
-import { useAggregateWorkers } from "@/features/activity-aggregation";
 import {
   useAccessTokenSync,
   useSyncApiTypeToParams,
-} from "@/features/auth/hooks/authorization-hooks";
-import { useActivityCategorizationQuerySync } from "@/features/activity/hooks/window-dependent-subscribes";
-import { useActivityFiltering } from "@/features/activity-filter/hooks/use-activity-filtering";
+} from "@/lib/auth/authenticate";
+import { useActivityFiltering } from "@/lib/filter/use-activity-filtering";
 import { useActivitySynchronization } from "@/features/activity/hooks/sync-state";
 import MapLoadingState from "@/features/maps/components/overlay/MapLoadingState";
 import * as React from "react";
+import { useAggregateWorkers } from "@/features/activity-aggregation/hooks/use-workers";
+import { useAggregateDispatcher } from "@/features/activity-aggregation/hooks/use-aggregate";
 
 export default function MapDependenciesWrapper({
   children,
@@ -20,14 +20,15 @@ export default function MapDependenciesWrapper({
 }) {
   useMapWorkers();
   useAggregateWorkers();
+
   useAccessTokenSync();
-  useActivityCategorizationQuerySync();
   useSyncApiTypeToParams();
 
-  useActivityFiltering();
+  const performAggregate = useAggregateDispatcher();
+
+  useActivityFiltering(performAggregate);
 
   useActivitySynchronization();
-
   return (
     <>
       {children} <MapLoadingState />

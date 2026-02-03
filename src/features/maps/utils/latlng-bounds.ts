@@ -2,8 +2,9 @@
 
 import { LatLng, LatLngBounds } from "leaflet";
 import { BBox } from "rbush";
-import { Point } from "@/types/types";
-import { getZoomDistanceSensitivity } from "@/features/maps/utils/bounds";
+
+import { getZoomDistanceSensitivity } from "@/features/maps/lib/map-view";
+import { Point } from "@/types/geo";
 
 export function getBoundsSearchBox(bounds: LatLngBounds): BBox | BBox[] {
   function getWidth(west: number, east: number): number {

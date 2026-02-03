@@ -8,7 +8,6 @@ import {
 } from "@/features/maps/lib/map-view";
 import { subscribeToPointInteractionUpdate } from "@/features/maps/lib/map-visuals";
 import { useMap } from "@/features/maps/stores/map-store";
-import { ActivityId } from "@/features/maps/types/types";
 import {
   ActivityInteractionViewState,
   useActivityInteractionViewStore,
@@ -18,9 +17,10 @@ import {
   createActivityFeatureMap,
   createActivityVectorGrid,
   highlightActivityProps,
-} from "@/features/maps/lib/draw-activities";
+} from "@/features/maps/lib/activity-map-features";
 import { Feature } from "geojson";
 import { featuresToCollection } from "@/utils/geo";
+import { ActivityId } from "@/types/activity-selection";
 
 export function useMapInteraction() {
   const map = useMap();

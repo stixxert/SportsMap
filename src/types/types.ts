@@ -12,5 +12,3 @@ export type AccessToken = {
 export type SearchParams = Promise<{
   [key: string]: string | string[] | undefined;
 }>;
-
-export type Point = [number, number];

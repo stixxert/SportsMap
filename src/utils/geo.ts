@@ -1,7 +1,7 @@
 "use client";
 
-import { Point } from "@/types/types";
 import { Feature, FeatureCollection, Position } from "geojson";
+import { Point } from "@/types/geo";
 
 /* https://stackoverflow.com/a/6853926 */
 export function getClosestPointOnLine(linePoints: Point[], queryPoint: Point) {

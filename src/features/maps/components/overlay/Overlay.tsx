@@ -28,13 +28,6 @@ export function updateSelected(
 ) {
   let updatedSelected = selected ? selected.slice() : [];
 
-  console.log(
-    selected,
-    newSelected,
-    drawerVisible(selected),
-    newSelected in MENU_OPTIONS_FOR_DRAWER,
-  );
-
   if (
     drawerVisible(selected) &&
     MENU_OPTIONS_FOR_DRAWER.find((v) => v === newSelected)
@@ -82,8 +75,6 @@ export default function Overlay() {
   function viewControllerIsVisible() {
     return !drawerVisible(selected);
   }
-
-  console.log(selected);
 
   return (
     <>

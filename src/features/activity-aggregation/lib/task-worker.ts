@@ -1,8 +1,12 @@
-import * as Comlink from "comlink";
-import { processWorkerTask } from "@/features/activity-aggregation/lib/task-aggregate";
+"use client";
 
-const actions = {
+import * as Comlink from "comlink";
+
+import { processWorkerTask } from "@/features/activity-aggregation/lib/task-aggregate";
+import { AggregationWorkerActions } from "@/features/activity-aggregation/types/aggregation";
+
+const workerActions: AggregationWorkerActions = {
   processWorkerTask,
 };
 
-Comlink.expose(actions);
+Comlink.expose(workerActions);

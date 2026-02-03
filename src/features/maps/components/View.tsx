@@ -10,7 +10,6 @@ import useZoomControls, {
 } from "@/features/maps/hooks/use-zoom-controls";
 import { BaseIconButton } from "@/features/maps/components/BaseIconButton";
 import { useMap } from "@/features/maps/stores/map-store";
-import { drawerVisible } from "@/features/maps/components/overlay/Overlay";
 
 type ViewButtonProps = {
   action: () => void;

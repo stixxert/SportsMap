@@ -1,12 +1,12 @@
 "use client";
 
 import L, { LatLng, LocationEvent } from "leaflet";
-import { getZoomDistanceSensitivity } from "@/features/maps/utils/bounds";
 import {
   PointInteraction,
   useMapInteractionStore,
   usePointSensitivityStore,
 } from "@/features/maps/stores/map-interaction-store";
+import { getZoomDistanceSensitivity } from "@/features/maps/lib/map-view";
 
 const GEOLOCATION_MARKER: L.CircleOptions = {
   color: "#1769aa",
