@@ -6,7 +6,7 @@ import Box from "@mui/material/Box";
 import * as React from "react";
 import { useAuthenticatedState } from "@/lib/auth/authenticate";
 import { useApiType } from "@/lib/auth/api-store";
-import { MapLoginDialog } from "@/features/maps/components/map-login-dialog";
+import { MapLoginDialog } from "@/features/maps/components/MapLoginDialog";
 import { usePrivacyNoticeState } from "@/components/privacy-notice/privacy-notice";
 import { PrivacyDialog } from "@/components/privacy-notice/privacy-dialog";
 import { useActivitySyncStore } from "@/lib/activity/sync-state";

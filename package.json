@@ -36,6 +36,7 @@
     "bresenham": "^0.0.4",
     "comlink": "^4.4.2",
     "cookies-next": "^6.1.1",
+    "dayjs": "^1.11.19",
     "geojson-vt": "^4.0.2",
     "haversine-distance": "^1.2.4",
     "idb": "^8.0.3",

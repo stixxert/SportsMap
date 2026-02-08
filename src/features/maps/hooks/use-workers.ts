@@ -8,8 +8,6 @@ import { setSpatialSearchWorker } from "@/features/maps/lib/spatial/dispatch-wor
 const SPATIAL_SEARCH_WORKER_URL = "../lib/spatial/worker.ts";
 
 export function useMapWorkers() {
-  const setWorkers = useMapWorkerStore((state) => state.setWorkers);
-
   useEffect(() => {
     const workers: { [key: string]: Worker } = {
       [SPATIAL_SEARCH_WORKER]: new Worker(
@@ -17,7 +15,7 @@ export function useMapWorkers() {
       ),
     };
 
-    setWorkers(workers);
+    useMapWorkerStore.getState().setWorkers(workers);
 
     setSpatialSearchWorker(workers[SPATIAL_SEARCH_WORKER]);
 

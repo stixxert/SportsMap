@@ -54,42 +54,42 @@ export function useActivitiesOnMap() {
 
   const activityFilter = useActivityFilter();
 
-  const updateMapFeatures = async () => {
-    if (!map.current) return;
-
-    if (!filterProcessingResultsReady) return;
-
-    if (!apiType) return;
-
-    const db = await openActivityDatabase(apiType);
-
-    const aggregatedData = await getAggregatedData(
-      db,
-      AggregationCategory.FeatureCollection,
-      activityFilter,
-    );
-
-    if (!aggregatedData) return;
-
-    const featureCollection =
-      aggregateIndexGetFeatureCollectionIndex(aggregatedData);
-
-    if (!featureCollection) return;
-
-    const layer = createActivityVectorGrid(map.current, featureCollection);
-
-    if (!layer) return;
-
-    activityLayer.current = layer;
-  };
-
   useEffect(() => {
+    const updateMapFeatures = async () => {
+      if (!map.current) return;
+
+      if (!filterProcessingResultsReady) return;
+
+      if (!apiType) return;
+
+      const db = await openActivityDatabase(apiType);
+
+      const aggregatedData = await getAggregatedData(
+        db,
+        AggregationCategory.FeatureCollection,
+        activityFilter,
+      );
+
+      if (!aggregatedData) return;
+
+      const featureCollection =
+        aggregateIndexGetFeatureCollectionIndex(aggregatedData);
+
+      if (!featureCollection) return;
+
+      const layer = createActivityVectorGrid(map.current, featureCollection);
+
+      if (!layer) return;
+
+      activityLayer.current = layer;
+    };
+
     void updateMapFeatures();
 
     return () => {
       if (activityLayer.current) activityLayer.current.remove();
     };
-  });
+  }, [activityFilter, apiType, filterProcessingResultsReady, map]);
 }
 
 /* true: map ready. false; not */

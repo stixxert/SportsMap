@@ -1,21 +1,25 @@
 "use client";
 
+import * as Comlink from "comlink";
+
 import * as zustand from "zustand";
 
-interface WorkerState {
-  workers: Worker | Worker[];
+export type RemoteProxy<T> = ReturnType<typeof Comlink.wrap<T>>;
+
+interface WorkerState<T> {
+  workers: RemoteProxy<T>[];
 }
 
-interface WorkerActions {
-  setWorkers: (workers: Worker | Worker[]) => void;
+interface WorkerActions<T> {
+  setWorkers: (workers: RemoteProxy<T>[]) => void;
 }
 
-type WorkerStore = WorkerState & WorkerActions;
+type WorkerStore<T> = WorkerState<T> & WorkerActions<T>;
 
-export function createWorkerStore() {
-  return zustand.create<WorkerStore>((set) => ({
+export function createWorkerStore<T>() {
+  return zustand.create<WorkerStore<T>>((set) => ({
     workers: [],
-    setWorkers: (workers: Worker | Worker[]) =>
+    setWorkers: (workers: RemoteProxy<T>[]) =>
       set({
         workers,
       }),

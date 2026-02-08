@@ -1,29 +1,22 @@
-import * as Comlink from "comlink";
-
 import { AggregationWorkerActions } from "@/features/activity-aggregation/types/aggregation";
 import { ActivityAggregationSelector } from "@/types/activity-selection";
 import { AggregationCategory } from "@/types/activity-aggregation";
 
 import { ApiType } from "@/lib/auth/api-types";
+import { RemoteProxy } from "@/utils/worker-store-template";
 
 export async function dispatchActivityAggregation(
   originType: ApiType,
   selectionOptions: ActivityAggregationSelector,
-  workerPool: Worker[],
+  workerPool: RemoteProxy<AggregationWorkerActions>[],
 ): Promise<void> {
-  const numWorkers = workerPool.length;
-
-  if (numWorkers === 0) {
+  if (workerPool.length === 0) {
     throw new Error("Aggregate Worker pool empty");
   }
 
-  const wrappedWorkers = workerPool.map((worker) =>
-    Comlink.wrap<AggregationWorkerActions>(worker),
-  );
-
   await Promise.all(
     Object.values(AggregationCategory).map((taskType, index) =>
-      wrappedWorkers[index % numWorkers].processWorkerTask(
+      workerPool[index % workerPool.length].processWorkerTask(
         taskType,
         originType,
         selectionOptions,

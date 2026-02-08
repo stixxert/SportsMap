@@ -1,14 +1,246 @@
 import * as React from "react";
 
-import Box from "@mui/material/Box";
+import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
+
+import dayjs, { Dayjs } from "dayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+
+import {
+  Box,
+  Checkbox,
+  TextField,
+  Autocomplete,
+  Button,
+  Switch,
+  Typography,
+  Stack,
+} from "@mui/material";
 import { SportType } from "@/strava-api";
-import { useSetActivityFilter } from "@/lib/filter/active-filter-store";
-import { MAX_UPPER_BOUNDS } from "@/utils/db";
-import { ActivityAggregationSelector } from "@/types/activity-selection";
+
+import {
+  useApplyFilter,
+  useFilterModifyStore,
+} from "@/features/maps/stores/current-filter-state";
+import { useState } from "react";
+import { defaultFilter } from "@/config/default-filter";
+import { useFilterProcessingResultsStatus } from "@/lib/filter/active-filter-store";
 
 interface SportTypeFilter {
   displayName: string;
   sportType: SportType;
+}
+
+const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
+const checkedIcon = <CheckBoxIcon fontSize="small" />;
+
+function SportTypeFilter() {
+  const currentFilter = useFilterModifyStore((state) => state.filter);
+  const setCurrentFilter = useFilterModifyStore((state) => state.setFilter);
+
+  const selected = (currentFilter.sportType as SportType[])
+    .map((select) => allLabels.find((v) => v.sportType === select))
+    .filter((v) => v !== undefined);
+
+  const handleChange = (
+    event: React.SyntheticEvent,
+    newValues: SportTypeFilter[],
+  ) => {
+    setCurrentFilter({
+      ...currentFilter,
+      sportType: newValues.map((v) => v.sportType),
+    });
+  };
+
+  return (
+    <Autocomplete
+      limitTags={3}
+      multiple
+      id={"sport-type-filter"}
+      options={allLabels}
+      disableCloseOnSelect
+      getOptionLabel={(option) => option.displayName}
+      renderOption={(props, option, { selected }) => {
+        const { key, ...optionProps } = props;
+
+        return (
+          <li key={key} {...optionProps}>
+            <Checkbox
+              icon={icon}
+              checkedIcon={checkedIcon}
+              style={{ marginRight: 8 }}
+              checked={selected}
+            />
+            {option.displayName}
+          </li>
+        );
+      }}
+      sx={{
+        width: "20vw",
+      }}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label={"Sport Types"}
+          placeholder={"Pick sport types"}
+        />
+      )}
+      value={selected}
+      onChange={handleChange}
+      slotProps={{
+        listbox: {
+          sx: (theme) => ({
+            backgroundColor: `${theme.palette.primary.light}CF`,
+          }),
+        },
+        paper: { sx: { background: "transparent" } },
+      }}
+    />
+  );
+}
+
+function DatePickerFilter({ selector }: { selector: "startDate" | "endDate" }) {
+  const currentFilter = useFilterModifyStore((state) => state.filter);
+  const setCurrentFilter = useFilterModifyStore((state) => state.setFilter);
+
+  const currentSelector = useFilterModifyStore(
+    (state) => state.filter[selector],
+  );
+
+  const fieldIsDefault = currentSelector === defaultFilter[selector];
+
+  const [switchOpen, setSwitchOpen] = useState(!fieldIsDefault);
+
+  const switchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSwitchOpen(event.target.checked);
+
+    if (!event.target.checked) {
+      setCurrentFilter({
+        ...currentFilter,
+        [selector]: defaultFilter[selector],
+      });
+    }
+  };
+
+  const fieldValue = fieldIsDefault ? null : dayjs(currentSelector);
+
+  const updateValue = (newValue: Dayjs | null) => {
+    let _value = newValue
+      ? new Date(
+          newValue
+            .set("h", 0)
+            .set("m", 0)
+            .set("s", 0)
+            .set("milliseconds", 0)
+            .toDate()
+            .getTime(),
+        )
+      : defaultFilter[selector];
+    if (selector === "endDate" && newValue) {
+      _value = new Date(
+        newValue
+          .set("h", 23)
+          .set("m", 59)
+          .set("s", 59)
+          .set("milliseconds", 59)
+          .toDate()
+          .getTime(),
+      );
+    }
+    setCurrentFilter({
+      ...currentFilter,
+      [selector]: _value,
+    });
+  };
+
+  const dateLabel = `Set ${selector === "startDate" ? "start date" : "end date"}`;
+
+  const additionalProps =
+    selector === "startDate"
+      ? {
+          maxDate:
+            currentFilter.endDate === defaultFilter.endDate
+              ? undefined
+              : dayjs(currentFilter.endDate),
+        }
+      : {
+          minDate:
+            currentFilter.startDate === defaultFilter.startDate
+              ? undefined
+              : dayjs(currentFilter.startDate),
+        };
+
+  return (
+    <Box>
+      <Stack alignItems={"center"} direction={"row"}>
+        <Switch checked={switchOpen} onChange={switchChange} />
+        <Typography>{dateLabel}</Typography>
+      </Stack>
+      {switchOpen && (
+        <DatePicker
+          label={dateLabel}
+          value={fieldValue}
+          onChange={updateValue}
+          {...additionalProps}
+        />
+      )}
+    </Box>
+  );
+}
+
+export function FilterOptionBox() {
+  const applyFilter = useApplyFilter();
+
+  const filterProcessingReady = useFilterProcessingResultsStatus();
+
+  return (
+    <Box
+      sx={(theme) => ({
+        paddingTop: "1cm",
+        paddingLeft: 1,
+        paddingRight: 1,
+        backgroundColor: `${theme.palette.primary.main}30`,
+        width: "100%",
+        borderRadius: "16px",
+      })}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
+        <Stack direction="column" spacing={2}>
+          <SportTypeFilter />
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePickerFilter selector={"startDate"} />
+            <DatePickerFilter selector={"endDate"} />
+          </LocalizationProvider>
+        </Stack>
+      </Box>
+      <Button
+        disabled={!filterProcessingReady}
+        onClick={applyFilter}
+        sx={(theme) => ({
+          marginTop: 3,
+          marginBottom: 1,
+          position: "relative",
+          left: 0,
+          bottom: 0,
+          color: "black",
+          backgroundColor: `${theme.palette.primary.main}80`,
+
+          "&:hover": {
+            backgroundColor: `${theme.palette.primary.light}66`,
+          },
+        })}
+      >
+        Apply
+      </Button>
+    </Box>
+  );
 }
 
 const excludeSports: SportType[] = [
@@ -103,14 +335,3 @@ const allLabels: SportTypeFilter[] = [
       }) as SportTypeFilter,
   ),
 ];
-
-const defaultFilterOptions: ActivityAggregationSelector = {
-  startDate: new Date(0),
-  endDate: MAX_UPPER_BOUNDS.date,
-  sportType: [SportType.Run, SportType.TrailRun],
-};
-
-export function FilterOptionBox() {
-  const setFilter = useSetActivityFilter();
-  return <Box></Box>;
-}

@@ -5,5 +5,5 @@ import { SportType } from "@/strava-api";
 export const defaultFilter: ActivityAggregationSelector = {
   startDate: new Date(0),
   endDate: MAX_UPPER_BOUNDS.date,
-  sportType: Object.keys(SportType) as SportType[],
+  sportType: [SportType.Run, SportType.TrailRun],
 };

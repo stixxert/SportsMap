@@ -9,12 +9,11 @@ import {
 import { spatialIndexWorkerActions } from "@/features/maps/lib/spatial/worker-actions";
 import { createReadinessStore } from "@/utils/ready-state-store";
 import { MapIndexWorkerUpdate } from "@/features/maps/lib/base-worker";
+import { RemoteProxy } from "@/utils/worker-store-template";
 
 export type WorkerActions = typeof spatialIndexWorkerActions;
 
-type Remote<T> = ReturnType<typeof Comlink.wrap<T>>;
-
-const worker: { ref: Remote<WorkerActions> | undefined } = {
+const worker: { ref: RemoteProxy<WorkerActions> | undefined } = {
   ref: undefined,
 };
 

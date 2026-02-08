@@ -9,9 +9,5 @@ export function useAggregateDispatcher(): AggregationDispatcherFn {
   const workers = useWorkerStore((state) => state.workers);
 
   return (originType: ApiType, selectionOptions: ActivityAggregationSelector) =>
-    dispatchActivityAggregation(
-      originType,
-      selectionOptions,
-      workers as Worker[],
-    );
+    dispatchActivityAggregation(originType, selectionOptions, workers);
 }

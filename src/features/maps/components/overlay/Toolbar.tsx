@@ -17,7 +17,7 @@ import {
   IconButtonBaseProps,
 } from "@/features/maps/components/BaseIconButton";
 import { ToolbarMarkerIcon } from "@/features/maps/components/overlay/ToolbarMarkerIcon";
-import { UserAvatar } from "@/features/maps/components/user-avatar";
+import { UserAvatar } from "@/features/maps/components/UserAvatar";
 
 type FunctionIcon = {
   type: SelectionMenuTypes;

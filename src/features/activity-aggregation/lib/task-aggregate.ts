@@ -50,20 +50,19 @@ export async function performActivityAggregation(
     selectionOptions,
   );
 
-  let adjustedStartDate = selectionOptions.startDate;
+  const adjustedStartDate = selectionOptions.startDate;
 
-  if (existingAggregatedIndex)
+  /*
+  TODO: Should we use existing aggregation for a lower-bound subset of the requested aggregate?
+  if (existingAggregatedIndex && existingAggregatedIndex.updatedAt)
     adjustedStartDate = existingAggregatedIndex.updatedAt;
+  */
 
   const adjustedOptions = Object.assign({}, selectionOptions, {
     startDate: adjustedStartDate,
   });
 
   const activities = await getActivities(db, adjustedOptions);
-
-  if (!activities.length) {
-    return;
-  }
 
   const aggregationInput = breakdownActivities(activities);
 

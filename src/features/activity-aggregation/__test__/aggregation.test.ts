@@ -1,4 +1,7 @@
 import "fake-indexeddb/auto";
+import "@/features/activity/lib/activity-schema";
+import "@/features/activity-aggregation/lib/schema";
+
 import { IDBFactory } from "fake-indexeddb";
 import { beforeEach } from "@jest/globals";
 import { openActivityDatabase } from "@/lib/activity/db";
@@ -26,6 +29,7 @@ import { getAggregatedData } from "@/lib/activity-aggregation/aggregation-schema
 import { ActivityDatabase } from "@/lib/activity/activity-schema";
 
 import { ApiType } from "@/lib/auth/api-types";
+import { RemoteProxy } from "@/utils/worker-store-template";
 
 const transformData: AggregationIndexerFn = () => "emptyIndex";
 
@@ -62,7 +66,7 @@ jest.mock("comlink", () => {
 describe("Activity Aggregation", () => {
   let activityDatabase: ActivityDatabase;
 
-  let workerPool: Worker[];
+  let comlinkPool: RemoteProxy<AggregationWorkerActions>[];
 
   let firstInsertionOptions: { start?: Date; end?: Date };
 
@@ -71,8 +75,8 @@ describe("Activity Aggregation", () => {
 
     globalThis.indexedDB = new IDBFactory();
 
-    workerPool = Array.from({ length: AGGREGATE_WORKER_COUNT }).map(
-      () => new Worker(""),
+    comlinkPool = Array.from({ length: AGGREGATE_WORKER_COUNT }).map(
+      () => mockComlinkWrappedWorker as RemoteProxy<AggregationWorkerActions>,
     );
 
     activityDatabase = await openActivityDatabase(ApiType.Demo);
@@ -111,7 +115,7 @@ describe("Activity Aggregation", () => {
         sportType: sportType as SportType,
       };
 
-      await dispatchActivityAggregation(ApiType.Demo, options, workerPool);
+      await dispatchActivityAggregation(ApiType.Demo, options, comlinkPool);
 
       const databaseReturnedIndex = await getAggregatedData(
         activityDatabase,
@@ -142,7 +146,7 @@ describe("Activity Aggregation", () => {
     };
 
     const indexType = AggregationCategory.Spatial;
-    await dispatchActivityAggregation(ApiType.Demo, options, workerPool);
+    await dispatchActivityAggregation(ApiType.Demo, options, comlinkPool);
 
     const databaseReturnedIndex = await getAggregatedData(
       activityDatabase,
@@ -169,7 +173,7 @@ describe("Activity Aggregation", () => {
     };
 
     const indexType = AggregationCategory.Spatial;
-    await dispatchActivityAggregation(ApiType.Demo, options, workerPool);
+    await dispatchActivityAggregation(ApiType.Demo, options, comlinkPool);
 
     const opt = {
       start: firstInsertionOptions.end || new Date(0),
@@ -182,7 +186,7 @@ describe("Activity Aggregation", () => {
 
     await seedActivities(activityDatabase, 1000, 1000, opt);
 
-    await dispatchActivityAggregation(ApiType.Demo, options, workerPool);
+    await dispatchActivityAggregation(ApiType.Demo, options, comlinkPool);
 
     const databaseReturnedIndex = await getAggregatedData(
       activityDatabase,

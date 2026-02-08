@@ -14,7 +14,7 @@ interface ActivityFilterActions {
   setFilter: (filter: ActivityAggregationSelector) => void;
 }
 
-type ActivityFilterStore = ActivityFilterState & ActivityFilterActions;
+export type ActivityFilterStore = ActivityFilterState & ActivityFilterActions;
 
 export const useActivityFilterStore = zustand.create<ActivityFilterStore>(
   (set) => ({
