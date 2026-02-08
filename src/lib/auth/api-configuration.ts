@@ -1,7 +1,7 @@
 "use client";
 
 import { AccessToken, Result } from "@/types/types";
-import { Configuration } from "@/strava-api";
+import { Configuration, ErrorContext, Middleware } from "@/strava-api";
 import {
   useApiConfigurationStore,
   useApiTypeStore,
@@ -15,6 +15,28 @@ import {
   isAuthenticated,
 } from "@/lib/auth/server-exchange";
 import { ApiType } from "@/lib/auth/api-types";
+import { Logout } from "@/lib/auth/user-actions";
+
+async function fetchErrorWrapper(
+  input: string | URL | Request,
+  init?: RequestInit,
+): Promise<Response> {
+  const response = await fetch(input, init);
+
+  if (response.status === 401) {
+    throw new Error("Unauthorized", await response.json());
+  }
+
+  return response;
+}
+
+const errorFallbackMiddleware: Middleware = {
+  onError: function (context: ErrorContext): Promise<Response | void> {
+    if (context.error === "Unauthorized") void Logout();
+
+    return Promise.resolve();
+  },
+};
 
 export function readApiTypeString(apiType: string): ApiType | undefined {
   const modeUppercase = apiType.toUpperCase();
@@ -30,12 +52,16 @@ export function readApiTypeString(apiType: string): ApiType | undefined {
 
 function createStravaApiConfiguration(accessToken: AccessToken) {
   return new Configuration({
+    fetchApi: fetchErrorWrapper,
+    middleware: [errorFallbackMiddleware],
     accessToken: `${accessToken.token_type} ${accessToken.access_token}`,
   });
 }
 
 function createDemoApiConfiguration() {
   return new Configuration({
+    fetchApi: fetchErrorWrapper,
+    middleware: [errorFallbackMiddleware],
     basePath: `${process.env.NEXT_PUBLIC_DOMAIN}/api/demo`,
   });
 }
