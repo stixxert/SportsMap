@@ -25,8 +25,14 @@ import {
   useFilterModifyStore,
 } from "@/features/maps/stores/current-filter-state";
 import { useState } from "react";
+import {
+  getDefaultFilter,
+  setDefaultFilter,
+  useActivityFilter,
+  useActivityFilterStore,
+  useFilterProcessingResultsStatus,
+} from "@/lib/filter/active-filter-store";
 import { defaultFilter } from "@/config/default-filter";
-import { useFilterProcessingResultsStatus } from "@/lib/filter/active-filter-store";
 
 interface SportTypeFilter {
   displayName: string;
@@ -109,7 +115,8 @@ function DatePickerFilter({ selector }: { selector: "startDate" | "endDate" }) {
     (state) => state.filter[selector],
   );
 
-  const fieldIsDefault = currentSelector === defaultFilter[selector];
+  const fieldIsDefault =
+    currentSelector.getTime() === defaultFilter[selector].getTime();
 
   const [switchOpen, setSwitchOpen] = useState(!fieldIsDefault);
 
@@ -119,7 +126,7 @@ function DatePickerFilter({ selector }: { selector: "startDate" | "endDate" }) {
     if (!event.target.checked) {
       setCurrentFilter({
         ...currentFilter,
-        [selector]: defaultFilter[selector],
+        [selector]: new Date(getDefaultFilter()[selector]),
       });
     }
   };
@@ -137,7 +144,7 @@ function DatePickerFilter({ selector }: { selector: "startDate" | "endDate" }) {
             .toDate()
             .getTime(),
         )
-      : defaultFilter[selector];
+      : getDefaultFilter()[selector];
     if (selector === "endDate" && newValue) {
       _value = new Date(
         newValue
@@ -161,13 +168,13 @@ function DatePickerFilter({ selector }: { selector: "startDate" | "endDate" }) {
     selector === "startDate"
       ? {
           maxDate:
-            currentFilter.endDate === defaultFilter.endDate
+            currentFilter.endDate === defaultFilter[selector]
               ? undefined
               : dayjs(currentFilter.endDate),
         }
       : {
           minDate:
-            currentFilter.startDate === defaultFilter.startDate
+            currentFilter.startDate === defaultFilter[selector]
               ? undefined
               : dayjs(currentFilter.startDate),
         };
@@ -220,25 +227,63 @@ export function FilterOptionBox() {
           </LocalizationProvider>
         </Stack>
       </Box>
-      <Button
-        disabled={!filterProcessingReady}
-        onClick={applyFilter}
-        sx={(theme) => ({
+      <Stack
+        direction={"row"}
+        spacing={2}
+        sx={{
           marginTop: 3,
           marginBottom: 1,
           position: "relative",
           left: 0,
           bottom: 0,
-          color: "black",
-          backgroundColor: `${theme.palette.primary.main}80`,
-
-          "&:hover": {
-            backgroundColor: `${theme.palette.primary.light}66`,
-          },
-        })}
+        }}
       >
-        Apply
-      </Button>
+        <Button
+          disabled={!filterProcessingReady}
+          onClick={applyFilter}
+          sx={(theme) => ({
+            color: "black",
+            backgroundColor: `${theme.palette.primary.main}80`,
+
+            "&:hover": {
+              backgroundColor: `${theme.palette.primary.light}66`,
+            },
+          })}
+        >
+          Apply
+        </Button>
+        <Button
+          onClick={() => {
+            setDefaultFilter()(useActivityFilterStore.getState().filter);
+          }}
+          sx={(theme) => ({
+            color: "black",
+            backgroundColor: `${theme.palette.primary.main}80`,
+
+            "&:hover": {
+              backgroundColor: `${theme.palette.primary.light}66`,
+            },
+          })}
+        >
+          Set preferences
+        </Button>
+        <Button
+          onClick={() => {
+            useFilterModifyStore.getState().setFilter(defaultFilter);
+            applyFilter();
+          }}
+          sx={(theme) => ({
+            color: "black",
+            backgroundColor: `${theme.palette.primary.main}80`,
+
+            "&:hover": {
+              backgroundColor: `${theme.palette.primary.light}66`,
+            },
+          })}
+        >
+          Reset
+        </Button>
+      </Stack>
     </Box>
   );
 }

@@ -1,8 +1,9 @@
 import { ActivityAggregationSelector } from "@/types/activity-selection";
 import * as zustand from "zustand";
-import { defaultFilter } from "@/config/default-filter";
 import {
   ActivityFilterStore,
+  getDefaultFilter,
+  parsePersistedSelector,
   useActivityFilter,
   useFilterProcessingResults,
   useSetActivityFilter,
@@ -11,7 +12,7 @@ import { compressSpan } from "@/lib/activity/sport-type-compression";
 
 export const useFilterModifyStore = zustand.create<ActivityFilterStore>(
   (set) => ({
-    filter: defaultFilter,
+    filter: parsePersistedSelector(getDefaultFilter()),
     setFilter: (filter: ActivityAggregationSelector) =>
       set({
         filter,
