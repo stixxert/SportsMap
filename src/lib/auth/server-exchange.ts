@@ -31,7 +31,9 @@ export async function exchangeCodeForToken(
   if (!response.ok)
     return {
       success: false,
-      error: "Error while requesting token: ".concat(response.statusText),
+      error: "Error while requesting token: "
+        .concat(response.statusText)
+        .concat(await response.json()),
     };
 
   const response_body = await response.json();
