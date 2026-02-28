@@ -1,6 +1,6 @@
 import { encode, LatLngTuple } from "@googlemaps/polyline-codec";
 import { generateRandomActivityMap } from "@/lib/demo-data/map-generation";
-import { SportType, SummaryActivity } from "@/strava-api";
+import { SportType, SummaryActivity } from "@/src/generated/strava-api";
 import { randomBetween, randomFromArray } from "@/utils/misc";
 
 const DISTANCE_BOUNDS = [1000, 100000];
@@ -12,7 +12,6 @@ const MOVING_TIME_BOUNDS = [60 * 10, 60 * 60 * 24 * 1.5];
 const defaultOptions = {
   name: crypto.randomUUID(),
   id: randomBetween(0, Number.MAX_SAFE_INTEGER),
-  sportType: randomFromArray(Object.keys(SportType)) as SportType,
   startDate: new Date(
     randomBetween(START_DATE_BOUNDS[0], START_DATE_BOUNDS[1]),
   ),
@@ -25,11 +24,15 @@ export function generateActivity(
   const { name, id, sportType, startDate, movingTime } = Object.assign(
     {},
     defaultOptions,
+    { sportType: randomFromArray(Object.keys(SportType)) as SportType },
     options ? options : {},
   );
 
   const _map = generateRandomActivityMap({
-    radiusInMeters: randomBetween(DISTANCE_BOUNDS[0], DISTANCE_BOUNDS[1] / 10),
+    radiusInMeters: randomBetween(
+      DISTANCE_BOUNDS[0] / 8,
+      DISTANCE_BOUNDS[1] / 2,
+    ),
   });
 
   const map = {

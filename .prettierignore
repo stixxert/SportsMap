@@ -1,4 +1,4 @@
 # Ignore artifacts:
 build
 coverage
-strava-api
+src/generate/strava-api

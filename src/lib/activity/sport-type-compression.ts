@@ -1,4 +1,4 @@
-import { SportType } from "@/strava-api";
+import { SportType } from "@/src/generated/strava-api";
 
 const ACTIVITY_TYPES = Object.keys(SportType);
 

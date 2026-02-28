@@ -8,7 +8,7 @@ import { openActivityDatabase } from "@/lib/activity/db";
 import { seedActivities } from "@/lib/demo-data/seed-activities";
 import { dispatchActivityAggregation } from "@/features/activity-aggregation/lib/dispatch-aggregate";
 
-import { SportType } from "@/strava-api";
+import { SportType } from "@/src/generated/strava-api";
 
 import {
   AggregationIndexerFn,
@@ -128,13 +128,11 @@ describe("Activity Aggregation", () => {
         options,
       );
 
-      if (activitiesInCategory.length > 0) {
-        expect(databaseReturnedIndex).toBeDefined();
+      expect(databaseReturnedIndex).toBeDefined();
 
-        expect((databaseReturnedIndex as AggregatedIndex).index).toEqual(
-          "emptyIndex",
-        );
-      } else expect(databaseReturnedIndex).not.toBeDefined();
+      expect((databaseReturnedIndex as AggregatedIndex).index).toEqual(
+        "emptyIndex",
+      );
     }
   });
 

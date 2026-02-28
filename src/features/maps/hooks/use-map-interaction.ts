@@ -12,7 +12,7 @@ import {
   ActivityInteractionViewState,
   useActivityInteractionViewStore,
 } from "@/features/maps/stores/activity-interaction-view-store";
-import { SummaryActivity } from "@/strava-api";
+import { SummaryActivity } from "@/src/generated/strava-api";
 import {
   createActivityFeatureMap,
   createActivityVectorGrid,

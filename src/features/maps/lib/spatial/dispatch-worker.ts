@@ -1,6 +1,6 @@
 import * as Comlink from "comlink";
 import { InteractionSearch } from "@/features/maps/lib/spatial/search";
-import { SummaryActivity } from "@/strava-api";
+import { SummaryActivity } from "@/src/generated/strava-api";
 import { useApiTypeStore } from "@/lib/auth/api-store";
 import {
   useActivityFilterStore,

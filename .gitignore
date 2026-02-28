@@ -42,4 +42,5 @@ next-env.d.ts
 
 .venv/
 .idea/
-demo_data/
+
+src/generated

@@ -18,7 +18,7 @@ import {
   Typography,
   Stack,
 } from "@mui/material";
-import { SportType } from "@/strava-api";
+import { SportType } from "@/src/generated/strava-api";
 
 import {
   useApplyFilter,

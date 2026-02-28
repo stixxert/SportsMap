@@ -1,6 +1,6 @@
 "use client";
 
-import { SportType, SummaryActivity } from "@/strava-api";
+import { SportType, SummaryActivity } from "@/src/generated/strava-api";
 import {
   constructDiscreteKeyBound,
   constructKeyBound,

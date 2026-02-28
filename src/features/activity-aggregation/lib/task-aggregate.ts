@@ -3,7 +3,7 @@
 import { getActivities } from "@/features/activity/lib/store-actions";
 import { openActivityDatabase } from "@/lib/activity/db";
 
-import { SummaryActivity } from "@/strava-api";
+import { SummaryActivity } from "@/src/generated/strava-api";
 
 import { AggregationInput } from "@/features/activity-aggregation/types/aggregation";
 

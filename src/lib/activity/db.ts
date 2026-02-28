@@ -1,7 +1,6 @@
 "use client";
 
 import { deleteDB, openDB } from "idb";
-import { createSubscribeRegistry } from "@/utils/registry";
 import {
   ACTIVITY_STORES,
   ActivityDatabase,
@@ -10,9 +9,10 @@ import {
 
 import { ApiType } from "@/lib/auth/api-types";
 
-const dbUpgradeRegistry = createSubscribeRegistry<ActivityDatabase>();
-
-export const subscribeToActivityDbUpgrade = dbUpgradeRegistry.subscribe;
+import {
+  dbUpgradeRegistry,
+  subscribeToActivityDbUpgrade,
+} from "@/lib/activity/register-db-extensions";
 
 function getDatabaseName(apiType: ApiType) {
   return `${apiType.toLowerCase()}-data-db`;

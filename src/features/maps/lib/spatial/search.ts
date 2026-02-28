@@ -4,7 +4,7 @@ import { BBox } from "rbush";
 import { lineSegmentToLatLng } from "@/features/maps/utils/point";
 import { getClosestPointOnLine } from "@/utils/geo";
 import { openActivityDatabase } from "@/lib/activity/db";
-import { SummaryActivity } from "@/strava-api";
+import { SummaryActivity } from "@/src/generated/strava-api";
 import haversine from "haversine-distance";
 import {
   ACTIVITY_INDEXES,

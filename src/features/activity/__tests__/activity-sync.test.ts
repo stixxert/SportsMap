@@ -1,5 +1,5 @@
 import { fetchByPagination } from "@/testing/fetch-pagination";
-import { ActivitiesApi, Configuration } from "@/strava-api";
+import { ActivitiesApi, Configuration } from "@/src/generated/strava-api";
 
 import {
   findUninsertedActivities,

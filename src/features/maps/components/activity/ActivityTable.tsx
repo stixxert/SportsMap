@@ -17,7 +17,7 @@ import {
   type MRT_ColumnDef,
   MRT_RowSelectionState,
 } from "material-react-table";
-import { SummaryActivity } from "@/strava-api";
+import { SummaryActivity } from "@/src/generated/strava-api";
 import { useEffect, useMemo, useState } from "react";
 import { useMapActivityInteraction } from "@/features/maps/hooks/use-map-interaction";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { decode } from "@googlemaps/polyline-codec";
-import { SummaryActivity } from "@/strava-api";
+import { SummaryActivity } from "@/src/generated/strava-api";
 import L, { PathOptions } from "leaflet";
 
 import { FeatureCollection } from "geojson";

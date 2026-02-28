@@ -1,6 +1,6 @@
 import { useAuthenticatedState } from "@/lib/auth/authenticate";
 import { useApiConfiguration, useApiType } from "@/lib/auth/api-store";
-import { AthletesApi, DetailedAthlete } from "@/strava-api";
+import { AthletesApi, DetailedAthlete } from "@/src/generated/strava-api";
 import useSWR, { Fetcher } from "swr";
 import { ApiType } from "@/lib/auth/api-types";
 

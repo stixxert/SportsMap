@@ -1,8 +1,8 @@
-import { subscribeToActivityDbUpgrade } from "@/lib/activity/db";
 import {
   ACTIVITY_INDEXES,
   ACTIVITY_STORES,
 } from "@/lib/activity/activity-schema";
+import { subscribeToActivityDbUpgrade } from "@/lib/activity/register-db-extensions";
 
 subscribeToActivityDbUpgrade((db) => {
   const activitiesStore = db.createObjectStore(ACTIVITY_STORES.Activity, {

@@ -1,5 +1,5 @@
 import * as zustand from "zustand";
-import { Configuration } from "@/strava-api";
+import { Configuration } from "@/src/generated/strava-api";
 import { apiStateUpdateCallback } from "@/lib/auth/api-configuration";
 import { useAccessTokenStore } from "@/lib/auth/auth-store";
 import { ApiType } from "@/lib/auth/api-types";

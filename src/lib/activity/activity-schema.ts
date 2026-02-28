@@ -1,7 +1,7 @@
 "use client";
 
 import { DBSchema, IDBPDatabase } from "idb";
-import { SportType, SummaryActivity } from "@/strava-api";
+import { SportType, SummaryActivity } from "@/src/generated/strava-api";
 import { AggregatedIndexesSchema } from "@/types/activity-aggregation";
 import { ActivityId } from "@/types/activity-selection";
 

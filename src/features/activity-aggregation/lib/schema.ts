@@ -1,10 +1,10 @@
-import { subscribeToActivityDbUpgrade } from "@/lib/activity/db";
 import {
   AGGREGATION_INDEXES,
   AggregationCategory,
   AggregationTaskType,
 } from "@/types/activity-aggregation";
 import { ActivityDatabase } from "@/lib/activity/activity-schema";
+import { subscribeToActivityDbUpgrade } from "@/lib/activity/register-db-extensions";
 
 function setupStore(db: ActivityDatabase, storeName: AggregationTaskType) {
   const indexStore = db.createObjectStore(storeName, {

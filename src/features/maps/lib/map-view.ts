@@ -13,7 +13,7 @@ import {
   useMapInteractionStore,
   usePointSensitivityStore,
 } from "@/features/maps/stores/map-interaction-store";
-import { SummaryActivity } from "@/strava-api";
+import { SummaryActivity } from "@/src/generated/strava-api";
 import {
   convLatLngToPoint,
   getBoundsSearchBox,

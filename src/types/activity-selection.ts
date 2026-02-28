@@ -1,4 +1,4 @@
-import { SportType, SummaryActivity } from "@/strava-api";
+import { SportType, SummaryActivity } from "@/src/generated/strava-api";
 
 export interface ActivityAggregationSelector {
   startDate: Date;

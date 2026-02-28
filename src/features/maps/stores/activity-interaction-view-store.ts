@@ -1,6 +1,6 @@
 import * as zustand from "zustand";
 
-import { SummaryActivity } from "@/strava-api";
+import { SummaryActivity } from "@/src/generated/strava-api";
 import { useMapInteractionStore } from "@/features/maps/stores/map-interaction-store";
 import { updateActivitiesInViewCallback } from "@/features/maps/lib/map-view";
 import { useFilterProcessingResults } from "@/lib/filter/active-filter-store";

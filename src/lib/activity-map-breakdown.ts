@@ -1,4 +1,4 @@
-import { SummaryActivity } from "@/strava-api";
+import { SummaryActivity } from "@/src/generated/strava-api";
 import { decode } from "@googlemaps/polyline-codec";
 import { DataIndexObject } from "@/types/activity-aggregation";
 import { Point } from "@/types/geo";

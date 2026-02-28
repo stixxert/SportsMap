@@ -1,6 +1,10 @@
 "use client";
 
-import { ActivitiesApi, Configuration, SummaryActivity } from "@/strava-api";
+import {
+  ActivitiesApi,
+  Configuration,
+  SummaryActivity,
+} from "@/src/generated/strava-api";
 import { addActivities } from "@/features/activity/lib/store-actions";
 import { useActivityMetadataStore } from "@/features/activity/stores/activity-metadata-store";
 import { useActivitySyncStore } from "@/lib/activity/sync-state";

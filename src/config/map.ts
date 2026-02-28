@@ -1,4 +1,4 @@
 export const ZOOM_BOUNDS = {
-  min: 2,
+  min: 3,
   max: 15,
 };

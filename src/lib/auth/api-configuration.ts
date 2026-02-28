@@ -1,7 +1,11 @@
 "use client";
 
 import { AccessToken, Result } from "@/types/types";
-import { Configuration, ErrorContext, Middleware } from "@/strava-api";
+import {
+  Configuration,
+  ErrorContext,
+  Middleware,
+} from "@/src/generated/strava-api";
 import {
   useApiConfigurationStore,
   useApiTypeStore,
