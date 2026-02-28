@@ -8,12 +8,16 @@
     "src"
   ],
   "scripts": {
-    "dev": "next dev",
     "build": "next build",
+    "dev": "next dev",
     "start": "next start",
     "lint": "eslint",
     "test": "jest",
-    "generate:api": "openapi-generator-cli generate -i https://developers.strava.com/swagger/swagger.json --skip-validate-spec -g typescript-fetch -o src/generated/strava-api"
+    "generate:api": "openapi-generator-cli generate -i https://developers.strava.com/swagger/swagger.json --skip-validate-spec -g typescript-fetch -o src/generated/strava-api",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
     "@babel/preset-react": "^7.28.5",
@@ -29,6 +33,7 @@
     "@mui/x-data-grid": "^8.22.1",
     "@mui/x-date-pickers": "^8.23.0",
     "@openapitools/openapi-generator-cli": "^2.25.0",
+    "@opennextjs/cloudflare": "^1.17.1",
     "@types/geojson": "^7946.0.16",
     "@types/leaflet": "^1.9.21",
     "@types/leaflet.vectorgrid": "^1.3.10",
@@ -84,6 +89,7 @@
     "tailwindcss": "^4",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wrangler": "^4.69.0"
   }
 }
