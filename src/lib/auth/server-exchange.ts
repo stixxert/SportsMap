@@ -9,22 +9,19 @@ import {
   setRefreshTokenCookie,
 } from "@/lib/server-cookies";
 import { OAUTH_RETRIEVE_TOKEN_URL } from "@/config/api-urls";
+import { assembleUrl } from "@/utils/url";
 
 export async function exchangeCodeForToken(
   code: string,
 ): Promise<Result<void, string>> {
-  const query = new URL(OAUTH_RETRIEVE_TOKEN_URL);
-
-  Object.entries({
+  const url = assembleUrl(OAUTH_RETRIEVE_TOKEN_URL, {
     client_id: process.env.NEXT_PUBLIC_CLIENT_ID || "",
     client_secret: process.env.CLIENT_SECRET || "",
     code: code,
     grant_type: "authorization_code",
-  }).forEach(([key, value]) => {
-    query.searchParams.append(key, value);
   });
 
-  const response = await fetch(query, {
+  const response = await fetch(url, {
     method: "POST",
   });
 
@@ -72,18 +69,14 @@ export async function exchangeRefreshToken(): Promise<Result<void, string>> {
   if (!refresh_token)
     return { success: false, error: "Refresh token not found" };
 
-  const query = new URL(OAUTH_RETRIEVE_TOKEN_URL);
-
-  Object.entries({
+  const url = assembleUrl(OAUTH_RETRIEVE_TOKEN_URL, {
     client_id: process.env.NEXT_PUBLIC_CLIENT_ID || "",
     client_secret: process.env.CLIENT_SECRET || "",
     grant_type: "refresh_token",
     refresh_token: refresh_token,
-  }).forEach(([key, value]) => {
-    query.searchParams.append(key, value);
   });
 
-  const response = await fetch(query, {
+  const response = await fetch(url, {
     method: "POST",
   });
 
