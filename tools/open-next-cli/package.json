@@ -1,0 +1,9 @@
+{
+  "name": "@sports-map/open-next-cli",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Provides an `open-next` binary that delegates to @opennextjs/cloudflare's CLI.",
+  "bin": {
+    "open-next": "./cli.mjs"
+  }
+}
