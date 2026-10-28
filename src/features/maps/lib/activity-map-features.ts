@@ -1,7 +1,7 @@
 "use client";
 
 import { decode } from "@googlemaps/polyline-codec";
-import { SummaryActivity } from "@/src/generated/strava-api";
+import { Activity } from "@/lib/strava/types";
 import L, { PathOptions } from "leaflet";
 
 import { FeatureCollection } from "geojson";
@@ -11,14 +11,14 @@ import "leaflet.vectorgrid";
 import { ZOOM_BOUNDS } from "@/config/map";
 import { featuresToCollection, mapPointsToFeature } from "@/utils/geo";
 
-export function createActivityFeatureMap(activity: SummaryActivity) {
+export function createActivityFeatureMap(activity: Activity) {
   const points = decode(activity.map?.summaryPolyline || "");
 
   return mapPointsToFeature(points, activity.id ?? 0);
 }
 
 export function activityToGeoJSON(
-  activity: SummaryActivity,
+  activity: Activity,
 ): FeatureCollection | undefined {
   const map = createActivityFeatureMap(activity);
 
@@ -31,7 +31,7 @@ export function activityToGeoJSON(
 }
 
 export function activitiesToGeoJSON(
-  activities: SummaryActivity[],
+  activities: Activity[],
 ): FeatureCollection | undefined {
   const maps = activities
     .map((activity) => createActivityFeatureMap(activity))

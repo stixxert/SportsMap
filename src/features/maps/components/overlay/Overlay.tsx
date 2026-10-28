@@ -1,12 +1,10 @@
 import React, { useState } from "react";
 
-import { Box, Drawer, useTheme, useMediaQuery } from "@mui/material";
+import { Box, useTheme, useMediaQuery } from "@mui/material";
 import { FunctionToolbar } from "@/features/maps/components/overlay/Toolbar";
 import { OverlayDrawer } from "@/features/maps/components/overlay/OverlayDrawer";
 import { ViewController } from "@/features/maps/components/View";
 import { BottomMenu } from "@/features/maps/components/overlay/BottomMenu";
-import { FilterOptionBox } from "@/features/maps/components/activity/FilterOptionBox";
-import { ActivityTable } from "@/features/maps/components/activity/ActivityTable";
 
 export const MENU_OPTIONS_FOR_DRAWER = ["list", "filter"] as const;
 

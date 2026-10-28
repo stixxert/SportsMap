@@ -1,12 +1,7 @@
 "use client";
 
-import {
-  redirect,
-  useParams,
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
-import { useEffect, useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import {
   exchangeCodeForToken,
   isAuthenticated,
@@ -20,43 +15,58 @@ import { useApiTypeStore } from "@/lib/auth/api-store";
 import { rehydrateAccessToken } from "@/lib/auth/auth-store";
 import { ApiType } from "@/lib/auth/api-types";
 
+/**
+ * OAuth callback handler.
+ *
+ * Previously: an effect with no dependency array (so it re-ran on every render and could
+ * exchange the same single-use code repeatedly), `redirect()` called mid-render, and no
+ * `return` after redirecting so execution continued into the exchange.
+ */
 export function useAuthorizationFlow() {
   const searchParams = useSearchParams();
-
   const router = useRouter();
+  const started = useRef(false);
 
   useEffect(() => {
-    if (!searchParams || !searchParams.has("code")) {
-      redirect(AUTHORIZE_URL);
+    const code = searchParams?.get("code");
+
+    if (!code) {
+      window.location.assign(AUTHORIZE_URL);
+      return;
     }
 
-    const code = searchParams.get("code") as string;
+    // Guard against React's development re-mounts re-submitting a single-use code.
+    if (started.current) return;
+    started.current = true;
 
-    async function codeExchange(code: string) {
+    void (async () => {
       const result = await exchangeCodeForToken(code);
 
-      if (result.success) {
-      } else {
-        // TODO: Toast
+      if (!result.success) {
+        console.error("Strava authorization failed", result.error);
+        window.location.assign(AUTHORIZE_URL);
+        return;
       }
-      router.push("/");
-    }
 
-    codeExchange(code).then(() => rehydrateAccessToken());
-  });
+      await rehydrateAccessToken();
+      router.replace("/");
+    })();
+  }, [searchParams, router]);
 }
 
 export function useAuthenticatedState() {
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
-    async function updateAuthenticatedState() {
-      const state = await isAuthenticated();
+    let cancelled = false;
 
-      setAuthenticated(state);
-    }
+    void isAuthenticated().then((state) => {
+      if (!cancelled) setAuthenticated(state);
+    });
 
-    void updateAuthenticatedState();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return authenticated;

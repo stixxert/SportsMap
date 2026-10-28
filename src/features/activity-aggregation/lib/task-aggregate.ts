@@ -3,7 +3,7 @@
 import { getActivities } from "@/features/activity/lib/store-actions";
 import { openActivityDatabase } from "@/lib/activity/db";
 
-import { SummaryActivity } from "@/src/generated/strava-api";
+import { Activity } from "@/lib/strava/types";
 
 import { AggregationInput } from "@/features/activity-aggregation/types/aggregation";
 
@@ -32,7 +32,7 @@ export async function processWorkerTask(
   await performActivityAggregation(db, taskType, selector);
 }
 
-export function breakdownActivities(activities: SummaryActivity[]) {
+export function breakdownActivities(activities: Activity[]) {
   return activities.map((activity) => ({
     input: breakdownActivity(activity),
     owner: activity.id,

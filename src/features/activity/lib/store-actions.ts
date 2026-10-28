@@ -1,6 +1,6 @@
 "use client";
 
-import { SportType, SummaryActivity } from "@/src/generated/strava-api";
+import { SportType, Activity } from "@/lib/strava/types";
 import {
   constructDiscreteKeyBound,
   constructKeyBound,
@@ -22,12 +22,14 @@ import { ApiType } from "@/lib/auth/api-types";
 
 export async function addActivities(
   db: ActivityDatabase,
-  activities: SummaryActivity[],
+  activities: Activity[],
 ): Promise<void> {
   const tx = db.transaction(ACTIVITY_STORES.Activity, "readwrite");
 
+  // `put`, not `add`: a re-sync that overlaps stored rows must be idempotent instead of
+  // throwing ConstraintError and leaving the batch half-written.
   const addActivitiesPromises = activities.map(async (activity) => {
-    await tx.store.add(activity);
+    await tx.store.put(activity);
   });
 
   await Promise.all([...addActivitiesPromises, tx.done]);
@@ -75,7 +77,7 @@ export function constructSelectionOptionsKeyRange(
 export async function getActivities(
   db: ActivityDatabase,
   selectionOptions?: ActivitySelectionOptions,
-): Promise<SummaryActivity[]> {
+): Promise<Activity[]> {
   if (!selectionOptions) return db.getAll(ACTIVITY_STORES.Activity);
 
   const { sportType, startDate, endDate } = selectionOptions;
@@ -125,7 +127,7 @@ export async function getActivities(
 export async function getActivity(
   dataOrigin: ApiType,
   activityId: ActivityId,
-): Promise<SummaryActivity | undefined> {
+): Promise<Activity | undefined> {
   const db = await openActivityDatabase(dataOrigin);
 
   const activity = await db.getFromIndex(

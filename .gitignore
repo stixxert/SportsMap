@@ -43,7 +43,19 @@ next-env.d.ts
 .venv/
 .idea/
 
-src/generated
+# Generated Strava schema IS committed (no codegen at build time).
 
 # OpenNext
 .open-next
+
+# local tooling (pnpm bootstrap)
+.tooling/
+
+# local baseline artefacts
+.baseline/
+
+# package manager state — never commit
+.pnpm-store/
+
+# agent session state
+.pi/

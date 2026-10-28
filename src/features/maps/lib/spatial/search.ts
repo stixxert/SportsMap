@@ -4,7 +4,7 @@ import { BBox } from "rbush";
 import { lineSegmentToLatLng } from "@/features/maps/utils/point";
 import { getClosestPointOnLine } from "@/utils/geo";
 import { openActivityDatabase } from "@/lib/activity/db";
-import { SummaryActivity } from "@/src/generated/strava-api";
+import { Activity } from "@/lib/strava/types";
 import haversine from "haversine-distance";
 import {
   ACTIVITY_INDEXES,
@@ -39,15 +39,13 @@ export function getActivitiesOfBBox(
 ): ActivityId[] {
   const results = getIndexBboxResults(index, bBox);
 
-  const activityIds: ActivityId[] = [];
+  // A Set keeps this linear: an R-tree bbox result can contain thousands of segments
+  // belonging to the same activity, and Array.find made this quadratic.
+  const activityIds = new Set<ActivityId>();
 
-  results.forEach((line) => {
-    if (!activityIds.find((id) => id === line.data)) {
-      activityIds.push(line.data);
-    }
-  });
+  for (const line of results) activityIds.add(line.data);
 
-  return activityIds;
+  return [...activityIds];
 }
 
 export function getActivitiesOfPoint(
@@ -60,32 +58,32 @@ export function getActivitiesOfPoint(
 
   const results = getIndexBboxResults(index, bounds);
 
-  const activityIds: ActivityId[] = [];
+  const activityIds = new Set<ActivityId>();
 
-  results.forEach((line) => {
-    if (!activityIds.find((id) => id === line.data)) {
-      const lineClosestPoint = getClosestPointOnLine(
-        lineSegmentToLatLng(line),
-        point,
-      );
-      const distance = haversine(
-        { lat: point[0], lng: point[1] },
-        { lat: lineClosestPoint[0], lng: lineClosestPoint[1] },
-      );
-      if (distance <= radius) {
-        activityIds.push(line.data);
-      }
+  for (const line of results) {
+    if (activityIds.has(line.data)) continue;
+
+    const lineClosestPoint = getClosestPointOnLine(
+      lineSegmentToLatLng(line),
+      point,
+    );
+    const distance = haversine(
+      { lat: point[0], lng: point[1] },
+      { lat: lineClosestPoint[0], lng: lineClosestPoint[1] },
+    );
+    if (distance <= radius) {
+      activityIds.add(line.data);
     }
-  });
+  }
 
-  return activityIds;
+  return [...activityIds];
 }
 
 export async function getViewActivitiesImpl(
   originType: ApiType,
   index: SpatialDataIndex,
   view: InteractionSearch,
-): Promise<SummaryActivity[]> {
+): Promise<Activity[]> {
   let activityIds: ActivityId[];
 
   const { point, bounds } = view;

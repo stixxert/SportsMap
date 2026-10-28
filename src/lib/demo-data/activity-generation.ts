@@ -1,6 +1,6 @@
 import { encode, LatLngTuple } from "@googlemaps/polyline-codec";
 import { generateRandomActivityMap } from "@/lib/demo-data/map-generation";
-import { SportType, SummaryActivity } from "@/src/generated/strava-api";
+import { SportType, Activity } from "@/lib/strava/types";
 import { randomBetween, randomFromArray } from "@/utils/misc";
 
 const DISTANCE_BOUNDS = [1000, 100000];
@@ -20,7 +20,7 @@ const defaultOptions = {
 
 export function generateActivity(
   options?: Partial<typeof defaultOptions>,
-): SummaryActivity {
+): Activity {
   const { name, id, sportType, startDate, movingTime } = Object.assign(
     {},
     defaultOptions,

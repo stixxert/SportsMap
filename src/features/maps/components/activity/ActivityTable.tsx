@@ -17,7 +17,7 @@ import {
   type MRT_ColumnDef,
   MRT_RowSelectionState,
 } from "material-react-table";
-import { SummaryActivity } from "@/src/generated/strava-api";
+import { Activity } from "@/lib/strava/types";
 import { useEffect, useMemo, useState } from "react";
 import { useMapActivityInteraction } from "@/features/maps/hooks/use-map-interaction";
 
@@ -73,8 +73,8 @@ function activityCount(
 }
 
 function useTableColumns(
-  activities: SummaryActivity[] | null,
-): MRT_ColumnDef<SummaryActivity>[] {
+  activities: Activity[] | null,
+): MRT_ColumnDef<Activity>[] {
   const interactionType = useMapInteractionStore((state) => state.interaction);
   const { movingTime, distance, totalElevationGain } =
     useReducedActivitiesStatistics(activities);
@@ -198,7 +198,7 @@ function useTableColumns(
         </div>
       ),
     },
-  ] as MRT_ColumnDef<SummaryActivity>[];
+  ] as MRT_ColumnDef<Activity>[];
 }
 
 function useSelectedRow() {
@@ -223,9 +223,16 @@ function useSelectedRow() {
   };
 }
 
-function useReducedActivitiesStatistics(activities: SummaryActivity[] | null) {
-  return useMemo(() => {
-    const defaultData: SummaryActivity = {
+/** Column totals shown in the table footer — deliberately not an Activity. */
+type ActivityTotals = {
+  movingTime: number;
+  distance: number;
+  totalElevationGain: number;
+};
+
+function useReducedActivitiesStatistics(activities: Activity[] | null) {
+  return useMemo<ActivityTotals>(() => {
+    const defaultData: ActivityTotals = {
       movingTime: 0,
       distance: 0,
       totalElevationGain: 0,

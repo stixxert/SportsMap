@@ -12,7 +12,7 @@ import {
   ActivityInteractionViewState,
   useActivityInteractionViewStore,
 } from "@/features/maps/stores/activity-interaction-view-store";
-import { SummaryActivity } from "@/src/generated/strava-api";
+import { Activity } from "@/lib/strava/types";
 import {
   createActivityFeatureMap,
   createActivityVectorGrid,
@@ -52,7 +52,7 @@ export function useMapInteraction() {
   }, [map]);
 }
 
-type ActivityGetterFn = (activityId: ActivityId) => SummaryActivity | undefined;
+type ActivityGetterFn = (activityId: ActivityId) => Activity | undefined;
 
 function useActivityGetter(
   activityView: ActivityInteractionViewState["activityView"],
@@ -86,7 +86,7 @@ function useHighlightInteraction() {
     );
   };
 
-  const addActivity = (activity: SummaryActivity) => {
+  const addActivity = (activity: Activity) => {
     const map = createActivityFeatureMap(activity);
 
     if (!map) return;
@@ -114,7 +114,7 @@ function useHighlightInteraction() {
     };
   }, [highlightedActivities, map]);
 
-  const toggleActivityHighlight = (activity: SummaryActivity) => {
+  const toggleActivityHighlight = (activity: Activity) => {
     if (!map.current) return;
 
     if (activityHasHighlight(activity.id ?? 0))
@@ -133,7 +133,7 @@ function useHighlightInteraction() {
 function useActivitySelectionInteraction() {
   const map = useMap();
 
-  return (activity: SummaryActivity) => {
+  return (activity: Activity) => {
     if (!map.current) return;
 
     setActivityAsMapBounds(map.current, activity);

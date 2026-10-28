@@ -5,9 +5,15 @@ import { useFilterProcessingResultsStatus } from "@/lib/filter/active-filter-sto
 export function useMapLoadState() {
   const syncDone = useActivitySyncStore((state) => state.activitiesSync);
 
+  const syncError = useActivitySyncStore((state) => state.syncError);
+
   const filterProcessingResultsReady = useFilterProcessingResultsStatus();
 
   const mapIndexReady = useSpatialIndexReadinessStore((state) => state.ready);
+
+  // A failed sync must not look like an endless load: the UI needs to be able to say
+  // so, and to offer a retry.
+  if (syncError) return { ready: false, status: syncError, failed: true };
 
   if (!syncDone) return { ready: false, status: "Retrieving activities" };
 
@@ -17,5 +23,5 @@ export function useMapLoadState() {
   if (!mapIndexReady)
     return { ready: false, status: "Processing spatial index" };
 
-  return { ready: true };
+  return { ready: true, failed: false };
 }

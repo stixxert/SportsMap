@@ -1,6 +1,6 @@
 import * as Comlink from "comlink";
 import { InteractionSearch } from "@/features/maps/lib/spatial/search";
-import { SummaryActivity } from "@/src/generated/strava-api";
+import { Activity } from "@/lib/strava/types";
 import { useApiTypeStore } from "@/lib/auth/api-store";
 import {
   useActivityFilterStore,
@@ -25,7 +25,7 @@ export function setSpatialSearchWorker(newWorker: Worker) {
 
 export async function getViewActivities(
   view: InteractionSearch,
-): Promise<SummaryActivity[]> {
+): Promise<Activity[]> {
   if (!worker.ref) {
     throw new Error("Spatial search worker not initialised");
   }

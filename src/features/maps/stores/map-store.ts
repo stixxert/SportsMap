@@ -6,7 +6,7 @@ interface MapState {
   map: RefObject<Map | null>;
 }
 
-const useMapStore = zustand.create<MapState>((set) => ({
+const useMapStore = zustand.create<MapState>(() => ({
   map: createRef<Map>(),
 }));
 

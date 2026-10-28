@@ -1,5 +1,5 @@
 import * as zustand from "zustand";
-import { Configuration } from "@/src/generated/strava-api";
+import type { StravaClient } from "@/lib/strava/client";
 import { apiStateUpdateCallback } from "@/lib/auth/api-configuration";
 import { useAccessTokenStore } from "@/lib/auth/auth-store";
 import { ApiType } from "@/lib/auth/api-types";
@@ -9,9 +9,9 @@ interface ApiTypeState {
   setApiType: (apiType: ApiType | null) => void;
 }
 
-interface ApiConfigurationState {
-  configuration: Configuration | null;
-  setConfiguration: (configuration: Configuration | null) => void;
+interface StravaClientState {
+  client: StravaClient | null;
+  setClient: (client: StravaClient | null) => void;
 }
 
 export const useApiTypeStore = zustand.create<ApiTypeState>((set) => ({
@@ -21,20 +21,15 @@ export const useApiTypeStore = zustand.create<ApiTypeState>((set) => ({
   },
 }));
 
-export const useApiConfigurationStore = zustand.create<ApiConfigurationState>(
-  (set) => ({
-    configuration: null,
-    setConfiguration: (configuration: Configuration | null) =>
-      set(() => ({
-        configuration: configuration,
-      })),
-  }),
-);
+export const useStravaClientStore = zustand.create<StravaClientState>((set) => ({
+  client: null,
+  setClient: (client: StravaClient | null) => set(() => ({ client })),
+}));
 
 export const useApiType = () => useApiTypeStore((state) => state.apiType);
 
-export const useApiConfiguration = () =>
-  useApiConfigurationStore((state) => state.configuration);
+export const useStravaClient = () =>
+  useStravaClientStore((state) => state.client);
 
 useApiTypeStore.subscribe((state, prevState) => {
   if (state.apiType !== prevState.apiType) {

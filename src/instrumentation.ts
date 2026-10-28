@@ -1,25 +1,37 @@
-import { assembleUrl } from "@/utils/url";
+/**
+ * Registers the Strava push subscription on first server start.
+ *
+ * There is deliberately no manual deployment step: no extra secret (the verify token is
+ * derived from CLIENT_SECRET) and no registration script. `ensureWebhookSubscription`
+ * checks for an existing subscription first and never replaces one, so repeated cold
+ * starts, preview deployments and restarts are all harmless.
+ *
+ * It is skipped outside production so local development never registers a localhost
+ * callback with Strava.
+ */
 
-const STRAVA_WEBHOOK_URL = "https://www.strava.com/api/v3/push_subscriptions";
-
-// Strava requires web-hooks as a part of TOS - as we don't store data on a server,
-// we omit actual implementation of processing these updates.
+let attempted = false;
 
 export async function register() {
-  const client_id = process.env.NEXT_PUBLIC_CLIENT_ID;
-  const client_secret = process.env.CLIENT_SECRET;
-  const callback_url = process.env.NEXT_PUBLIC_DOMAIN;
+  if (process.env.NODE_ENV !== "production") return;
+  if (attempted) return;
 
-  if (client_id && client_secret && callback_url) {
-    const url = new URL(
-      assembleUrl(STRAVA_WEBHOOK_URL, {
-        client_id,
-        client_secret,
-        callback_url: `${callback_url}/webhooks`,
-        verify_token: "ANY",
-      }),
-    );
+  attempted = true;
 
-    await fetch(url, { method: "POST" });
+  const { ensureWebhookSubscription } = await import("@/lib/strava/webhook");
+
+  try {
+    const result = await ensureWebhookSubscription({
+      clientId: process.env.NEXT_PUBLIC_CLIENT_ID,
+      clientSecret: process.env.CLIENT_SECRET,
+      publicOrigin: process.env.NEXT_PUBLIC_DOMAIN,
+    });
+
+    if (result !== "skipped") {
+      console.info(`Strava push subscription: ${result}`);
+    }
+  } catch (error) {
+    // Never let webhook bookkeeping take the server down.
+    console.error("Strava push subscription check failed", error);
   }
 }

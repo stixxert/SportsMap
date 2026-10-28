@@ -13,7 +13,7 @@ import {
   useMapInteractionStore,
   usePointSensitivityStore,
 } from "@/features/maps/stores/map-interaction-store";
-import { SummaryActivity } from "@/src/generated/strava-api";
+import { Activity } from "@/lib/strava/types";
 import {
   convLatLngToPoint,
   getBoundsSearchBox,
@@ -35,7 +35,7 @@ export async function updateActivitiesInViewCallback() {
 
   if (!(interaction && value)) return;
 
-  let activities: SummaryActivity[];
+  let activities: Activity[];
 
   if (interaction === "mapview") {
     const bounds = getBoundsSearchBox(value as LatLngBounds);
@@ -89,8 +89,11 @@ export function createMapPointClickUpdate(map: Map) {
   return (event: LeafletMouseEvent) => setPointAsView(map, event.latlng);
 }
 
-export function setActivityAsMapBounds(map: Map, activity: SummaryActivity) {
-  const bounds = getActivityMapLatLngBounds(activity) as LatLngTuple[];
+export function setActivityAsMapBounds(map: Map, activity: Activity) {
+  const bounds = getActivityMapLatLngBounds(activity) as LatLngTuple[] | undefined;
+
+  // Activities without a map (trainer/manual) have no bounds to fit.
+  if (!bounds) return;
 
   map.fitBounds(bounds, { padding: [50, 50], animate: true, duration: 1 });
 }

@@ -1,11 +1,11 @@
 import { useAuthenticatedState } from "@/lib/auth/authenticate";
-import { useApiConfiguration, useApiType } from "@/lib/auth/api-store";
-import { AthletesApi, DetailedAthlete } from "@/src/generated/strava-api";
+import { useStravaClient, useApiType } from "@/lib/auth/api-store";
+import type { AthleteProfile } from "@/lib/strava/types";
 import useSWR, { Fetcher } from "swr";
 import { ApiType } from "@/lib/auth/api-types";
 
 export type ProfileState = {
-  user: DetailedAthlete;
+  user: AthleteProfile;
   error: unknown;
   profileUsable: boolean;
 };
@@ -13,30 +13,18 @@ export type ProfileState = {
 export function useProfile(): ProfileState {
   const authenticated = useAuthenticatedState();
   const apiType = useApiType();
-  const apiConfiguration = useApiConfiguration();
+  const client = useStravaClient();
 
-  const athletesApi = new AthletesApi(
-    apiType === ApiType.Strava ? apiConfiguration || undefined : undefined,
-  );
+  const fetcher: Fetcher<AthleteProfile, string> = () =>
+    client!.getAthlete();
 
-  const fetcher: Fetcher<DetailedAthlete, string> = () =>
-    athletesApi.getLoggedInAthlete();
+  const profileUsable = apiType === ApiType.Strava;
 
-  function constraintValid() {
-    return Boolean(
-      authenticated && apiType === ApiType.Strava && apiConfiguration,
-    );
-  }
+  const profileKey = authenticated && client && profileUsable ? "athlete" : null;
 
-  const { data, isLoading, isValidating, error } = useSWR(
-    constraintValid() ? "true" : null,
-    fetcher,
-    {
-      revalidateOnFocus: false,
-    },
-  );
+  const { data, error } = useSWR(profileKey, fetcher, {
+    revalidateOnFocus: false,
+  });
 
-  const profileUsable = apiType === ApiType.Strava; // || isLoading || isValidating || Boolean(data);
-
-  return { user: data as DetailedAthlete, error, profileUsable };
+  return { user: data as AthleteProfile, error, profileUsable };
 }

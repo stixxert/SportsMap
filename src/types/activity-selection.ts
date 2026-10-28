@@ -1,4 +1,4 @@
-import { SportType, SummaryActivity } from "@/src/generated/strava-api";
+import { SportType, Activity } from "@/lib/strava/types";
 
 export interface ActivityAggregationSelector {
   startDate: Date;
@@ -7,4 +7,4 @@ export interface ActivityAggregationSelector {
 }
 
 export type ActivitySelectionOptions = Partial<ActivityAggregationSelector>;
-export type ActivityId = NonNullable<SummaryActivity["id"]>;
+export type ActivityId = NonNullable<Activity["id"]>;

@@ -1,7 +1,6 @@
 "use server";
 
 import { Result } from "@/types/types";
-import { URL } from "url";
 import {
   deleteRefreshTokenCookie,
   getRefreshTokenCookie,
@@ -10,6 +9,51 @@ import {
 } from "@/lib/server-cookies";
 import { OAUTH_RETRIEVE_TOKEN_URL } from "@/config/api-urls";
 import { assembleUrl } from "@/utils/url";
+
+/** Strava token endpoints get a hard deadline: a hung upstream must not hang the app. */
+const TOKEN_REQUEST_TIMEOUT_MS = 10_000;
+
+type TokenResponse = {
+  token_type?: string;
+  access_token?: string;
+  expires_at?: number;
+  expires_in?: number;
+  refresh_token?: string;
+};
+
+/**
+ * Reads a token response defensively.
+ *
+ * Strava answers some failures with a non-JSON body, so `response.json()` can throw. The
+ * previous code concatenated the parsed body into an error string, which produced
+ * "[object Object]" and could have leaked upstream detail into the UI.
+ */
+async function readTokenResponse(response: Response) {
+  if (!response.ok) {
+    return { ok: false as const, reason: `HTTP ${response.status}` };
+  }
+
+  let body: TokenResponse;
+
+  try {
+    body = (await response.json()) as TokenResponse;
+  } catch {
+    return { ok: false as const, reason: "malformed token response" };
+  }
+
+  const { token_type, access_token, expires_at, expires_in, refresh_token } =
+    body;
+
+  if (!token_type || !access_token || !expires_at || !expires_in) {
+    return { ok: false as const, reason: "incomplete token response" };
+  }
+
+  return {
+    ok: true as const,
+    token: { token_type, access_token, expires_at, expires_in },
+    refreshToken: refresh_token,
+  };
+}
 
 export async function exchangeCodeForToken(
   code: string,
@@ -23,41 +67,25 @@ export async function exchangeCodeForToken(
 
   const response = await fetch(url, {
     method: "POST",
+    signal: AbortSignal.timeout(TOKEN_REQUEST_TIMEOUT_MS),
   });
 
-  if (!response.ok)
+  const parsed = await readTokenResponse(response);
+
+  if (!parsed.ok) {
     return {
       success: false,
-      error: "Error while requesting token: "
-        .concat(response.statusText)
-        .concat(await response.json()),
+      error: `Error while requesting token: ${parsed.reason}`,
     };
+  }
 
-  const response_body = await response.json();
-
-  const { refresh_token } = response_body;
-
-  if (!refresh_token)
-    return {
-      success: false,
-      error: "Error while refreshing token: ".concat("Missing refresh token"),
-    };
-
-  const { token_type, access_token, expires_at, expires_in } = response_body;
-
-  if (!token_type || !access_token || !expires_at || !expires_in)
-    return {
-      success: false,
-      error: "Error while requesting token: ".concat("Missing access token"),
-    };
-
-  /*
-   * Set client cookies based on refresh and access token.
-   */
+  if (!parsed.refreshToken) {
+    return { success: false, error: "Error while requesting token: missing refresh token" };
+  }
 
   await Promise.all([
-    setRefreshTokenCookie(refresh_token),
-    setAccessTokenCookie({ token_type, access_token, expires_at, expires_in }),
+    setRefreshTokenCookie(parsed.refreshToken),
+    setAccessTokenCookie(parsed.token),
   ]);
 
   return { success: true, value: undefined };
@@ -78,37 +106,25 @@ export async function exchangeRefreshToken(): Promise<Result<void, string>> {
 
   const response = await fetch(url, {
     method: "POST",
+    signal: AbortSignal.timeout(TOKEN_REQUEST_TIMEOUT_MS),
   });
 
-  if (!response.ok)
+  const parsed = await readTokenResponse(response);
+
+  if (!parsed.ok) {
     return {
       success: false,
-      error: "Error while refreshing access token: ".concat(
-        response.statusText,
-      ),
+      error: `Error while refreshing access token: ${parsed.reason}`,
     };
+  }
 
-  const response_body = await response.json();
-
-  const refresh_token_new = response_body.refresh_token;
-
-  if (!refresh_token_new)
-    return {
-      success: false,
-      error: "Error while refreshing token: ".concat("Missing refresh token"),
-    };
-
-  const { token_type, access_token, expires_at, expires_in } = response_body;
-
-  if (!token_type || !access_token || !expires_at || !expires_in)
-    return {
-      success: false,
-      error: "Error while refreshing token: ".concat("Missing access token"),
-    };
+  if (!parsed.refreshToken) {
+    return { success: false, error: "Error while refreshing token: missing refresh token" };
+  }
 
   await Promise.all([
-    setRefreshTokenCookie(refresh_token_new),
-    setAccessTokenCookie({ token_type, access_token, expires_at, expires_in }),
+    setRefreshTokenCookie(parsed.refreshToken),
+    setAccessTokenCookie(parsed.token),
   ]);
 
   return { success: true, value: undefined };

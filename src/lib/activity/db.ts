@@ -18,14 +18,53 @@ function getDatabaseName(apiType: ApiType) {
   return `${apiType.toLowerCase()}-data-db`;
 }
 
-export async function openActivityDatabase(
+/**
+ * One connection per data origin.
+ *
+ * Callers used to open a fresh `openDB` connection per query — the search worker, the
+ * map view and single-activity lookups each did it — which churns connections and
+ * repeats the (synchronous) upgrade checks on the hot path of every map interaction.
+ */
+const connections = new Map<ApiType, Promise<ActivityDatabase>>();
+
+export function openActivityDatabase(
   dataOrigin: ApiType,
 ): Promise<ActivityDatabase> {
-  return openDB<ActivityDatabaseSchema>(getDatabaseName(dataOrigin), 1, {
-    upgrade(db) {
-      dbUpgradeRegistry.callbacks.forEach((callback) => callback(db));
+  const existing = connections.get(dataOrigin);
+
+  if (existing) return existing;
+
+  const opened = openDB<ActivityDatabaseSchema>(
+    getDatabaseName(dataOrigin),
+    1,
+    {
+      upgrade(db) {
+        dbUpgradeRegistry.callbacks.forEach((callback) => callback(db));
+      },
     },
-  });
+  );
+
+  connections.set(dataOrigin, opened);
+
+  // A failed open must not poison the cache.
+  opened.catch(() => connections.delete(dataOrigin));
+
+  return opened;
+}
+
+/** Closes and forgets the cached connection (used by tests and by deletes). */
+export async function closeActivityDatabase(
+  dataOrigin: ApiType,
+): Promise<void> {
+  const existing = connections.get(dataOrigin);
+
+  connections.delete(dataOrigin);
+
+  if (!existing) return;
+
+  const db = await existing.catch(() => undefined);
+
+  db?.close();
 }
 
 subscribeToActivityDbUpgrade((db) => {
@@ -59,6 +98,7 @@ export async function deleteMetaData(
 export async function deleteActivityDatabase(
   dataOrigin: ApiType,
 ): Promise<void> {
+  await closeActivityDatabase(dataOrigin);
   await deleteDB(getDatabaseName(dataOrigin));
 }
 

@@ -1,4 +1,4 @@
-import { SummaryActivity } from "@/src/generated/strava-api";
+import { Activity } from "@/lib/strava/types";
 import { decode } from "@googlemaps/polyline-codec";
 import { DataIndexObject } from "@/types/activity-aggregation";
 import { Point } from "@/types/geo";
@@ -33,21 +33,30 @@ export function convPolylineToLineSegments(polyline: Point[]): Point[][] {
   return lineSegments;
 }
 
-export function breakdownActivity(activity: SummaryActivity): Point[] {
+export function breakdownActivity(activity: Activity): Point[] {
   return decode(activity.map?.summaryPolyline || "");
 }
 
-export function getActivityMapLatLngBounds(activity: SummaryActivity) {
+export function getActivityMapLatLngBounds(activity: Activity) {
   const pts = breakdownActivity(activity);
 
-  const lats = pts.map(([lat]) => lat);
-  const lngs = pts.map(([, lng]) => lng);
+  // A trainer/manual activity has no polyline. Returning [[0,0],[0,0]] would send
+  // the map to Null Island; undefined lets the caller simply not move the view.
+  if (pts.length === 0) return undefined;
 
-  const minLat = Math.min(...lats);
-  const minLng = Math.min(...lngs);
+  // Explicit loop: `Math.min(...lats)` overflows the call stack for long activities
+  // (a spread of ~65k+ elements throws RangeError), and this allocates nothing.
+  let minLat = Infinity;
+  let minLng = Infinity;
+  let maxLat = -Infinity;
+  let maxLng = -Infinity;
 
-  const maxLat = Math.max(...lats);
-  const maxLng = Math.max(...lngs);
+  for (const [lat, lng] of pts) {
+    if (lat < minLat) minLat = lat;
+    if (lat > maxLat) maxLat = lat;
+    if (lng < minLng) minLng = lng;
+    if (lng > maxLng) maxLng = lng;
+  }
 
   const se = [minLat, maxLng] as Point;
   const nw = [maxLat, minLng] as Point;

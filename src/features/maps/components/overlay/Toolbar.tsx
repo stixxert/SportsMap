@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Drawer, Stack, Box } from "@mui/material";
+import { Drawer, Stack } from "@mui/material";
 
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 

@@ -18,7 +18,7 @@ import {
   Typography,
   Stack,
 } from "@mui/material";
-import { SportType } from "@/src/generated/strava-api";
+import { SportType } from "@/lib/strava/types";
 
 import {
   useApplyFilter,
@@ -28,7 +28,6 @@ import { useState } from "react";
 import {
   getDefaultFilter,
   setDefaultFilter,
-  useActivityFilter,
   useActivityFilterStore,
   useFilterProcessingResultsStatus,
 } from "@/lib/filter/active-filter-store";

@@ -1,7 +1,7 @@
 "use client";
 
 import { DBSchema, IDBPDatabase } from "idb";
-import { SportType, SummaryActivity } from "@/src/generated/strava-api";
+import { SportType, Activity } from "@/lib/strava/types";
 import { AggregatedIndexesSchema } from "@/types/activity-aggregation";
 import { ActivityId } from "@/types/activity-selection";
 
@@ -21,9 +21,8 @@ export const ACTIVITY_INDEXES = {
 
 export interface ActivityStoreSchema extends DBSchema {
   [ACTIVITY_STORE]: {
-    value: {
-      [K in keyof SummaryActivity]?: SummaryActivity[K];
-    };
+    // Stored rows are the app's own model, always complete (see @/lib/strava/types).
+    value: Activity;
     key: ActivityId;
     indexes: {
       [ACTIVITY_INDEXES.ID]: ActivityId;

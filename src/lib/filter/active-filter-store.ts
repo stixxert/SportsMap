@@ -1,7 +1,7 @@
 "use client";
 
 import * as zustand from "zustand";
-import { persist, StateStorage } from "zustand/middleware";
+import { persist } from "zustand/middleware";
 
 import { defaultFilter } from "@/config/default-filter";
 import { ActivityAggregationSelector } from "@/types/activity-selection";

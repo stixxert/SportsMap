@@ -1,37 +1,27 @@
-import { SportType } from "@/src/generated/strava-api";
+import { SportType } from "@/lib/strava/types";
 
-const ACTIVITY_TYPES = Object.keys(SportType);
-
-const SPAN_DELIMITER = "-";
+/**
+ * Compresses a sport-type selection into a stable string, used as part of the aggregate
+ * cache key and for comparing two selections.
+ *
+ * Names are used directly (sorted, comma-joined) rather than indexes into the SportType
+ * enum. The previous index encoding silently broke whenever Strava added a sport type —
+ * the indexes shifted, so already-stored aggregates decoded to the *wrong* sports, and a
+ * newly added type compressed to "-1" and was dropped entirely.
+ */
+const SPAN_DELIMITER = ",";
 
 export type CompressedTypeSpan = string;
 
-function convTypeToIndex(type: SportType) {
-  return ACTIVITY_TYPES.findIndex((value) => value === type.toString());
-}
-
-function convIndexToType(index: string | number) {
-  const _index = typeof index === "number" ? index : Number(index);
-
-  if (_index < 0 && _index >= ACTIVITY_TYPES.length) {
-    return undefined;
-  }
-
-  return ACTIVITY_TYPES[_index];
-}
+const KNOWN_TYPES = new Set<string>(Object.values(SportType));
 
 export function compressSpan(
   span: SportType[] | SportType,
 ): CompressedTypeSpan {
-  if (!Array.isArray(span)) return convTypeToIndex(span).toString();
+  const types = Array.isArray(span) ? span : [span];
 
-  return (
-    span
-      /* sort to ensure spans with equal types will actually match in compressed form */
-      .sort()
-      .map((type) => convTypeToIndex(type))
-      .join(SPAN_DELIMITER)
-  );
+  // Sort a copy: mutating the caller's filter array has bitten this app before.
+  return [...types].sort().join(SPAN_DELIMITER);
 }
 
 export function uncompressSpan(
@@ -39,13 +29,12 @@ export function uncompressSpan(
 ): SportType | SportType[] | undefined {
   const results = compressedSpan
     .split(SPAN_DELIMITER)
-    .map((value) => convIndexToType(value))
-    /* filter away undefined index types*/
-    .filter((value) => value !== undefined);
+    /* drop anything that is not a known sport type (stale or foreign keys) */
+    .filter((value) => KNOWN_TYPES.has(value)) as SportType[];
 
   if (results.length === 0) return undefined;
 
-  if (results.length === 1) return results[0] as SportType;
+  if (results.length === 1) return results[0];
 
-  return results as SportType[];
+  return results;
 }

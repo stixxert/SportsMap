@@ -1,14 +1,14 @@
-import "fake-indexeddb/auto";
 import "@/features/activity/lib/activity-schema";
 import "@/features/activity-aggregation/lib/schema";
 
 import { IDBFactory } from "fake-indexeddb";
-import { beforeEach } from "@jest/globals";
-import { openActivityDatabase } from "@/lib/activity/db";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+
+import { closeActivityDatabase, openActivityDatabase } from "@/lib/activity/db";
 import { seedActivities } from "@/lib/demo-data/seed-activities";
 import { dispatchActivityAggregation } from "@/features/activity-aggregation/lib/dispatch-aggregate";
 
-import { SportType } from "@/src/generated/strava-api";
+import { SportType } from "@/lib/strava/types";
 
 import {
   AggregationIndexerFn,
@@ -41,14 +41,7 @@ const mergeTransformData: AggregationIndexerFn<AggregationOutput[]> = (
   for (const index of input) {
     if (!index) continue;
 
-    const _index = index as string;
-
-    if (!mergedIndex && !index) {
-      mergedIndex = _index;
-      continue;
-    }
-
-    mergedIndex = (mergedIndex ?? "").concat(_index);
+    mergedIndex = (mergedIndex ?? "").concat(index as string);
   }
   return mergedIndex ?? "";
 };
@@ -59,9 +52,11 @@ const mockComlinkWrappedWorker: AggregationWorkerActions = {
 
 const ALL_SPORTS_TYPES = Object.keys(SportType) as SportType[];
 
-jest.mock("comlink", () => {
-  return { wrap: () => mockComlinkWrappedWorker };
-});
+// These tests exercise the aggregation pipeline and its persistence shape, so the exact
+// row count is irrelevant — keep it small enough that the suite stays fast.
+const SEED_COUNT = 100;
+
+vi.mock("comlink", () => ({ wrap: () => mockComlinkWrappedWorker }));
 
 describe("Activity Aggregation", () => {
   let activityDatabase: ActivityDatabase;
@@ -70,9 +65,9 @@ describe("Activity Aggregation", () => {
 
   let firstInsertionOptions: { start?: Date; end?: Date };
 
-  beforeEach(async () => {
-    global.Worker = jest.fn();
+  let originalSpatialHandler: (typeof aggregationHandlers)[typeof AggregationCategory.Spatial];
 
+  beforeEach(async () => {
     globalThis.indexedDB = new IDBFactory();
 
     comlinkPool = Array.from({ length: AGGREGATE_WORKER_COUNT }).map(
@@ -89,7 +84,10 @@ describe("Activity Aggregation", () => {
       ),
     };
 
-    await seedActivities(activityDatabase, 1000, 0, firstInsertionOptions);
+    await seedActivities(activityDatabase, SEED_COUNT, 0, firstInsertionOptions);
+
+    originalSpatialHandler =
+      aggregationHandlers[AggregationCategory.Spatial];
 
     aggregationHandlers[AggregationCategory.Spatial] = {
       aggregate: transformData,
@@ -98,7 +96,10 @@ describe("Activity Aggregation", () => {
   });
 
   afterEach(async () => {
-    activityDatabase.close();
+    // Restore the shared handler table so tests stay order-independent, and drop the
+    // memoised connection (opening the DB is cached per origin).
+    aggregationHandlers[AggregationCategory.Spatial] = originalSpatialHandler;
+    await closeActivityDatabase(ApiType.Demo);
   });
 
   test("adds database entry and returns aggregation index", async () => {
@@ -123,13 +124,7 @@ describe("Activity Aggregation", () => {
         options,
       );
 
-      const activitiesInCategory = await getActivities(
-        activityDatabase,
-        options,
-      );
-
       expect(databaseReturnedIndex).toBeDefined();
-
       expect((databaseReturnedIndex as AggregatedIndex).index).toEqual(
         "emptyIndex",
       );
@@ -137,14 +132,20 @@ describe("Activity Aggregation", () => {
   });
 
   test("can aggregate data from multiple SportTypes", async () => {
+    // Seed data is generated over the last year, so this range must contain rows.
     const options = {
       sportType: ALL_SPORTS_TYPES,
-      startDate: new Date(0),
+      startDate: firstInsertionOptions.start ?? new Date(0),
       endDate: new Date(Date.now()),
     };
 
     const indexType = AggregationCategory.Spatial;
     await dispatchActivityAggregation(ApiType.Demo, options, comlinkPool);
+
+    const activitiesInCategory = await getActivities(activityDatabase, options);
+
+    // Guard the guard: if the fixture ever stops producing rows, this test is meaningless.
+    expect(activitiesInCategory.length).toBeGreaterThan(0);
 
     const databaseReturnedIndex = await getAggregatedData(
       activityDatabase,
@@ -152,18 +153,13 @@ describe("Activity Aggregation", () => {
       options,
     );
 
-    const activitiesInCategory = await getActivities(activityDatabase, options);
-
-    if (activitiesInCategory.length > 0) {
-      expect(databaseReturnedIndex).toBeDefined();
-
-      expect((databaseReturnedIndex as AggregatedIndex).index).toEqual(
-        "emptyIndex",
-      );
-    } else expect(databaseReturnedIndex).not.toBeDefined();
+    expect(databaseReturnedIndex).toBeDefined();
+    expect((databaseReturnedIndex as AggregatedIndex).index).toEqual(
+      "emptyIndex",
+    );
   });
 
-  test("can use existing updatedAt, to fill in part of aggregation range", async () => {
+  test("merges into an existing aggregate row on a later run", async () => {
     const options = {
       sportType: ALL_SPORTS_TYPES,
       startDate: new Date(0),
@@ -182,7 +178,7 @@ describe("Activity Aggregation", () => {
       ),
     };
 
-    await seedActivities(activityDatabase, 1000, 1000, opt);
+    await seedActivities(activityDatabase, SEED_COUNT, SEED_COUNT, opt);
 
     await dispatchActivityAggregation(ApiType.Demo, options, comlinkPool);
 
@@ -194,12 +190,10 @@ describe("Activity Aggregation", () => {
 
     const activitiesInCategory = await getActivities(activityDatabase, options);
 
-    if (activitiesInCategory.length > 0) {
-      expect(databaseReturnedIndex).toBeDefined();
-
-      expect((databaseReturnedIndex as AggregatedIndex).index).toEqual(
-        "emptyIndexemptyIndex",
-      );
-    } else expect(databaseReturnedIndex).not.toBeDefined();
+    expect(activitiesInCategory.length).toBeGreaterThan(0);
+    expect(databaseReturnedIndex).toBeDefined();
+    expect((databaseReturnedIndex as AggregatedIndex).index).toEqual(
+      "emptyIndexemptyIndex",
+    );
   });
 });

@@ -1,19 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import React from "react";
 import Head from "next/head";
 import AppProvider from "@/app/provider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+/*
+ * No webfont is loaded here on purpose. The previous Geist/Geist_Mono setup defined
+ * `--font-geist-*` CSS variables that nothing referenced, so the app always rendered in
+ * the fallback font while still paying for the download. Load a font here only together
+ * with a component that actually applies its class.
+ */
 
 export const metadata: Metadata = {
   title: "Sports Map",
